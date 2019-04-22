@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    {% block head %}{% endblock %}
+</head>
+<body>
+<form action="{{ url_for('log') }}" method="post">
+{#<form action="{{ url_for('log') }}" method="post">#}
+        {% if form.errors %}
+            <ul>
+                {% for name, errors in form.errors.items() %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        账号：{{ form.email(size=20) }}<label>{{ form.email.errors[0] }}</label><br/>
+        密码：<input name="password" type="password"/><br/>
+        {{ form.hidden_tag() }}
+        <button type="submit">登录</button>
+    </form>
+</body>
+</html>

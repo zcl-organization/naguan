@@ -1,0 +1,11 @@
+{
+  "auth": "",
+  "admin": "role:admin",
+  "edit": "role:admin_or_special-edit",
+  "test": "role:user",
+  "admin:edit": "role:admin",
+  "admin:<id>:test": "role:admin",
+  "user": "role:admin",
+  "menu": "role:admin"
+
+}
