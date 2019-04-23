@@ -9,6 +9,10 @@ parser.add_argument('host')
 parser.add_argument('vm_name')
 parser.add_argument('action')
 parser.add_argument('uuid')
+parser.add_argument('new_cpu')
+parser.add_argument('old_cpu')
+parser.add_argument('new_memory')
+parser.add_argument('old_memory')
 ret_status = {
     'ok': True,
     'code': 200,
@@ -366,9 +370,9 @@ class InstanceManage(Resource):
             type: string
             description: platform_id
           - in: path
-            name: vmname
+            name: uuid
             type: string
-            description: vmmorname
+            description: uuid
           - in: query
             name: arrDiskOcNameJson
             type: string
@@ -473,4 +477,23 @@ class InstanceManage(Resource):
                     properties:
         """
 
-        pass
+        args = parser.parse_args()
+        args.get('cpu')
+        try:
+            if args.get('new_cpu'):
+                pass
+
+            if all([args['new_cpu'], args['old_cpu']]):
+                # args['id']
+                # args['uuid']
+
+                data = instance_manage.vm_update_cpu(platform_id=args['platform_id'],
+                                                     uuid=args['uuid'], new_cpu=args['new_cpu'],
+                                                     old_cpu=args['old_cpu'])
+
+            if all([args['new_memory'], args['old_memory']]):
+                data = instance_manage.vm_update_memory(platform_id=args['platform_id'],
+                                                        uuid=args['uuid'], new_memory=args['new_memory'],
+                                                        old_memory=args['old_memory'])
+        except Exception as e:
+            print(e)

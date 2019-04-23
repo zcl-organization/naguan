@@ -115,3 +115,40 @@ def vm_delete(platform_id, uuid):
     print("Done.")
     # 从数据库中删除云主机及 user_instance
     # pass
+
+
+def vm_update_cpu(platform_id, uuid, new_cpu, old_cpu):
+    s, content, platfrom = get_connect(platform_id)
+
+    local_vm = db_vm.vm_list_by_uuid(platfrom['id'], uuid)
+
+    if local_vm.cpu == old_cpu:
+        vm_mor_name = local_vm.vm_mor_name
+        vm = get_obj(content, [vim.VirtualMachine], vm_mor_name)
+
+        cspec = vim.vm.ConfigSpec()
+        cspec.numCPUs = int(new_cpu)
+        cspec.numCoresPerSocket = 1
+        task = vm.Reconfigure(cspec)
+        wait_for_tasks(s, [task])
+        print('update success cpu')
+    else:
+        raise Exception('参数错误')
+
+
+def vm_update_memory(platform_id, uuid, new_memory, old_memory):
+    s, content, platfrom = get_connect(platform_id)
+
+    local_vm = db_vm.vm_list_by_uuid(platfrom['id'], uuid)
+
+    if local_vm.memory == old_memory:
+        vm_mor_name = local_vm.vm_mor_name
+        vm = get_obj(content, [vim.VirtualMachine], vm_mor_name)
+
+        cspec = vim.vm.ConfigSpec()
+        cspec.memoryMB = int(new_memory)
+        task = vm.Reconfigure(cspec)
+        wait_for_tasks(s, [task])
+        print('update success memory')
+    else:
+        raise Exception('参数错误')

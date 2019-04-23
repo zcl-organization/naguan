@@ -71,7 +71,7 @@ api.add_resource(PlatformTypeMg, '/api/v1.0/platform_type/<id>', methods=['PUT',
 
 # vCenter 信息同步
 api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree/', methods=['GET', 'POST'], endpoint='TreeMg')
-api.add_resource(InstanceManage, '/api/v1.0/vm/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='VmMg')
+api.add_resource(InstanceManage, '/api/v1.0/vm/', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
 api.add_resource(InstanceManage, '/api/v1.0/vm/<int:id>/<string:uuid>', methods=['DELETE'], endpoint='VmMgDel')
 api.add_resource(ImageManage, '/api/v1.0/image/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
@@ -80,4 +80,5 @@ api.add_resource(RoleManage, '/api/v1.0/role/', methods=['GET', 'POST'], endpoin
 api.add_resource(RoleManage, '/api/v1.0/role/<int:id>', methods=['DELETE', 'PUT'], endpoint='RoleManageById')
 
 # 用户角色管理
-api.add_resource(RolesUsersManage, '/api/v1.0/role_user/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='RoleUserMg')
+api.add_resource(RolesUsersManage, '/api/v1.0/role_user/', methods=['GET', 'POST', 'PUT', 'DELETE'],
+                 endpoint='RoleUserMg')
