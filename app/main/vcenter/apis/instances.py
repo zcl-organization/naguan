@@ -2,6 +2,8 @@
 from flask_restful import Resource, reqparse
 
 from app.main.vcenter.control import instances as instance_manage
+from app.main.vcenter.control.instances import Instance
+import json
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -13,6 +15,10 @@ parser.add_argument('new_cpu')
 parser.add_argument('old_cpu')
 parser.add_argument('new_memory')
 parser.add_argument('old_memory')
+parser.add_argument('new_networks')
+parser.add_argument('del_networks')
+parser.add_argument('dc_id')
+parser.add_argument('ds_id')
 ret_status = {
     'ok': True,
     'code': 200,
@@ -165,14 +171,29 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        print(args)
+        # print(args)
         try:
+            instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
 
-            if args['action'] in ['start', 'stop', 'suspend', 'restart']:
-                instance_manage.power_action(action=args['action'], platform_id=args['platform_id'], uuid=args['uuid'])
-                pass
+            if args['action'] == 'start':
+                instance.start()
+
+            elif args['action'] == 'stop':
+                instance.stop()
+
+            elif args['action'] == 'suspend':
+                instance.suspend()
+
+            elif args['action'] == 'restart':
+                instance.restart()
+
+            elif args['action'] == 'create':
+
+                instance_manage.create_vm(platform_id=args['platform_id'], new_cpu=args['new_cpu'],
+                                          new_memory=args['new_memory'], dc_id=args['dc_id'],
+                                          ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['new_networks'])
             else:
-                pass
+                raise Exception('Parameter error')
         except Exception as e:
             print('raise ', e)
         return "操作成功"
@@ -285,8 +306,10 @@ class InstanceManage(Resource):
         """
         args = parser.parse_args()
         try:
-            data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
-                                               vm_name=args['vm_name'])
+            instance = Instance(platform_id=args['platform_id'])
+            data = instance.list(host=args['host'], vm_name=args['vm_name'])
+            # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
+            #                                    vm_name=args['vm_name'])
             ret_status['ok'] = True
             ret_status['code'] = 1111
             ret_status['data'] = data
@@ -299,7 +322,7 @@ class InstanceManage(Resource):
             return ret_status, 400
         return ret_status
 
-    def delete(self, id, uuid):
+    def delete(self, platfrom_id, uuid):
         """
          操作 vm 信息
         ---
@@ -353,8 +376,10 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        data = instance_manage.vm_delete(platform_id=id,
-                                         uuid=uuid)
+        instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
+        instance.delete()
+        # data = instance_manage.vm_delete(platform_id=platfrom_id,
+        #                                  uuid=uuid)
 
         return '删除成功'
 
@@ -478,22 +503,34 @@ class InstanceManage(Resource):
         """
 
         args = parser.parse_args()
-        args.get('cpu')
+
         try:
-            if args.get('new_cpu'):
-                pass
-
+            instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
             if all([args['new_cpu'], args['old_cpu']]):
-                # args['id']
-                # args['uuid']
+                instance.update_vcpu(new_cpu=args['new_cpu'], old_cpu=args['old_cpu'])
 
-                data = instance_manage.vm_update_cpu(platform_id=args['platform_id'],
-                                                     uuid=args['uuid'], new_cpu=args['new_cpu'],
-                                                     old_cpu=args['old_cpu'])
+                # data = instance_manage.vm_update_cpu(platform_id=args['platform_id'],
+                #                                      uuid=args['uuid'], new_cpu=args['new_cpu'],
+                #                                      old_cpu=args['old_cpu'])
 
             if all([args['new_memory'], args['old_memory']]):
-                data = instance_manage.vm_update_memory(platform_id=args['platform_id'],
-                                                        uuid=args['uuid'], new_memory=args['new_memory'],
-                                                        old_memory=args['old_memory'])
+                instance.update_vmemory(new_memory=args['new_memory'], old_memory=args['old_memory'])
+
+                # data = instance_manage.vm_update_memory(platform_id=args['platform_id'],
+                #                                         uuid=args['uuid'], new_memory=args['new_memory'],
+                #                                         old_memory=args['old_memory'])
+            # 添加网络
+            if args['new_networks']:
+                instance.add_network(networks=args['new_networks'])
+                # data = instance_manage.vm_add_network(platform_id=args['platform_id'], uuid=args['uuid'],
+                #                                       networks=args['new_networks'])
+            if args['del_networks']:
+                instance.del_network(networks=args['del_networks'])
+                # data = instance_manage.vm_del_network(platform_id=args['platform_id'], uuid=args['uuid'],
+                #                                       networks=args['del_networks'])
+
+
         except Exception as e:
             print(e)
+            return 'vm update failed', 400
+        return 'vm update success'

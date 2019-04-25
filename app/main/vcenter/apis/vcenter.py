@@ -89,7 +89,7 @@ class VCenterManage(Resource):
         # parser.add_argument('id')
         args = parser.parse_args()
         try:
-            print(args)
+            # print(args)
             vcenter_tree = vcenter_manage.vcenter_tree_list(int(args['id']))
             ret_status['data'] = vcenter_tree
             ret_status['ok'] = True

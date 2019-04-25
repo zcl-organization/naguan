@@ -11,6 +11,7 @@ from config import config
 import os
 import datetime
 
+
 # roles_users = db.Table('roles_users',
 #                        db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
 #                        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
@@ -194,23 +195,23 @@ class VCenterVm(db.Model):
     __tablename__ = 'vcenter_instance'
 
     id = db.Column(db.Integer, primary_key=True)
-    platform_id = db.Column(db.Integer, nullable=False)                         # 所属于平台
-    vm_name = db.Column(db.String(255), nullable=False)                          # 云主机名称
+    platform_id = db.Column(db.Integer, nullable=False)  # 所属于平台
+    vm_name = db.Column(db.String(255), nullable=False)  # 云主机名称
     vm_mor_name = db.Column(db.String(255), nullable=False)
     template = db.Column(db.Boolean, nullable=False)
     vm_path_name = db.Column(db.String(255), nullable=False)
-    memory = db.Column(db.String(40), nullable=False)                           # 内存
+    memory = db.Column(db.String(40), nullable=False)  # 内存
     # memory_used = db.Column(db.String(40), nullable=False)                      # 已使用内存
-    cpu = db.Column(db.String(40), nullable=False)                              # 总cpu
+    cpu = db.Column(db.String(40), nullable=False)  # 总cpu
     # cpu_used = db.Column(db.String(40), nullable=False)                         # 已使用cpu
     num_ethernet_cards = db.Column(db.Integer, nullable=False)
     num_virtual_disks = db.Column(db.Integer, nullable=False)
     uuid = db.Column(db.String(40), nullable=False)
     instance_uuid = db.Column(db.String(40), nullable=False)
-    guest_id = db.Column(db.String(255), nullable=False)                   # 镜像id
+    guest_id = db.Column(db.String(255), nullable=False)  # 镜像id
     guest_full_name = db.Column(db.String(255), nullable=False)
-    host = db.Column(db.String(40), nullable=False)                             # 所属HOST
-    ip = db.Column(db.String(20))                                               # ip
+    host = db.Column(db.String(40), nullable=False)  # 所属HOST
+    ip = db.Column(db.String(20))  # ip
     status = db.Column(db.String(40))
 
 
@@ -252,7 +253,7 @@ class CloudPlatform(db.Model):
 class VCenterTree(db.Model):
     __tablename__ = 'vcenter_tree'
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Integer, nullable=False)    # 类型
+    type = db.Column(db.Integer, nullable=False)  # 类型
 
     platform_id = db.Column(db.Integer, nullable=False, )  # platform_id
     dc_host_folder_mor_name = db.Column(db.String(255))
@@ -265,3 +266,37 @@ class VCenterTree(db.Model):
     cluster_oc_name = db.Column(db.String(255))
 
 
+class VCenterNetworkPortGroup(db.Model):
+    __tablename__ = 'vcenter_network_port_group'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    mor_name = db.Column(db.String(255))
+    dc_name = db.Column(db.String(255))
+    dc_mor_name = db.Column(db.String(255))
+    platform_id = db.Column(db.Integer)
+
+
+class VCenterNetworkDevice(db.Model):
+    __tablename__ = 'vcenter_network_device'
+    id = db.Column(db.Integer, primary_key=True)
+    platform_id = db.Column(db.Integer)
+    vm_uuid = db.Column(db.String(255))
+    label = db.Column(db.String(255))
+    mac = db.Column(db.String(255))
+    network_port_group = db.Column(db.String(255))
+    address_type = db.Column(db.String(255))
+
+
+class VCenterDataStore(db.Model):
+    __tablename__ = 'vcenter_datastore'
+    id = db.Column(db.Integer, primary_key=True)
+    platform_id = db.Column(db.Integer)
+    name = db.Column(db.String(255))
+    capacity = db.Column(db.String(255))
+    used_capacity = db.Column(db.String(255))
+    type = db.Column(db.String(55))
+    version = db.Column(db.String(55))
+    uuid = db.Column(db.Integer)
+    ssd = db.Column(db.Boolean, nullable=False)
+    local = db.Column(db.Boolean, nullable=False)
+    host = db.Column(db.String(55))

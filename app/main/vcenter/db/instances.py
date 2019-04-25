@@ -66,7 +66,9 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
 
 def vcenter_get_vm_by_platform_id(platform_id, host):
     if platform_id and host:
-        return db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
+        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
+        db.session.remove()
+        return result
     else:
         return False
 
@@ -90,6 +92,6 @@ def vm_list(platform_id, host, vm_name):
     return query.all()
 
 
-def vm_list_by_uuid(platform_id, uuid):
+def list_by_uuid(platform_id, uuid):
     return db.session.query(VCenterVm).filter_by(platform_id=platform_id).filter_by(
         uuid=uuid).first()

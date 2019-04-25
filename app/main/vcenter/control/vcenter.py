@@ -2,10 +2,13 @@
 from app.main.vcenter.control import get_mor_name
 from app.main.vcenter.db import vcenter as db_vcenter
 from app.main.vcenter.db import instances as db_vm
+from app.main.vcenter.db import network_port_group as db_network
+from app.main.vcenter.control import network_devices as netowrk_device_manage
 from pyVim import connect
 import atexit
 import time
-import threadpool
+# import threadpool
+import threading
 
 # from pyVmomi import vmodl
 from pyVmomi import vim
@@ -47,6 +50,22 @@ def sync_tree(platform_id):
     sync_vcenter_tree(content, platform)
 
 
+def sync_vcenter_network(netwroks, dc_name, dc_mor_name, platform_id):
+    # print('dc_name:', dc_name)
+    # print('dc_mor_name:', dc_mor_name)
+    # print('platform_id:', platform_id)
+    if netwroks:
+        for network in netwroks:
+            pass
+            # 判断是否存在网络
+            network_mor_name = get_mor_name(network)
+            network_info = db_network.network_list_by_mor_name(platform_id, network_mor_name)
+            if not network_info:
+                db_network.network_create(network.name, network_mor_name, dc_name, dc_mor_name, platform_id)
+            else:
+                db_network.network_update(network_info.get('id'), network.name, network_mor_name, dc_name, dc_mor_name)
+
+
 def sync_vcenter_vm(host, platform):
     vms = host.vm
 
@@ -58,11 +77,8 @@ def sync_vcenter_vm(host, platform):
     for vm in platform_vm_list:
         vm_list.append(vm.uuid)
 
-    # vms_list = [(lambda: vm for vm in vms)]
-    # print(vms_list)
-
     for vm in vms:
-
+        #
         # print('power:', vm.summary.runtime.powerState)
 
         # 判断是否已存在云主机
@@ -88,6 +104,9 @@ def sync_vcenter_vm(host, platform):
                                             guest_id=vm.summary.config.guestId,
                                             guest_full_name=vm.summary.config.guestFullName,
                                             host=host.name, ip=ip, status=vm.summary.runtime.powerState)
+
+            # 同步 vm network device
+
         else:
             db_vm.vcenter_vm_create(uuid=vm.summary.config.uuid, platform_id=platform['id'],
                                     vm_name=vm.summary.config.name,
@@ -101,6 +120,10 @@ def sync_vcenter_vm(host, platform):
                                     guest_id=vm.summary.config.guestId,
                                     guest_full_name=vm.summary.config.guestFullName,
                                     host=host.name, ip=ip, status=vm.summary.runtime.powerState)
+
+        # 同步 vm network device
+        netowrk_device_manage.sync_network_device(platform_id=platform['id'], vm=vm)
+
         # print('vm_list:', vm_list)
 
     # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
@@ -131,9 +154,19 @@ def sync_vcenter_tree(content, platform):
     datacenters = content.rootFolder.childEntity
     for dc in datacenters:
 
+        netwroks = dc.network
+
         dc_mor = get_mor_name(dc)
         dc_host_moc = get_mor_name(dc.hostFolder)
         dc_vm_moc = get_mor_name(dc.vmFolder)
+
+        # 同步vcenter网络
+        # print('cccc')
+        # sync_network_thread = threading.Thread(target=sync_vcenter_network,
+        #                                        args=(netwroks, dc.name, dc_mor, platform['id']))
+        # sync_network_thread.start()
+        # return True
+        sync_vcenter_network(netwroks, dc.name, dc_mor, platform['id'])
 
         # 获取 dc tree
         result = db_vcenter.vcenter_tree_get_by_dc(platform['id'], dc_mor, 2)
@@ -195,9 +228,14 @@ def sync_vcenter_tree(content, platform):
                                                    dc_host_folder_mor_name=dc_host_moc, dc_vm_folder_mor_name=dc_vm_moc,
                                                    cluster_mor_name=cluster_mor, cluster_oc_name=cluster.name)
                 # 同步vm信息
+
                 sync_vcenter_vm(host, platform)
 
+                # sync_vm_thread = threading.Thread(target=sync_vcenter_vm, args=(host, platform))
+                # sync_vm_thread.start()
+
                 # for vm in vms:
+
                 #     # print(vm)
                 #     # vm_info = '%s' % vm
                 #     # vm_mor = vm_info.replace("'", "").split(':', 1)[1]
@@ -212,7 +250,7 @@ def sync_vcenter_tree(content, platform):
         for id in vcenter_list:
             db_vcenter.vcenter_tree_delete_by_id(id)
 
-    # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
+    print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
     return True
 
 

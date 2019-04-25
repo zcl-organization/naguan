@@ -2,6 +2,7 @@
 from pyVmomi import vmodl
 from pyVmomi import vim
 
+
 def get_mor_name(obj):
     obj_info = '%s' % obj
     obj_mor = obj_info.replace("'", "").split(':', 1)[1]
@@ -53,3 +54,14 @@ def wait_for_tasks(s, tasks):
     finally:
         if pcfilter:
             pcfilter.Destroy()
+
+
+def get_obj(content, vimtype, name):
+    obj = None
+    container = content.viewManager.CreateContainerView(
+        content.rootFolder, vimtype, True)
+    for c in container.view:
+        if c.name == name:
+            obj = c
+            break
+    return obj
