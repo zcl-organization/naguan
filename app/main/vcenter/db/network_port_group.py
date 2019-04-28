@@ -17,7 +17,8 @@ def network_create(name, mor_name, dc_name, dc_mor_name, platform_id):
 
 def network_list_by_mor_name(platform_id, mor_name):
     try:
-        return db.session.query(VCenterNetworkPortGroup).filter_by(mor_name=mor_name).filter_by(platform_id).first()
+        print(platform_id,mor_name)
+        return db.session.query(VCenterNetworkPortGroup).filter_by(mor_name=mor_name).filter_by(platform_id=platform_id).first()
     except Exception as e:
         return False
 
@@ -34,4 +35,9 @@ def network_update(id, name, mor_name, dc_name, dc_mor_name):
 
 def network_list_by_id(id):
     data = db.session.query(VCenterNetworkPortGroup).filter_by(id=id).first()
+    return data
+
+
+def list_all(platform_id):
+    data = db.session.query(VCenterNetworkPortGroup).filter_by(platform_id=platform_id).all()
     return data

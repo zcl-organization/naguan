@@ -6,7 +6,8 @@ import atexit
 from pyVmomi import vmodl
 from pyVmomi import vim
 
-from app.main.vcenter.control.vcenter import get_connect, vcenter_tree_list
+from app.main.vcenter.control import get_connect
+from app.main.vcenter.control.vcenter import vcenter_tree_list
 
 
 def sizeof_fmt(num):

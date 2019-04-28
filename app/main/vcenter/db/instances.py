@@ -2,6 +2,10 @@
 from app.models import VCenterVm
 from app.exts import db
 
+# import sys
+# reload(sys)
+# sys.setdefaultencoding('utf8')
+
 
 # 添加vcenter tree 信息
 def vcenter_vm_create(uuid, platform_id, vm_name, vm_mor_name, template, vm_path_name, memory, cpu,
@@ -10,10 +14,10 @@ def vcenter_vm_create(uuid, platform_id, vm_name, vm_mor_name, template, vm_path
     # print(options)
     new_vm = VCenterVm()
     new_vm.platform_id = platform_id
-    new_vm.vm_name = vm_name
+    new_vm.vm_name = unicode(vm_name)
     new_vm.vm_mor_name = vm_mor_name
     new_vm.template = template
-    new_vm.vm_path_name = vm_path_name
+    new_vm.vm_path_name = unicode(vm_path_name)
     new_vm.memory = memory
     new_vm.cpu = cpu
     new_vm.num_ethernet_cards = num_ethernet_cards
@@ -44,10 +48,10 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
                               ip, status):
     if uuid and platform_id:
         vm_info = db.session.query(VCenterVm).filter_by(uuid=uuid).filter_by(platform_id=platform_id).first()
-        vm_info.vm_name = vm_name
+        vm_info.vm_name = unicode(vm_name)
         vm_info.vm_mor_name = vm_mor_name
         vm_info.template = template
-        vm_info.vm_path_name = vm_path_name
+        vm_info.vm_path_name = unicode(vm_path_name)
         vm_info.memory = memory
         vm_info.cpu = cpu
         vm_info.num_ethernet_cards = num_ethernet_cards

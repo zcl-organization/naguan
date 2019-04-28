@@ -8,12 +8,12 @@ def platform_create(options):
 
 def platform_list(options=None):
     platforms = db_platform.platform_list(options)
-    # print(platforms)
+
     platforms_list =[]
-    # print('platforms:', platforms)
+
     if platforms:
         for platform in platforms:
-            # print('id:',platform.id)
+
             platform_tmp = {
                 'id': platform.id,
                 'platform_type_id': platform.platform_type_id,

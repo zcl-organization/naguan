@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 from pyVmomi import vmodl
 from pyVmomi import vim
-
+from pyVim import connect
+import atexit
 
 def get_mor_name(obj):
     obj_info = '%s' % obj
@@ -65,3 +66,36 @@ def get_obj(content, vimtype, name):
             obj = c
             break
     return obj
+
+
+def connect_server(host, user, password, port, ssl=True):
+    # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
+    if ssl:
+        service_instance = connect.SmartConnectNoSSL(host=host,
+                                                     user=user,
+                                                     pwd=password,
+                                                     port=int(port))
+    else:
+        service_instance = connect.SmartConnect(host=host,
+                                                user=user,
+                                                pwd=password,
+                                                port=int(port))
+    return service_instance
+
+
+from app.main.base.control import cloud_platform
+
+
+def get_connect(platform_id):
+    options = {
+        'id': platform_id
+    }
+    platforms = cloud_platform.platform_list(options)
+    if platforms:
+        platform = platforms[0]
+        s = connect_server(platform['ip'], platform['name'], platform['password'], platform['port'])
+        atexit.register(connect.Disconnect, s)
+    else:
+        raise Exception('unable to find platform')
+    content = s.RetrieveContent()
+    return s, content, platforms[0]

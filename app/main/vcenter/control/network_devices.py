@@ -45,3 +45,4 @@ def sync_network_device(platform_id, vm):
 
 def device_list_by_id(platform_id, vm_uuid, device_id):
     return db_network.device_list_by_id(platform_id, vm_uuid, device_id)
+

@@ -300,3 +300,21 @@ class VCenterDataStore(db.Model):
     ssd = db.Column(db.Boolean, nullable=False)
     local = db.Column(db.Boolean, nullable=False)
     host = db.Column(db.String(55))
+
+
+class VCenterDisk(db.Model):
+    __tablename__ = 'vcenter_disk'
+    id = db.Column(db.Integer, primary_key=True)
+    vm_uuid = db.Column(db.String(64), nullable=False)
+    disk_uuid = db.Column(db.String(64), nullable=False)
+    platform_id = db.Column(db.Integer)
+    label = db.Column(db.String(32))
+    disk_size = db.Column(db.String(64))    #
+    disk_type = db.Column(db.Integer)    # 类型
+    sharing = db.Column(db.String(16))   # 共享
+    disk_file = db.Column(db.String(64))
+    shares = db.Column(db.Integer)  # 份额数
+    level = db.Column(db.String(16))  # 份额 等级
+    iops = db.Column(db.String(16))
+    cache = db.Column(db.Integer)
+    disk_mode = db.Column(db.String(16))

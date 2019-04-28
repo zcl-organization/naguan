@@ -19,6 +19,9 @@ parser.add_argument('new_networks')
 parser.add_argument('del_networks')
 parser.add_argument('dc_id')
 parser.add_argument('ds_id')
+parser.add_argument('new_disks')
+parser.add_argument('delete_disks')
+
 ret_status = {
     'ok': True,
     'code': 200,
@@ -376,10 +379,8 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
+        instance = Instance(platform_id=platfrom_id, uuid=uuid)
         instance.delete()
-        # data = instance_manage.vm_delete(platform_id=platfrom_id,
-        #                                  uuid=uuid)
 
         return '删除成功'
 
@@ -509,27 +510,22 @@ class InstanceManage(Resource):
             if all([args['new_cpu'], args['old_cpu']]):
                 instance.update_vcpu(new_cpu=args['new_cpu'], old_cpu=args['old_cpu'])
 
-                # data = instance_manage.vm_update_cpu(platform_id=args['platform_id'],
-                #                                      uuid=args['uuid'], new_cpu=args['new_cpu'],
-                #                                      old_cpu=args['old_cpu'])
-
             if all([args['new_memory'], args['old_memory']]):
                 instance.update_vmemory(new_memory=args['new_memory'], old_memory=args['old_memory'])
 
-                # data = instance_manage.vm_update_memory(platform_id=args['platform_id'],
-                #                                         uuid=args['uuid'], new_memory=args['new_memory'],
-                #                                         old_memory=args['old_memory'])
             # 添加网络
             if args['new_networks']:
                 instance.add_network(networks=args['new_networks'])
-                # data = instance_manage.vm_add_network(platform_id=args['platform_id'], uuid=args['uuid'],
-                #                                       networks=args['new_networks'])
+
             if args['del_networks']:
                 instance.del_network(networks=args['del_networks'])
-                # data = instance_manage.vm_del_network(platform_id=args['platform_id'], uuid=args['uuid'],
-                #                                       networks=args['del_networks'])
 
-
+            if args['new_disks']:
+                print('new_disks')
+                instance.add_disk(disks=args['new_disks'])
+                # pass
+            if args['delete_disks']:
+                instance.delete_disk(disks=args['delete_disks'])
         except Exception as e:
             print(e)
             return 'vm update failed', 400

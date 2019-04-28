@@ -89,7 +89,7 @@ api.add_resource(ImageManage, '/api/v1.0/image/', methods=['GET', 'POST', 'PUT',
 
 # vcenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
-                 methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='NetworkMg')
+                 methods=['GET'], endpoint='NetworkMg')
 
 # vcenter datastore
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore/', methods=['GET', 'POST', 'PUT', 'DELETE'],
