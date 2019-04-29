@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
+# 已存在异常
 class ExistsException(Exception):
 
     def __init__(self, msg, name=None):

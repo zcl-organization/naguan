@@ -2,12 +2,15 @@
 
 from flask_restful import Resource, reqparse
 
-
+from app.common.tool import set_return_val
 from app.main.base.control import menu as menu_manage
 from app.main.base.control import event_logs
+
+from app.main.base import control
 from auth import basic_auth
 from flask import g
-from flask_security import roles_accepted,current_user
+from flask_security import roles_accepted, current_user
+
 parser = reqparse.RequestParser()
 parser.add_argument('id')
 parser.add_argument('icon')
@@ -67,44 +70,15 @@ class MenuManage(Resource):
                   default: Steven Wilson
                   name: code
         """
-        print('role:', current_user.is_active)
+        # print('role:', current_user.is_active)
         try:
-            # g.event_request_id =
-            # g.event_request_id = get_event_request_id()
             args = parser.parse_args()
-            # if not args['pgnum']:
-            #     pgnum = 1
-            # else:
-            #     pgnum = int(args['pgnum'])
-            #
-            #
-            # if not args['pgsize']:
-            #     limit = 10
-            # else:
-            #     limit = int(args['pgsize'])
 
-            options = {
-                'id': args['id'],
-                'url': args['url'],
-                'name': args['name'],
-                'identifier': args['identifier'],
-                'all': args['all']
-            }
+            data = control.menu.menu_list(menu_id=args['id'], url=args['url'], name=args['name'],
+                                          identifier=args['identifier'], all=args['all'])
 
-            # result, pg = menu_manage.menu_list(options=options)
-            result = menu_manage.menu_list(options=options)
-
-            ret_status['data'] = result
-            ret_status['msg'] = '获取菜单成功'
-            ret_status['code'] = 1310
-            ret_status['ok'] = True
-            # ret_status['pg'] = pg
         except Exception, e:
-            ret_status['data'] = ''
-            ret_status['msg'] = '获取菜单异常'
-            ret_status['code'] = 1319
-            ret_status['ok'] = False
-
+            return set_return_val(False, [], str(e), 1319), 400
         event_options = {
             'type': 'menu',
             'result': ret_status['ok'],
@@ -113,7 +87,7 @@ class MenuManage(Resource):
             'submitter': g.username,
         }
         event_logs.eventlog_create(event_options)
-        return ret_status
+        return set_return_val(True, data, 'Get menu success', 1310)
 
     def post(self):
         """
@@ -161,45 +135,23 @@ class MenuManage(Resource):
                   name: code
         """
         args = parser.parse_args()
-
-        # 验证is_hide合法性
-        if int(args['is_hide']) not in [1, 2]:
-            ret_status['code'] = 1104
-            ret_status['msg'] = 'is_hide信息不对，请传入正确参数，1为True，2为False'
-            ret_status['ok'] = False
-            return ret_status
-        # 验证 is_hide_children 合法性
-        if int(args['is_hide']) not in [1, 2]:
-            ret_status['code'] = 1104
-            ret_status['msg'] = 'is_hide_children 信息不对，请传入正确参数，1为True，2为False'
-            ret_status['ok'] = False
-            return ret_status
-
-        options = {
-            'icon': args['icon'],
-            'url': args['url'],
-            'name': args['name'],
-            'identifier': args['identifier'],
-            'is_hide': int(args['is_hide']),
-            'is_hide_children': int(args['is_hide_children']),
-            'important': args['important'],
-            'parent_id': args['parent_id'],
-        }
-
         try:
+            # 验证is_hide合法性
+            if int(args['is_hide']) not in [1, 2]:
+                raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
-            result = menu_manage.menu_create(options=options)
-            ret_status['data'] = result
-            ret_status['msg'] = '创建菜单成功'
-            ret_status['code'] = 1300
-            ret_status['ok'] = True
+            # 验证 is_hide_children 合法性
+            if int(args['is_hide']) not in [1, 2]:
+                raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
+
+            control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
+                                     identifier=args['identifier'], is_hide=int(args['is_hide']),
+                                     is_hide_children=int(args['is_hide_children']), important=args['important'],
+                                     parent_id=args['parent_id'])
+
         except Exception, e:
-            ret_status['data'] = ''
-            ret_status['msg'] = '创建菜单异常，请提交正确的参数'
-            ret_status['code'] = 1309
-            ret_status['ok'] = False
-
-        return ret_status
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'Create menu successfully', 1300)
 
     def delete(self, id):
         """
@@ -224,28 +176,11 @@ class MenuManage(Resource):
                  description: 用户id
                  default: Steven Wilson
         """
-        result = menu_manage.menu_delete(id=id)
-        if result:
-            result2 = menu_manage.children_menu(id=id)
-            if result2:
-                ret_status['data'] = ''
-                ret_status['msg'] = '当前菜单存在子菜单，请先删除子菜单'
-                ret_status['code'] = 1309
-                ret_status['ok'] = False
-            else:
-                ret_status['data'] = ''
-                ret_status['msg'] = '删除菜单成功'
-                ret_status['code'] = 1300
-                ret_status['ok'] = True
-        else:
-            ret_status['data'] = ''
-            ret_status['msg'] = '无法获取到菜单'
-            ret_status['code'] = 1309
-            ret_status['ok'] = False
-        if ret_status['code'] != 1300:
-            return ret_status, 300
-        else:
-            return ret_status
+        try:
+            control.menu.menu_delete(id=id)
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(False, [], 'Menu deletion successfully', 1300)
 
     def put(self, id):
         """
@@ -297,39 +232,30 @@ class MenuManage(Resource):
                  default: Steven Wilson
         """
         args = parser.parse_args()
-
-        # 验证 is_hide 合法性
-        if not args['is_hide']:
-            ret_status['code'] = 1104
-            raise Exception('请传入 is_hide 信息，1为True，2为False')
-        else:
-            if int(args['is_hide']) not in [1, 2]:
-                ret_status['code'] = 1104
-                raise Exception('is_hide 信息不对，请传入正确参数，1为True，2为False')
-
         try:
-            options = {
-                'icon': args['icon'],
-                'name': args['name'],
-                'url': args['url'],
-                'identifier': args['identifier'],
-                'is_hide': int(args['is_hide']),
-                'is_hide_children': int(args['is_hide_children']),
-                'parent_id': args['parent_id'],
-                'important': args['important'],
-            }
-            result = menu_manage.menu_update(id, options=options)
-            if result:
-                ret_status['data'] = ''
-                ret_status['msg'] = '更新菜单成功'
-                ret_status['code'] = 1320
-                ret_status['ok'] = True
+            # 验证 is_hide 合法性
+            if not args['is_hide']:
+                raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
             else:
-                ret_status['code'] = 1328
-                raise Exception('不存在当前菜单')
+                if int(args['is_hide']) not in [1, 2]:
+                    raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
+
+            # options = {
+            #     'icon': args['icon'],
+            #     'name': args['name'],
+            #     'url': args['url'],
+            #     'identifier': args['identifier'],
+            #     'is_hide': int(args['is_hide']),
+            #     'is_hide_children': int(args['is_hide_children']),
+            #     'parent_id': args['parent_id'],
+            #     'important': args['important'],
+            # }
+            # result = control.menu.menu_update(id, options=options)
+            control.menu.menu_update(id=id, icon=args['icon'], name=args['name'], url=args['url'],
+                                     identifier=args['identifier'], is_hide=int(args['is_hide']),
+                                     is_hide_children=int(args['is_hide_children']),
+                                     parent_id=args['parent_id'], important=args['important'])
+
         except Exception, e:
-            ret_status['data'] = ''
-            ret_status['msg'] = str(e)
-            ret_status['ok'] = False
-            return ret_status, 400
-        return ret_status
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'Update menu successfully', 1300)

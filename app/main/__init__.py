@@ -38,7 +38,7 @@ def swagger_init(app):
 
 
 # 登录管理
-api.add_resource(LoginManage, '/api/v1.0/login/', endpoint='LoginManage')
+api.add_resource(LoginManage, '/api/v1.0/login/', methods=['POST'], endpoint='LoginManage')
 
 # 用户管理
 api.add_resource(UserManage, '/api/v1.0/user/', methods=['POST', 'GET'], endpoint='UserManage')

@@ -1,20 +1,31 @@
 # -*- coding:utf-8 -*-
-from app.main.base.db import menu as db_menu
+# from app.main.base.db import menu as db_menu
+from app.main.base import db
 
 
 # 获取菜单列表
-def menu_list(options=None):
-    if options['id'] or options['url'] or options['name'] or options['identifier'] or options['all']:
-        print('all')
-        return db_menu.menu_list(options)
+def menu_list(menu_id, url, name, identifier, all):
+    if menu_id or url or name or identifier or all:
+
+        result = db.menu.menu_list(menu_id, url, name, identifier, all)
+        data = []
+        for menu in result:
+            menu_tmp = {
+                'id': menu.id,
+                'name': menu.name,
+                'icon': menu.icon,
+                'url': menu.url,
+                'identifier': menu.identifier,
+            }
+            data.append(menu_tmp)
+        return data
     else:
         return childer_menu_list(0)
 
 
 # 递归获取所有子菜单
 def childer_menu_list(parent_id=0):
-
-    menu_level = db_menu.menu_list_by_parent_id(parent_id)
+    menu_level = db.menu.menu_list_by_parent_id(parent_id)
     if menu_level:
 
         menus = []
@@ -49,36 +60,42 @@ def childer_menu_list(parent_id=0):
 
 
 # 创建菜单信息
-def menu_create(options=None):
-    return db_menu.menu_create(options)
+# def menu_create(options=None):
+def menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id):
+    return db.menu.menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id)
 
 
 # 判断是否有子菜单
 def children_menu(id=None):
-    return db_menu.children_menu_list(id)
+    return db.menu.children_menu_list(id)
 
 
 # 删除菜单信息
 def menu_delete(id=None):
     # 判断是否有菜单
-    menu = db_menu.menu_list_by_id(id)
-    if menu:
-        children_menu = db_menu.children_menu_list(id)
-        if children_menu:
-            return menu
+    try:
+        menu = db.menu.menu_list_by_id(id)
+        # print(menu)
+        if menu:
+            sub_menu = db.menu.children_menu_list(id)
+            # print(children_menu)
+            if sub_menu:
+                raise Exception('Menu deletion failed, submenu exists')
+            else:
+                db.menu.menu_delete(id)
         else:
-            db_menu.menu_delete(id)
-            return menu
-    else:
-        return False
+            raise Exception('No current menu exists')
+    except Exception as e:
+        raise Exception(e)
 
 
 # 更新菜单信息
-def menu_update(id, options=None):
+def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, parent_id, important):
     # 判断是否有菜单
-    menu = db_menu.menu_list_by_id(id)
+
+    menu = db.menu.menu_list_by_id(id)
     if menu:
         # 更新用户信息
-        return db_menu.menu_update(id, options)
+        return db.menu.menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, parent_id, important)
     else:
-        return False
+        raise Exception('No current menu exists')

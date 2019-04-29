@@ -61,17 +61,19 @@ class Users(db.Model, UserMixin):
     is_superuser = db.Column(db.Boolean, nullable=False)  # 是否是超管
     remarks = db.Column(db.String(255))  # 备注
     date_created = db.Column(db.DateTime, nullable=False,
-                             default=lambda: datetime.datetime.utcnow())  # 创建时间
+                             default=lambda: datetime.datetime.now())  # 创建时间
     confirmed_at = db.Column(db.DateTime, nullable=False,
-                             default=lambda: datetime.datetime.utcnow())  # 确认时间
+                             default=lambda: datetime.datetime.now())  # 确认时间
 
     last_login_at = db.Column(db.DateTime, nullable=False,
-                              default=lambda: datetime.datetime.utcnow())  # 上次登录时间
+                              default=lambda: datetime.datetime.now())  # 上次登录时间
     current_login_at = db.Column(db.DateTime, nullable=False,
-                                 default=lambda: datetime.datetime.utcnow())  # 当前登录时间
+                                 default=lambda: datetime.datetime.now())  # 当前登录时间
     last_login_ip = db.Column(db.String(45), nullable=False)  # 上传登录IP
     current_login_ip = db.Column(db.String(45), nullable=False)  # 当前登录IP
     login_count = db.Column(db.Integer, nullable=False)  # 登录次数
+    is_deleted = db.Column(db.Integer, default=0)
+    deleted_at = db.Column(db.DateTime)  # 删除时间
 
     roles = db.relationship(
         'Roles',
@@ -309,9 +311,9 @@ class VCenterDisk(db.Model):
     disk_uuid = db.Column(db.String(64), nullable=False)
     platform_id = db.Column(db.Integer)
     label = db.Column(db.String(32))
-    disk_size = db.Column(db.String(64))    #
-    disk_type = db.Column(db.Integer)    # 类型
-    sharing = db.Column(db.String(16))   # 共享
+    disk_size = db.Column(db.String(64))  #
+    disk_type = db.Column(db.Integer)  # 类型
+    sharing = db.Column(db.String(16))  # 共享
     disk_file = db.Column(db.String(64))
     shares = db.Column(db.Integer)  # 份额数
     level = db.Column(db.String(16))  # 份额 等级

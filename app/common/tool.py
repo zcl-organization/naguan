@@ -43,4 +43,3 @@ def set_return_val(ok, data, msg, code, pg=None):
 
         }
     return data
-

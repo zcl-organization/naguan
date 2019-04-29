@@ -7,6 +7,8 @@ from app.models import Users
 from flask_security import login_user
 from flask import session, request
 
+from app.main.base import control
+
 # import redis
 
 
@@ -49,36 +51,34 @@ class LoginManage(Resource):
         try:
             if not all([args['username'], args['password']]):
                 raise Exception('Incorrect username or password.')
-            users = Users.query.filter_by(username=args['username']).first()
-            # print('status:', users.verify_password(args['password']))
-            # if not users or not users.verify_password(args['password']):
-            if not users:
+
+            user = control.user.list_by_name(username=args['username'])
+
+            if not user:
                 raise Exception('Incorrect username or password.')
             else:
-                if not users.verify_password(args['password']):
+                if not user.verify_password(args['password']):
                     raise Exception('Incorrect username or password.')
                 else:
-                    login_user(users, True)
-                    token = users.generate_auth_token()
+                    login_user(user, True)
+                    token = user.generate_auth_token()
                     # token = create_token(users.id, users.username)
                     data = {
                         'token': token,
-                        'id': users.id,
-                        'username': users.username,
-                        'email': users.email,
-                        'mobile': users.mobile,
-                        'department': users.department,
-                        'job': users.job,
-                        'location': users.location,
-                        'sex': users.sex,
-                        'remarks': users.remarks
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'mobile': user.mobile,
+                        'department': user.department,
+                        'job': user.job,
+                        'location': user.location,
+                        'sex': user.sex,
+                        'remarks': user.remarks
                     }
                     session[token] = True
+                    control.user.update_login_time(user)
         except Exception as e:
             return set_return_val(False, {}, str(e), 1301), 400
         return set_return_val(True, data, 'login successful', 1300)
 
-    def get(self):
-        print('debug:', request.args.get('debug'))
-        print('get')
-        return 'ccc'
+

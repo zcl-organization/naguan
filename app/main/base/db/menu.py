@@ -4,32 +4,32 @@ from app.exts import db
 
 
 # 菜单列表
-def menu_list(options=None):
+def menu_list(menu_id, url, name, identifier, all):
     query = db.session.query(Menu)
-    if options['id']:
-        query = query.filter_by(id=options['id'])
-    if options['url']:
-        query = query.filter_by(url=options['url'])
-    if options['name']:
-        query = query.filter_by(name=options['name'])
-    if options['identifier']:
-        query = query.filter_by(identifier=options['identifier'])
-    if options['limit'] and options['next_page']:
-        query = query.paginate(page=options['next_page'], per_page=options['limit'], error_out=False)
+    if menu_id:
+        query = query.filter_by(id=menu_id)
+    if url:
+        query = query.filter_by(url=url)
+    if name:
+        query = query.filter_by(name=name)
+    if identifier:
+        query = query.filter_by(identifier=identifier)
+    # if options['limit'] and options['next_page']:
+    #     query = query.paginate(page=options['next_page'], per_page=options['limit'], error_out=False)
 
     # result = query.items
-    result = query.all()
-    print(result)
-    data = []
-    for menu in result:
-        menu_tmp = {
-            'id': menu.id,
-            'name': menu.name,
-            'icon': menu.icon,
-            'url': menu.url,
-            'identifier': menu.identifier,
-        }
-        data.append(menu_tmp)
+    data = query.all()
+
+    # data = []
+    # for menu in result:
+    #     menu_tmp = {
+    #         'id': menu.id,
+    #         'name': menu.name,
+    #         'icon': menu.icon,
+    #         'url': menu.url,
+    #         'identifier': menu.identifier,
+    #     }
+    #     data.append(menu_tmp)
 
     # pg = {
     #     'has_next': query.has_next,
@@ -44,46 +44,43 @@ def menu_list(options=None):
 
 
 # 创建菜单
-def menu_create(options=None):
-    new_menu = Menu()
-    new_menu.icon = options['icon']
-    new_menu.url = options['url']
-    new_menu.name = options['name']
-    new_menu.identifier = options['identifier']
+def menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id):
+    try:
+        new_menu = Menu()
+        new_menu.icon = icon
+        new_menu.url = url
+        new_menu.name = name
+        new_menu.identifier = identifier
 
-    if options['is_hide'] == 1:
-        new_menu.is_hide = True
-    elif options['is_hide'] == 2:
-        new_menu.is_hide = False
-    else:
-        print('is_hide')
-        return False
+        if is_hide == 1:
+            new_menu.is_hide = True
+        elif is_hide == 2:
+            new_menu.is_hide = False
+        else:
+            raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-    if options['is_hide_children'] == 1:
-        new_menu.is_hide_children = True
-    elif options['is_hide_children'] == 2:
-        new_menu.is_hide_children = False
-    else:
-        print('is_hide_children')
-        return False
+        if is_hide_children == 1:
+            new_menu.is_hide_children = True
+        elif is_hide_children == 2:
+            new_menu.is_hide_children = False
+        else:
+            raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-    # new_menu.is_hide = False
-    # new_menu.is_hide_children = False
-    new_menu.important = options['important']
-    if options['parent_id']:
-        parent_menu = db.session.query(Menu).filter_by(id=options['parent_id']).first()
-        if parent_menu:
-            new_menu.parent_id = options['parent_id']
+        new_menu.important = important
+        if parent_id:
+            parent_menu = db.session.query(Menu).filter_by(id=parent_id).first()
+            if parent_menu:
+                new_menu.parent_id = parent_id
+            else:
+                new_menu.parent_id = 0
         else:
             new_menu.parent_id = 0
-    else:
-        new_menu.parent_id = 0
-    try:
+
         db.session.add(new_menu)
         db.session.commit()
-    except Exception, e:
-        return False
-    return options
+    except Exception as e:
+        # print(e)
+        raise Exception('Database operation exception')
 
 
 # 根据id获取菜单信息
@@ -104,52 +101,45 @@ def menu_delete(id=None):
     db.session.commit()
 
 
-def menu_update(id, options):
-    menu = db.session.query(Menu).filter_by(id=id).first()
+def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, parent_id, important):
+    try:
+        menu = db.session.query(Menu).filter_by(id=id).first()
 
-    # 判断是否更新状态
-    # if menu:
-    if options['icon']:
-        menu.icon = options['icon']
-    if options['name']:
-        menu.name = options['name']
-    if options['url']:
-        menu.url = options['url']
-    if options['identifier']:
-        menu.identifier = options['identifier']
+        # 判断是否更新状态
+        # if menu:
+        if icon:
+            menu.icon = icon
+        if name:
+            menu.name = name
+        if url:
+            menu.url = url
+        if identifier:
+            menu.identifier = identifier
 
-    if options['is_hide'] == 1:
-        # print('is_hide 1')
-        menu.is_hide = True
-    elif options['is_hide'] == 2:
-        # print('is_hide 1')
-        menu.is_hide = False
-    else:
-        # print('is_hide', options['is_hide'])
-        return False
+        if is_hide == 1:
+            menu.is_hide = True
+        elif is_hide == 2:
+            menu.is_hide = False
+        else:
+            raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
-    if options['is_hide_children'] == 1:
-        menu.is_hide_children = True
-    elif options['is_hide_children'] == 2:
-        menu.is_hide_children = False
-    else:
-        return False
+        if is_hide_children == 1:
+            menu.is_hide_children = True
+        elif is_hide_children == 2:
+            menu.is_hide_children = False
+        else:
+            raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-    # if options['is_hide']:
-    #     menu.is_hide = options['is_hide']
-    # if options['is_hide_children']:
-    #     menu.is_hide_children = options['is_hide_children']
-    if options['parent_id']:
-        menu.parent_id = options['parent_id']
-    if options['important']:
-        menu.important = options['important']
-    # db.session.add(menu)
-    db.session.commit()
-    # print('update')
-    return options
+        if parent_id:
+            menu.parent_id = parent_id
+        if important:
+            menu.important = important
+        # db.session.add(menu)
+        db.session.commit()
+    except Exception as e:
+        raise Exception('Database operation exception')
 
 
 # 根据父id获取菜单
 def menu_list_by_parent_id(parent_id):
     return db.session.query(Menu).filter_by(parent_id=parent_id).all()
-
