@@ -18,6 +18,13 @@ class BaseConfig(object):
     SESSION_TYPE = 'redis'
     SESSION_REDIS = redis.Redis(host='118.24.10.85', port='6379', password='123456')
     SESSION_KEY_PREFIX = 'flask'
+    # CELERY_IMPORTS = ('tasks.add',)
+    CELERY_BROKER_URL = 'redis://:123456@118.24.10.85:6379/'
+    CELERY_RESULT_BACKEND = 'redis://:123456@118.24.10.85:6379/'
+
+    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
 
     SQLALCHEMY_RECORD_QUERIES = True
 
@@ -86,7 +93,7 @@ class BaseConfig(object):
 
 
 class DevelopConfig(BaseConfig):
-    DEBUG = True
+    DEBUG = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'develop.db')
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:aaaaaa@192.168.125.160:3306/Code3?charset=utf8'
 

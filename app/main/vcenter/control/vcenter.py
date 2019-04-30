@@ -15,7 +15,10 @@ import threading
 from pyVmomi import vmodl
 from pyVmomi import vim
 
+from app.exts import celery
 
+
+@celery.task()
 def sync_tree(platform_id):
     si, content, platform = get_connect(platform_id)
     sync_vcenter_tree(si, content, platform)

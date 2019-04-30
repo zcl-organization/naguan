@@ -95,5 +95,4 @@ api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/'
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore/', methods=['GET', 'POST', 'PUT', 'DELETE'],
                  endpoint='DataStoreMg')
 
-
 # 网络管理

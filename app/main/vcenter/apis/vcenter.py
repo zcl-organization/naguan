@@ -150,7 +150,8 @@ class VCenterManage(Resource):
 
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            vcenter_manage.sync_tree(args['platform_id'])
+            # vcenter_manage.sync_tree(args['platform_id'])
+            vcenter_manage.sync_tree.apply_async(args=[args['platform_id']])
         except Exception as e:
             return set_return_val(False, {}, 'Failed to sync vcneter tree', 1239), 400
 

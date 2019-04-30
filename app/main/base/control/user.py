@@ -2,6 +2,7 @@
 from app.main.base.db import user as db_user
 from app.common.my_exceptions import ExistsException
 from app.main.base import db
+from app.main.base import task
 
 
 # 获取用户列表
@@ -87,4 +88,12 @@ def list_by_name(username):
 
 
 def update_login_time(user):
+    # task.user.add(1, 2)
+    sum_task = task.user.add.apply_async(args=[5, 7])
+
+    # sum_task = task.user.add.apply_async(23, 42)
+    # sum = sum_task.wait()
+    # print(sum)
+    # print (sum_task)
+    # print(sum_task.id)
     return db.user.update_login_time(user)

@@ -1,18 +1,30 @@
 # -*- coding:utf-8 -*-
 from flask import Flask, jsonify
 
-
 from app.models import Roles, Users, SystemConfig
 from flask_security import Security, SQLAlchemyUserDatastore
 
 from app.main.base.apis.auth import basic_auth
 from app.exts import db
-from config import config
+from config import config, BaseConfig
 from app.exts import init_ext
 from app.main import restful_init
 from app.main import swagger_init
 from app.main.base.control.roles_users import security_init
 from flask_session import Session
+
+
+from app.exts import celery
+
+# from celery import Celery
+#
+# celery = Celery(__name__, broker=BaseConfig.CELERY_BROKER_URL)
+
+
+# def make_celery(app):
+#     celery = Celery(app.import_name)
+#     celery.conf.update(app.config)
+#     return celery
 
 
 def create_app(config_name):
@@ -34,6 +46,9 @@ def create_app(config_name):
     restful_init(app)
     swagger_init(app)
     security_init(app)
+
+    celery.conf.update(app.config)
+    # celery.init_app(app=app)
 
     # from app.main.auth import auth
     # app.register_blueprint(auth)
