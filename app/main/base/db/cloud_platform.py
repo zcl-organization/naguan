@@ -4,23 +4,20 @@ from app.models import CloudPlatform
 from app.exts import db
 
 
-def platform_list(options):
+def platform_list(id=None, platform_name=None, platform_type_id=None):
     query = db.session.query(CloudPlatform)
     # print(options)
     try:
-        if options.get('id'):
-            query = query.filter_by(id=options['id'])
+        if id:
+            query = query.filter_by(id=id)
             # print('query2:', query)
-        if options.get('platform_name'):
-            query = query.filter_by(platform_name=options['platform_name'])
-        if options.get('platform_type_id'):
-            query = query.filter_by(platform_type_id=options['platform_type_id'])
-        # print('query:', query)
+        if platform_name:
+            query = query.filter_by(platform_name=platform_name)
+        if platform_type_id:
+            query = query.filter_by(platform_type_id=platform_type_id)
         result = query.all()
-        # print('result:', result)
-    except Exception, e:
-        # print('error')
-        result = []
+    except Exception as e:
+        raise Exception('Database operation exception')
     return result
 
 
@@ -46,7 +43,6 @@ def platform_create(options):
 
 
 def platform_update(id, options):
-
     try:
         platform = db.session.query(CloudPlatform).filter_by(id=id).first()
         if options['ip']:

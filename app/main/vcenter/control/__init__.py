@@ -90,7 +90,7 @@ def get_connect(platform_id):
     options = {
         'id': platform_id
     }
-    platforms = cloud_platform.platform_list(options)
+    platforms = cloud_platform.platform_list(id=platform_id)
     if platforms:
         platform = platforms[0]
         s = connect_server(platform['ip'], platform['name'], platform['password'], platform['port'])

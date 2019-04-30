@@ -2,3 +2,6 @@
 
 from app.main.base.control import user
 from app.main.base.control import menu
+from app.main.base.control import role
+from app.main.base.control import platform_type
+from app.main.base.control import cloud_platform

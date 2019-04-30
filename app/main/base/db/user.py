@@ -103,6 +103,7 @@ def user_delete(id=None):
     except Exception as e:
         raise Exception('User information delete failed')
 
+
 # 根据id更新用户信息
 def user_update(id, active, username, password, mobile, company, department, remarks):
     user = db.session.query(Users).filter_by(id=id).first()
@@ -135,7 +136,6 @@ def user_update(id, active, username, password, mobile, company, department, rem
         db.session.commit()
     except Exception as e:
         raise Exception('Database update exception')
-
 
 
 def update_login_time(user):

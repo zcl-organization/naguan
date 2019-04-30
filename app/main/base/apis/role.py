@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from app.main.base.control.role import role_list_c, role_create_c, role_update_c, role_delete_c
+
+from app.common.tool import set_return_val
+from app.main.base.control.role import role_list, role_create, role_update, role_delete
+from app.main.base import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('name', type=str)
@@ -38,23 +41,18 @@ class RoleManage(Resource):
                    default: Steven Wilson
          """
         args = parser.parse_args()
-        name = args.get('name')
-        pgnum = args.get('pgnum')
-        if not pgnum:  # 默认第一页
+
+        if not args['pgnum']:
             pgnum = 1
-        options = {
-            'name': name,
-            'pgnum': pgnum
-        }
-        role, pg = role_list_c(options)
-        response_data = {
-            'code': 1200,
-            'ok': True,
-            'data': role,
-            'msg': '获取角色信息成功',
-            'pg': pg,
-        }
-        return response_data
+        else:
+            pgnum = args['pgnum']
+        try:
+            data, pg = control.role.role_list(name=args['name'], pgnum=pgnum)
+
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+
+        return set_return_val(True, data, 'Get the role information successfully', 1200, pg)
 
     def post(self):
         """
@@ -84,31 +82,17 @@ class RoleManage(Resource):
                    default: Steven Wilson
          """
         args = parser.parse_args()
-        name = args.get('name')
-        description = args.get('description')
-        options = {
-            'name': name,
-            'description': description,
-        }
-        role = role_create_c(options)
-        if role:
-            response_data = {
-                'code': 3000,
-                'ok': True,
-                'data': role,
-                'msg': '创建角色信息成功',
-            }
-            return response_data
-        else:
-            response_data = {
-                'code': 3001,
-                'ok': False,
-                'data': '',
-                'msg': '角色名已存在',
-            }
-            return response_data
 
-    def put(self, id=None):
+        if not all([args['name'], args['description']]):
+            raise Exception('Parameter error')
+        try:
+            control.role.role_create(name=args['name'], description=args['description'])
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+
+        return set_return_val(True, [], 'The role information is created successfully.', 1200)
+
+    def put(self, id):
         """
          更新角色信息
          ---
@@ -140,31 +124,13 @@ class RoleManage(Resource):
                    default: Steven Wilson
          """
         args = parser.parse_args()
-        name = args.get('name')
-        description = args.get('description')
-        options = {
-            'id': id,
-            'name': name,
-            'description': description,
-        }
-        if role_update_c(options):
-            response_data = {
-                'code': 3000,
-                'ok': True,
-                'data': options,
-                'msg': '更改角色信息成功',
-            }
-            return response_data
-        else:
-            response_data = {
-                'code': 3001,
-                'ok': False,
-                'data': '',
-                'msg': '更改角色信息失败',
-            }
-            return response_data
+        try:
+            control.role.role_update(role_id=int(id), name=args['name'], description=args['description'])
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'Role information updated successfully', 1200)
 
-    def delete(self, id=None):
+    def delete(self, id):
         """
         删除角色信息
         ---
@@ -187,21 +153,8 @@ class RoleManage(Resource):
                   description: The name of the user
                   default: Steven Wilson
           """
-        name = role_delete_c(id)
-        if name:
-            response_data = {
-                'code': 3000,
-                'ok': True,
-                'data': '被删除角色名：' + name,
-                'msg': '删除角色信息成功',
-            }
-            return response_data
-        else:
-            response_data = {
-                'code': 3001,
-                'ok': False,
-                'data': '',
-                'msg': '删除角色信息失败',
-            }
-            return response_data
-
+        try:
+            control.role.role_delete(id)
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'The role information was deleted successfully.', 1200)

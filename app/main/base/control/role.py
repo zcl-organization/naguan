@@ -1,44 +1,45 @@
 # -*- coding:utf-8 -*-
-# from app.main.base.db.role import role_list_db, role_create_db, role_update_db, role_exist, role_delete_db
+
 from app.main.base.db import role as role_db
-
-
-# fro
+from app.main.base import db
 
 
 # 角色列表
-def role_list_c(options=None):
-    if role_db.role_list_db(options):
-        return role_db.role_list_db(options)
-    else:
-        return False
+def role_list(name, pgnum):
+    results, pg = db.role.role_list(name, pgnum)
+
+    data = []
+    for results in results:
+        role_tmp = {
+            'id': results.id,
+            'name': results.name,
+            'description': results.description,
+        }
+        data.append(role_tmp)
+    return data, pg
 
 
 # 创建角色信息
-def role_create_c(options=None):
-    role = role_db.role_create_db(options)
-    if role:
-        return role
-    else:
-        return False
+def role_create(name, description):
+    if db.role.role_exist(name):
+        raise Exception('Role information already exists')
+    return db.role.role_create(name, description)
 
 
 # 更新角色信息
-def role_update_c(options=None):
-    role = role_db.role_update_db(options)
-    if role:
-        return True
-    else:
-        return False
+def role_update(role_id, name, description):
+    if not db.role.list_by_id(role_id):
+        raise Exception('Role information not exists')
+    if db.role.role_exist(name):
+        raise Exception('Role name already exists')
+    return db.role.role_update(role_id, name, description)
 
 
 # 删除角色信息
-def role_delete_c(id=None):
-    try:
-        name = role_db.role_delete_db(id)
-        return name
-    except Exception as e:
-        return False
+def role_delete(role_id):
+    if not db.role.list_by_id(role_id):
+        raise Exception('Role information not exists')
+    return db.role.role_delete(role_id)
 
 
 def role_list_by_id(role_id):

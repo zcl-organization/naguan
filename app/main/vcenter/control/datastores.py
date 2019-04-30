@@ -49,62 +49,51 @@ def test_get_ds(platform_id):
 
     # obj = content.viewManager.CreateContainerView(content.rootFolder, [vim.HostSystem], True)
 
-    datacenters_object_view = content.viewManager.CreateContainerView(
-        content.rootFolder,
-        [vim.Datacenter],
-        True)
+    datacenters_object_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Datacenter], True)
 
     for dc in datacenters_object_view.view:
-
-        obj = content.viewManager.CreateContainerView(dc,
-                                                      [vim.Datastore],
-                                                      True)
-
+        obj = content.viewManager.CreateContainerView(dc, [vim.Datastore], True)
 
         # manage.filesView
         # # 获取资源池
         # rp = get_largest_free_rp(s, dc)
-        # print (dir(rp.summary))
-
         # return 'cccc'
         datastores = obj.view
 
         for ds in datastores:
-            # print(dir(ds))
-            # print(ds.folder)
+            search = vim.HostDatastoreBrowserSearchSpec()
+            search.matchPattern = '*.iso'
+            n = '[' + ds.summary.name + ']'
+            search_ds = ds.browser.SearchDatastoreSubFolders_Task(n, search)
+            while search_ds.info.state != "success":
+                pass
+            results = search_ds.info.result
+            for rs in search_ds.info.result:
+                dsfolder = rs.folderPath
+                for f in rs.file:
+                    dsfile = f.path
+                    print dsfolder + dsfile
 
 
-            # print(browse)
-            # Folder = content.viewManager.CreateContainerView(dc,
-            #                                                  [vim.Folder],
-            #                                                  True)
-
-            # print(Folder.view)
-
-            # folders = Folder.view
-
-            # for folder in folders:
-            #     print (folder.name)
-            # print (ds.parent.name)
-            # print(dir(ds))
-            # print(ds.host.summary.name)
-
-            ds_capacity = ds.summary.capacity
-            ds_freespace = ds.summary.freeSpace
-            ds_uncommitted = ds.summary.uncommitted if ds.summary.uncommitted else 0
-            ds_provisioned = ds_capacity - ds_freespace + ds_uncommitted
-            ds_overp = ds_provisioned - ds_capacity
-            ds_overp_pct = (ds_overp * 100) / ds_capacity \
-                if ds_capacity else 0
-            print('dc:', dc.name, 'version:', ds.info.name)
-            print('dc:', dc.name, 'capacity:', sizeof_fmt(ds_capacity))
-            print('dc:', dc.name, 'freeSpace:', sizeof_fmt(ds_freespace))
-            print('dc:', dc.name, 'ds_uncommitted :', sizeof_fmt(ds_uncommitted))
-            print('dc:', dc.name, 'ds_provisioned ', sizeof_fmt(ds_provisioned))
-
-            # print('name:', ds.info.name)
-            # print('type:', ds.info.type)
-            # print('ssd:', ds.info.ssd)
-            # print('ssd:', ds.info.ssd)
-            # print('local:', ds.info.local)
-            # print(dir(ds.summary.capacity))
+        # for ds in datastores:
+        #     # print(ds.host.summary.name)
+        #
+        #     ds_capacity = ds.summary.capacity
+        #     ds_freespace = ds.summary.freeSpace
+        #     ds_uncommitted = ds.summary.uncommitted if ds.summary.uncommitted else 0
+        #     ds_provisioned = ds_capacity - ds_freespace + ds_uncommitted
+        #     ds_overp = ds_provisioned - ds_capacity
+        #     ds_overp_pct = (ds_overp * 100) / ds_capacity \
+        #         if ds_capacity else 0
+        #     print('dc:', dc.name, 'version:', ds.info.name)
+        #     print('dc:', dc.name, 'capacity:', sizeof_fmt(ds_capacity))
+        #     print('dc:', dc.name, 'freeSpace:', sizeof_fmt(ds_freespace))
+        #     print('dc:', dc.name, 'ds_uncommitted :', sizeof_fmt(ds_uncommitted))
+        #     print('dc:', dc.name, 'ds_provisioned ', sizeof_fmt(ds_provisioned))
+        #
+        #     # print('name:', ds.info.name)
+        #     # print('type:', ds.info.type)
+        #     # print('ssd:', ds.info.ssd)
+        #     # print('ssd:', ds.info.ssd)
+        #     # print('local:', ds.info.local)
+        #     # print(dir(ds.summary.capacity))

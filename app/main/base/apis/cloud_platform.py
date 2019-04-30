@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from app.main.base.control import cloud_platform as platform_manage
 
+from app.common.tool import set_return_val
+from app.main.base.control import cloud_platform as platform_manage
+from app.main.base import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('id')
@@ -12,7 +14,6 @@ parser.add_argument('port')
 parser.add_argument('admin_name')
 parser.add_argument('admin_password')
 parser.add_argument('remarks')
-
 
 ret_status = {
     'ok': True,
@@ -58,19 +59,13 @@ class CloudPlatformManage(Resource):
                 'platform_type_id': args['platform_type_id'],
                 'platform_name': args['platform_name'],
             }
-            platform_list = platform_manage.platform_list(options)
-            ret_status['code'] = '1530'
-            ret_status['msg'] = '查询成功'
-            ret_status['data'] = platform_list
-            ret_status['ok'] = True
-            return ret_status
-        except Exception, e:
-            ret_status['code'] = '1530'
-            ret_status['msg'] = '查询异常'
-            ret_status['data'] = ''
-            ret_status['ok'] = False
+            data = control.cloud_platform.platform_list(id=args['id'],
+                                                        platform_type_id=args['platform_type_id'],
+                                                        platform_name=args['platform_name'])
 
-        return ret_status, 400
+        except Exception, e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, data, 'Platform list succeeded.', 1520)
 
     def post(self):
         """

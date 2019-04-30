@@ -87,7 +87,6 @@ class UserManage(Resource):
             limit = 10
         else:
             limit = int(args['pgsize'])
-
         try:
             data, pg = control.user.user_list(user_id=args['id'], email=args['email'], mobile=args['mobile'],
                                               remarks=args['remarks'], next_page=pgnum, limit=limit)

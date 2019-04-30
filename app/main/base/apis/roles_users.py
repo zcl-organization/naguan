@@ -42,11 +42,12 @@ class RolesUsersManage(Resource):
                    default: Steven Wilson
          """
         try:
+
             args = parser.parse_args()
-            user_name = args.get('user_name')
-            role_name = args.get('role_name')
+            # user_name = args.get('user_name')
+            # role_name = args.get('role_name')
             # 获取所有用户角色权限 列表
-            data = role_user_manage.role_user_list(user_name, role_name)
+            data = role_user_manage.role_user_list(args['user_name'], args['role_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 1234), 400
         return set_return_val(True, data, '获取列表成功', 1234)

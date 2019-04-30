@@ -4,34 +4,35 @@ from app.models import CloudPlatformType
 from app.exts import db
 from sqlalchemy.exc import IntegrityError
 
-def platform_type_list(options):
+
+def platform_type_list(id=None, name=None):
     # noinspection PyBroadException
     try:
         query = db.session.query(CloudPlatformType)
-        if options.get('id'):
-            query = query.filter_by(id=options.get('id'))
-        if options['name']:
-            query = query.filter_by(name=options['name'])
+        if id:
+            query = query.filter_by(id=id)
+        if name:
+            query = query.filter_by(name=name)
         result = query.all()
-    except Exception, e:
-        result = []
+    except Exception as e:
+        raise Exception('Database operation exception')
 
     return result
 
 
-def platform_type_create(options):
+def platform_type_create(name):
     # noinspection PyBroadException
     try:
         new_platform_type = CloudPlatformType()
-        new_platform_type.name = options.get('name')
+        new_platform_type.name = name
 
         db.session.add(new_platform_type)
         db.session.commit()
-        platform_type = db.session.query(CloudPlatformType).filter_by(name=options.get('name')).first()
-    except Exception, e:
-        return Exception('create platform_type error', options.get('name'))
 
-    return platform_type
+    except Exception as e:
+        raise Exception('create platform_type error', name)
+
+    # return platform_type
 
 
 def platform_type_list_by_id(id):
@@ -39,26 +40,24 @@ def platform_type_list_by_id(id):
     return platform_type
 
 
-def platform_type_update(id, options):
+def platform_type_update(id, name):
     try:
         platform = db.session.query(CloudPlatformType).filter_by(id=id).first()
-        if options.get('name'):
-            platform.name = options.get('name')
+        if name:
+            platform.name = name
         db.session.commit()
-        return True
+
     except IntegrityError:
-        raise Exception('db update, parameter error',  options.get('name'))
-    except Exception as ex:
-        return False
+        raise Exception('db update, parameter error', name)
+    except Exception as e:
+        raise Exception('Database operation exception')
 
 
 def platform_type_delete(type_id):
     try:
         query = db.session.query(CloudPlatformType)
-        platform_willdel = query.filter_by(id=type_id).first()
-        db.session.delete(platform_willdel)
+        platform_middle = query.filter_by(id=type_id).first()
+        db.session.delete(platform_middle)
         db.session.commit()
-
     except Exception:
-        raise Exception('删除云平台类型失败', type_id)
-    return True
+        raise Exception('Deleting platform type failed', type_id)

@@ -134,9 +134,10 @@ class AuthManage(Resource):
                         if userinfo.get('identifier'):
                             user = Users.query.filter_by(username=userinfo['identifier']).first()
                             if user is None:
-                                user = Users(uid=uid, username=userinfo['identifier'])
+                                # user = Users(uid=uid, username=userinfo['identifier'])
                                 # db.session.add(user)
                                 # User.create(uid=uid, username=userinfo['identifier'])
+                                pass
                             else:
                                 user.uid = uid
                                 # user.update(uid=uid)

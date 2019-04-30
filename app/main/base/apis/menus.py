@@ -240,17 +240,6 @@ class MenuManage(Resource):
                 if int(args['is_hide']) not in [1, 2]:
                     raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
-            # options = {
-            #     'icon': args['icon'],
-            #     'name': args['name'],
-            #     'url': args['url'],
-            #     'identifier': args['identifier'],
-            #     'is_hide': int(args['is_hide']),
-            #     'is_hide_children': int(args['is_hide_children']),
-            #     'parent_id': args['parent_id'],
-            #     'important': args['important'],
-            # }
-            # result = control.menu.menu_update(id, options=options)
             control.menu.menu_update(id=id, icon=args['icon'], name=args['name'], url=args['url'],
                                      identifier=args['identifier'], is_hide=int(args['is_hide']),
                                      is_hide_children=int(args['is_hide_children']),

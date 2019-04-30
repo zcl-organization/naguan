@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-# from app.main.base.db import menu as db_menu
 from app.main.base import db
 
 

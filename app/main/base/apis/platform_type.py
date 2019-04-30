@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
+
+from app.common.tool import set_return_val
 from app.main.base.control import platform_type as platform_type_manage
+from app.main.base import control
 from flask import g
 
 parser = reqparse.RequestParser()
@@ -48,23 +51,12 @@ class PlatformTypeMg(Resource):
         """
         args = parser.parse_args()
         try:
-            options = {
-                'id': args['id'],
-                'name': args['name'],
-            }
-            result = platform_type_manage.platform_type_list(options)
-            ret_status['data'] = result
-            ret_status['code'] = 1430
-            ret_status['ok'] = True
-            ret_status['msg'] = '查询成功'
 
-            return ret_status
+            data = control.platform_type.type_list(id=args['id'], name=args['name'])
         except Exception, e:
-            ret_status['data'] = ''
-            ret_status['code'] = 1439
-            ret_status['ok'] = False
-            ret_status['msg'] = '查询异常'
-            return ret_status, 400
+            return set_return_val(False, [], str(e), 1319), 400
+
+        return set_return_val(True, data, 'Platform type query succeeded.', 1430)
 
     def post(self):
         """
@@ -93,30 +85,16 @@ class PlatformTypeMg(Resource):
                  default: vCenter
         """
         args = parser.parse_args()
-        try:
-            if args['name']:
-                options = {
-                    'name': args['name']
-                }
-            else:
-                ret_status['code'] = 1402
-                raise Exception('请传入平台类型名称.')
-            result = platform_type_manage.platform_type_create(options)
-            if result:
-                ret_status['code'] = 1400
-                ret_status['msg'] = '创建成功'
-                ret_status['ok'] = True
-                ret_status['data'] = result
-            else:
-                ret_status['code'] = 1401
-                raise Exception('创建失败.')
 
-        except Exception, e:
-            # print()
-            ret_status['msg'] = str(e)
-            ret_status['ok'] = False
-            return ret_status, 400
-        return result
+        if not args['name']:
+            raise Exception('Please pass in the platform type name.')
+
+        try:
+            control.platform_type.type_create(name=args['name'])
+
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'Platform type create succeeded.', 1430)
 
     def put(self, id):
         """
@@ -149,29 +127,16 @@ class PlatformTypeMg(Resource):
                  description: 类型名称
                  default: vCenter
         """
-        print('id:', id)
-        args = parser.parse_args()
-        try:
-            options = {
-                'name': args['name'],
-            }
-            result = platform_type_manage.platform_type_update(id, options)
-            if result:
-                ret_status['code'] = '1520'
-                ret_status['msg'] = '更新成功'
-                ret_status['data'] = ''
-                ret_status['ok'] = True
-                return ret_status
-            else:
 
-                raise Exception('update failed')
+        args = parser.parse_args()
+        if not args['name']:
+            raise Exception('Please pass in the platform type name.')
+        try:
+            control.platform_type.type_update(id, args['name'])
+
         except Exception, e:
-            ret_status['data'] = ''
-            ret_status['ok'] = False
-            ret_status['msg'] = str(e)
-            ret_status['code'] = 1529
-            return ret_status, 400
-        return ret_status
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, [], 'Platform type update succeeded.', 1520)
 
     def delete(self, id):
         """
@@ -201,19 +166,8 @@ class PlatformTypeMg(Resource):
                  default: vCenter
         """
         try:
-            result = platform_type_manage.platform_type_delete(id)
-            if result:
-                ret_status['code'] = '1510'
-                ret_status['msg'] = '删除成功'
-                ret_status['data'] = ''
-                ret_status['ok'] = True
-            else:
-                ret_status['code'] = '1511'
-                raise Exception('删除失败', id)
+            control.platform_type.type_delete(id)
         except Exception as e:
-            # print(e)
-            ret_status['msg'] = str(e)
-            ret_status['data'] = ''
-            ret_status['ok'] = False
-            return ret_status, 400
-        return ret_status
+
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, [], 'Platform type delete succeeded.', 1520)
