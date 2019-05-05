@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 from flask_restful import reqparse, Resource, fields, marshal_with
-from app.exts import db
-from app.main.base.control.system import system_list, system_list_put, system_save, system_get
-from app.models import SystemConfig
-from app.main.base.apis.auth import basic_auth
 
+from app.common.tool import set_return_val
+
+from app.main.base.apis.auth import basic_auth
+from app.main.base import control
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -60,6 +61,8 @@ sysconfig_fields = {
     'STORE_LOG': fields.String,  # 日志存储位置
 }
 
+
+
 # 最终显示格式2
 result_fields2 = {
     'code': fields.Integer,
@@ -108,33 +111,21 @@ class System(Resource):
                   default: success
         """
         args = parser.parse_args()
-        system = SystemConfig()  # 获取配置信息
-        system.platform_name = args.get('platform_name').decode("utf-8")
-        system.version_information = args.get('version_information').decode("utf-8")
-        system.copyright = args.get('copyright').decode("utf-8")
-        system.user_authentication_mode = args.get('user_authentication_mode').decode("utf-8")
-        system.debug = args.get('debug')
 
-        # 若存在配置，则不允许再创建配置
-        result = system_list()
-        if result:
-            response_data = {
-                'code': 1204,
-                'msg': '系统配置已初始化，配置失败',
-                'ok': False,
-                'data': ''
-            }
-            return response_data
-        else:
-            system_save(system)
-            # 返回数据
-            response_data = {
-                'msg': '创建配置成功',
-                'ok': True,
-                'data': system,
-                'code': 1201,
-            }
-            return response_data
+        if int(args['debug']) not in [1, 2]:
+            raise Exception('The debug parameter is wrong, 1 is True and 2 is False')
+        try:
+
+            control.system.system_config_create(platform_name=args['platform_name'],
+                                                version_information=args['version_information'],
+                                                copyright=args['copyright'],
+                                                user_authentication_mode=args['user_authentication_mode'],
+                                                debug=args['debug'])
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'System config created successfully', 1300)
+
+
 
     @basic_auth.login_required
     def get(self):
@@ -164,27 +155,13 @@ class System(Resource):
                 store_log:
                   type: string
             """
-        # parse = parser.parse_args()
-        # sysconfig = SystemConfig.query.get(1)  # 默认显示所有
-        result = system_list()
-        if result is None:  # 未配置
-            response_data = {
-                'ok': False,
-                'msg': '系统未配置,请求失败',
-                'data': '',
-                'code': 1204,
-            }
-            return response_data
-        else:
-            sysconfig = result[0]
-            all_config = system_get(sysconfig)
-            response_data = {
-                'ok': True,
-                'msg': '成功请求系统配置信息',
-                'data': all_config,
-                'code': 1200,
-            }
-            return response_data
+
+        try:
+            data = control.system.system_config_list()
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, data, 'System configuration succeeded', 1300)
+
 
     # @basic_auth.login_required
     @marshal_with(result_fields2)
@@ -223,28 +200,15 @@ class System(Resource):
                   default: success
         """
         args = parser.parse_args()
-        data = {
-            'platform_name': args.get('platform_name'),
-            'version_information': args.get('version_information'),
-            'copyright': args.get('copyright'),
-            'user_authentication_mode': args.get('user_authentication_mode'),
-            'debug': args.get('debug'),
-        }
-        result = system_list_put(data)
-        if result:
-            response_data = {
-                'msg': '更新系统配置成功',
-                'ok': True,
-                'data': result,
-                'code': 1203,
-            }
-            return response_data
-        else:
-            response_data = {
-                'msg': '未初始化系统配置或debug输入错误，修改失败',
-                'ok': False,
-                'data': '',
-                'code': 1204,
-            }
-        return response_data
+
+        try:
+            control.system.system_config_update(platform_name=args['platform_name'],
+                                                version_information=args['version_information'],
+                                                copyright=args['copyright'],
+                                                user_authentication_mode=args['user_authentication_mode'],
+                                                debug=args['debug'])
+
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1319), 400
+        return set_return_val(True, [], 'System configuration updated succeeded', 1300)
 

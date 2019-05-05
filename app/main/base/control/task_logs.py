@@ -1,32 +1,42 @@
 # -*- coding=utf-8 -*-
-from app.main.base.db.task_logs import log_list_db, log_get, log_delete_db, task_log_start_db, task_log_end_db
+from app.main.base.db.task_logs import log_list, log_delete, task_log_start_db, task_log_end_db
 from app.main.base.db import task_logs as log_manage
+from app.main.base import db
 
 
 # 获取日志列表
-def log_list_c(options=None):
-    if log_list_db(options):
-        result, pg = log_list_db(options)
-        return result, pg
-    else:
-        return False
+def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
+    results, pg = db.task_logs.log_list(pgnum, task_id, rely_task_id, submitter, request_id)
+    data = []
+    for result in results:
+        data_tmp = {
+            'id': result.id,
+            'task_id': result.task_id,
+            'request_id': result.request_id,
+            'rely_task_id': result.rely_task_id,
+            'status': result.status,
+            'await_execute': result.await_execute,
+            'queue_name': result.queue_name,
+            'method_name': result.method_name,
+            'submitter': result.submitter,
+            'enqueue_time': str(result.enqueue_time),
+            'start_time': str(result.start_time),
+            'end_time': str(result.end_time),
+        }
+        data.append(data_tmp)
+    return data
 
 
 # 删除日志
-def log_delete_c(id=None):
-    task_logs = log_get(id=id)  # 先获取再删除
-    if task_logs:
-        result = log_delete_db(id=id)
-        if result:
-            return True
-        else:
-            return False
-    else:
-        return False
+def log_delete(log_id):
+    log = db.task_logs.log_list_by_id(log_id)
+    if not log:
+        raise Exception('No current log information exists')
+    return db.task_logs.log_delete(log_id)
 
 
 def task_log_create(options):
-    log_manage.task_log_create_db(options)
+    db.task_logs.task_log_create_db(options)
 
 
 # 开始任务日志
@@ -37,12 +47,3 @@ def task_log_start_c(task_id=None):
 # 完成任务日志
 def task_log_en_c(task_id=None):
     return task_log_end_db(task_id)
-
-
-
-
-
-
-
-
-

@@ -79,14 +79,15 @@ class MenuManage(Resource):
 
         except Exception, e:
             return set_return_val(False, [], str(e), 1319), 400
-        event_options = {
-            'type': 'menu',
-            'result': ret_status['ok'],
-            'resources_id': '',
-            'event': unicode('获取菜单信息'),
-            'submitter': g.username,
-        }
-        event_logs.eventlog_create(event_options)
+        # event_options = {
+        #     'type': 'menu',
+        #     'result': ret_status['ok'],
+        #     'resources_id': '',
+        #     'event': unicode('获取菜单信息'),
+        #     'submitter': g.username,
+        # }
+        event_logs.eventlog_create(type='menu', result=ret_status['ok'], resources_id='', event=unicode('获取菜单信息'),
+                                   submitter=g.username)
         return set_return_val(True, data, 'Get menu success', 1310)
 
     def post(self):
@@ -141,7 +142,7 @@ class MenuManage(Resource):
                 raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
             # 验证 is_hide_children 合法性
-            if int(args['is_hide']) not in [1, 2]:
+            if int(args['is_hide_children']) not in [1, 2]:
                 raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
             control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],

@@ -4,15 +4,16 @@ from app.models import RequestLog
 
 
 # 获取日志列表
-def log_list_db(options=None):
+def log_list(pgnum, request_id, status_num):
     query = db.session.query(RequestLog)
-    if options['request_id']:
-        query = query.filter_by(request_id=options['request_id'])
-    if options['status_num']:
-        query = query.filter_by(status_num=options['status_num'])
-    if options['page']:  # 默认获取分页获取所有日志
-        query = query.paginate(page=options['page'], per_page=20, error_out=False)
+    if request_id:
+        query = query.filter_by(request_id=request_id)
+    if status_num:
+        query = query.filter_by(status_num=status_num)
+    if pgnum:  # 默认获取分页获取所有日志
+        query = query.paginate(page=pgnum, per_page=10, error_out=False)
     results = query.items
+    print(results)
 
     pg = {
         'has_next': query.has_next,
@@ -20,36 +21,24 @@ def log_list_db(options=None):
         'page': query.page,
         'pages': query.pages,
         'total': query.total,
-        'prev_num': query.prev_num,
-        'next_num': query.next_num,
+        # 'prev_num': query.prev_num,
+        # 'next_num': query.next_num,
     }
-    result_item = []
-    for request in results:
-        data = {
-            'id': request.id,
-            'request_id': request.request_id,
-            'ip': request.ip,
-            'url': request.url,
-            'status_num': request.status_num,
-            'submitter': request.submitter,
-            'time': request.time.strftime('%Y-%m-%d %H:%M:%S'),
-        }
-        result_item.append(data)
-    return result_item, pg
 
-
-# 根据id获取日志
-def log_get(id=None):
-    result = RequestLog.query.get(id)
-    return result
+    return results, pg
 
 
 # 删除日志,根据请求id
-def log_delete_db(id=None):
+def log_delete(id):
     try:
-        log = log_get(id)   # 先获取再删除
-        db.session.delete(log)
+        query = db.session.query(RequestLog)
+        log_willdel = query.filter_by(id=id).first()
+        db.session.delete(log_willdel)
         db.session.commit()
-        return True
     except Exception as e:
-        return False
+        raise Exception('Database delete exception')
+
+
+def log_list_by_id(id):
+    return db.session.query(RequestLog).filter_by(id=id).first()
+

@@ -191,10 +191,17 @@ class InstanceManage(Resource):
                 instance.restart()
 
             elif args['action'] == 'create':
+                # print(args['new_disks'])
+                # disks = json.loads(args['new_disks'])
+                #
+                # for disk in disks:
+                #     disk_size = disk.get('size')
+                #     disk_type = disk.get('type')
+                #     print(disk_type)
 
-                instance_manage.create_vm(platform_id=args['platform_id'], new_cpu=args['new_cpu'],
-                                          new_memory=args['new_memory'], dc_id=args['dc_id'],
-                                          ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['new_networks'])
+                instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
+                              ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['new_networks'],
+                              disks=args['new_disks'])
             else:
                 raise Exception('Parameter error')
         except Exception as e:
@@ -521,7 +528,6 @@ class InstanceManage(Resource):
                 instance.del_network(networks=args['del_networks'])
 
             if args['new_disks']:
-                print('new_disks')
                 instance.add_disk(disks=args['new_disks'])
                 # pass
             if args['delete_disks']:

@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from app.main.base.control.request_logs import log_list_c, log_delete_c
+
+from app.common.tool import set_return_val
+
+from app.main.base import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('request_id', type=str)
-parser.add_argument('status_num', type=int)
+parser.add_argument('status', type=int)
 parser.add_argument('pgnum', type=int)
 response_data = {}
 
@@ -24,7 +27,7 @@ class LogRequest(Resource):
             type: string
             description: 请求id
           - in: query
-            name: page
+            name: pgnum
             type: int
             description: 页码
           - name: status
@@ -43,33 +46,18 @@ class LogRequest(Resource):
                   default: Steven Wilson
         """
         args = parser.parse_args()
-        request_id = args.get('request_id')
-        status_num = args.get('status_num')
-        page = args.get('pgnum')
-        if not page:
-            page = 1  # 默认第一页
-        options = {
-            'page': page,
-            'request_id': request_id,
-            'status_num': status_num,
-        }
-        if log_list_c(options=options):
-            request_logs, pg = log_list_c(options=options)
-            response_data['code'] = 1200
-            response_data['ok'] = True
-            response_data['data'] = request_logs
-            response_data['msg'] = '获取日志信息成功'
-            response_data['pg'] = pg
-            return response_data
-        else:
-            response_data['code'] = 1204
-            response_data['msg'] = '搜索日志结果不存在'
-            response_data['ok'] = False
-            response_data['data'] = ''
-            response_data['pg'] = ''
-            return response_data
+        pgnum = args['pgnum']
 
-    def delete(self, id=None):
+        if not pgnum:
+            pgnum = 1  # 默认第一页
+        try:
+            data, pg = control.request_logs.log_list(pgnum=pgnum, request_id=args['request_id'],
+                                                     status_num=args['status'])
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, data, 'request log list succeeded.', 1520, pg)
+
+    def delete(self, id):
         """
         根据请求日志id删除信息
        ---
@@ -92,22 +80,9 @@ class LogRequest(Resource):
                  description: The name of the request_logs
                  default: Steven Wilson
         """
-        response_data['data'] = ''
-        response_data['pg'] = ''
-        if id:
-            result = log_delete_c(id=id)
-            if result:
-                response_data['msg'] = '删除成功'
-                response_data['ok'] = True
-                response_data['code'] = 1200
-            else:
-                response_data['msg'] = '不存在的请求日志ID'
-                response_data['code'] = 3005
-                response_data['ok'] = False
-            return response_data
-        else:
-            response_data['msg'] = '请输入ID'
-            response_data['code'] = 3005
-            response_data['ok'] = False
-            return response_data
 
+        try:
+            result = control.request_logs.log_delete(id=id)
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, [], 'request log deleted succeeded.', 1520)

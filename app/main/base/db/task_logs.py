@@ -7,18 +7,18 @@ from app.models import TaskLog
 
 
 # 获取日志列表
-def log_list_db(options=None):
+def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
     query = db.session.query(TaskLog)
-    if options['task_id']:
-        query = query.filter_by(task_id=options['task_id'])
-    if options['rely_task_id']:
-        query = query.filter_by(rely_task_id=options['rely_task_id'])
-    if options['request_id']:
-        query = query.filter_by(request_id=options['request_id'])
-    if options['submitter']:
-        query = query.filter_by(submitter=options['submitter'])
-    if options['page']:  # 默认获取分页获取所有日志
-        query = query.paginate(page=options['page'], per_page=20, error_out=False)
+    if task_id:
+        query = query.filter_by(task_id=task_id)
+    if rely_task_id:
+        query = query.filter_by(rely_task_id=rely_task_id)
+    if request_id:
+        query = query.filter_by(request_id=request_id)
+    if submitter:
+        query = query.filter_by(submitter=submitter)
+    if pgnum:  # 默认获取分页获取所有日志
+        query = query.paginate(page=pgnum, per_page=10, error_out=False)
     results = query.items
     pg = {
         'has_next': query.has_next,
@@ -29,42 +29,40 @@ def log_list_db(options=None):
         'prev_num': query.prev_num,
         'next_num': query.next_num,
     }
-    result_item = []
-    for result in results:
-        data = {
-            'id': result.id,
-            'task_id': result.task_id,
-            'request_id': result.request_id,
-            'rely_task_id': result.rely_task_id,
-            'status': result.status,
-            'await_execute': result.await_execute,
-            'queue_name': result.queue_name,
-            'method_name': result.method_name,
-            'submitter': result.submitter,
-            'enqueue_time': str(result.enqueue_time),
-            'start_time': str(result.start_time),
-            'end_time': str(result.end_time),
+    # result_item = []
+    # for result in results:
+    #     data = {
+    #         'id': result.id,
+    #         'task_id': result.task_id,
+    #         'request_id': result.request_id,
+    #         'rely_task_id': result.rely_task_id,
+    #         'status': result.status,
+    #         'await_execute': result.await_execute,
+    #         'queue_name': result.queue_name,
+    #         'method_name': result.method_name,
+    #         'submitter': result.submitter,
+    #         'enqueue_time': str(result.enqueue_time),
+    #         'start_time': str(result.start_time),
+    #         'end_time': str(result.end_time),
+    #
+    #     }
+    #     result_item.append(data)
+    return results, pg
 
-        }
-        result_item.append(data)
-    return result_item, pg
 
-
-# 根据id获取日志
-def log_get(id=None):
-    result = TaskLog.query.get(id)
-    return result
+def log_list_by_id(log_id):
+    return db.session.query(TaskLog).filter_by(id=log_id).first()
 
 
 # 删除日志,根据请求id
-def log_delete_db(id=None):
+def log_delete(log_id):
     try:
-        log = log_get(id)  # 先获取再删除
-        db.session.delete(log)
+        query = db.session.query(TaskLog)
+        log_middle = query.filter_by(id=log_id).first()
+        db.session.delete(log_middle)
         db.session.commit()
-        return True
     except Exception as e:
-        return False
+        raise Exception('Database delete exception')
 
 
 # 任务日志创建
@@ -78,7 +76,7 @@ def task_log_create_db(options):
         newlog.rely_task_id = '--'
     newlog.status = options['result']
     newlog.await_execute = '1' + '/' + '2'
-    newlog.queue_name = 'iass_web'   # options['queue_name']  # 暂定
+    newlog.queue_name = 'iass_web'  # options['queue_name']  # 暂定
     newlog.method_name = 'task_callback'  # options['method_name']
     newlog.submitter = g.username
     db.session.add(newlog)

@@ -124,7 +124,7 @@ class SystemConfig(db.Model):
     # 版本信息
     version_information = db.Column(db.String(32), unique=True)
 
-    logo = db.Column(db.String(128), default=UPLOAD_DIR + 'iphone.png')
+    logo = db.Column(db.String(128), default=UPLOAD_DIR + 'logo.png')
     # 版权
     copyright = db.Column(db.String(32), unique=True)
     # 用户验证模式

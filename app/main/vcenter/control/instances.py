@@ -106,6 +106,7 @@ class Instance(object):
 
     # 新增网卡信息
     def add_network(self, networks):
+
         networks = json.loads(networks)
 
         devs = self.vm.config.hardware.device
@@ -228,7 +229,7 @@ class Instance(object):
             raise Exception('vm memory update failed')
 
     # 创建云主机
-    def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks):
+    def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks):
         try:
 
             dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
@@ -262,10 +263,13 @@ class Instance(object):
 
             task = vm_folder.CreateVM_Task(config=config, pool=resource_pool)
             wait_for_tasks(self.si, [task])
+            # self.update_vm_local()
 
             # 获取vm 并为vm 添加network
             vm = get_obj(self.content, [vim.VirtualMachine], vm_name)
+            self.vm = vm
             self.add_network(networks)
+            self.add_disk(disks)
             # vm_add_network(self.platform_id, vm.summary.config.uuid, networks, vm)
         except Exception as e:
             raise Exception('vm create failed')
@@ -352,10 +356,19 @@ class Instance(object):
 
         disks = json.loads(disks)
 
+        controller = vim.vm.device.ParaVirtualSCSIController()
+        controller.sharedBus = vim.vm.device.VirtualSCSIController.Sharing.noSharing
+        virtual_device_spec = vim.vm.device.VirtualDeviceSpec()
+        virtual_device_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+        virtual_device_spec.device = controller
+        config_spec = vim.vm.ConfigSpec()
+        config_spec.deviceChange = [virtual_device_spec]
+        task = self.vm.ReconfigVM_Task(config_spec)
+        wait_for_tasks(self.si, [task])
+
         for disk in disks:
             disk_size = disk.get('size')
             disk_type = disk.get('type')
-
             if not all([disk_size, disk_type]):
                 raise Exception('parameter error')
 
@@ -373,6 +386,7 @@ class Instance(object):
                         raise Exception("we don't support this many disks")
                 if isinstance(dev, vim.vm.device.VirtualSCSIController):
                     controller = dev
+
             # add disk here
             dev_changes = []
             new_disk_kb = int(disk_size) * 1024 * 1024
@@ -382,8 +396,10 @@ class Instance(object):
             disk_spec.device = vim.vm.device.VirtualDisk()
             disk_spec.device.backing = \
                 vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+
             if disk_type == 'thin':
                 disk_spec.device.backing.thinProvisioned = True
+
             disk_spec.device.backing.diskMode = 'persistent'
             disk_spec.device.unitNumber = unit_number
             disk_spec.device.capacityInKB = new_disk_kb
@@ -392,10 +408,11 @@ class Instance(object):
             spec.deviceChange = dev_changes
             task = self.vm.ReconfigVM_Task(spec=spec)
             wait_for_tasks(self.si, [task])
-        sync_disk(self.platform_id,self.vm)
+
+        sync_disk(self.platform_id, self.vm)
 
     def delete_disk(self, disks, languag=None):
-        language ='English'
+        language = 'English'
 
         disks = json.loads(disks)
         for disk in disks:

@@ -22,43 +22,43 @@ def platform_list(id=None, platform_name=None, platform_type_id=None):
 
 
 # 添加第三方云平台
-def platform_create(options):
-    # print(options)
+# def platform_create(options):
+def platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip, remarks):
+
     new_platform = CloudPlatform()
     try:
-        new_platform.platform_type_id = options['platform_type_id']
-        new_platform.platform_name = options['platform_name']
-        new_platform.ip = options['ip']
-        new_platform.port = options['port']
-        new_platform.admin_name = options['admin_name']
-        new_platform.admin_password = options['admin_password']
-        new_platform.remarks = options['remarks']
+        new_platform.platform_type_id = platform_type_id
+        new_platform.platform_name = platform_name
+        new_platform.ip = ip
+        new_platform.port = port
+        new_platform.admin_name = admin_name
+        new_platform.admin_password = admin_password
+        new_platform.remarks = remarks
 
         db.session.add(new_platform)
         db.session.commit()
         # return db.session.query(CloudPlatform).filter_by(platform_name=options['platform_name']).first()
-        return True
-    except Exception, e:
-        return False
+
+    except Exception as e:
+        raise Exception('Database operation exception')
 
 
-def platform_update(id, options):
+def platform_update(id, ip, admin_name, admin_password, port, remarks):
     try:
         platform = db.session.query(CloudPlatform).filter_by(id=id).first()
-        if options['ip']:
-            platform.ip = options['ip']
-        if options['port']:
-            platform.port = options['port']
-        if options['admin_name']:
-            platform.admin_name = options['admin_name']
-        if options['admin_password']:
-            platform.admin_name = options['admin_password']
-        if options['remarks']:
-            platform.admin_name = options['remarks']
+        if ip:
+            platform.ip = ip
+        if port:
+            platform.port = port
+        if admin_name:
+            platform.admin_name = admin_name
+        if admin_password:
+            platform.admin_password = admin_password
+        if remarks:
+            platform.remarks = remarks
         db.session.commit()
-        return True
-    except Exception, e:
-        return False
+    except Exception as e:
+        raise Exception('Database operation exception')
 
 
 def platform_list_by_id(id):
@@ -66,8 +66,10 @@ def platform_list_by_id(id):
 
 
 def platform_delete(id):
-    query = db.session.query(CloudPlatform)
-    platform_willdel = query.filter_by(id=id).first()
-    db.session.delete(platform_willdel)
-    db.session.commit()
-    return True
+    try:
+        query = db.session.query(CloudPlatform)
+        platform_willdel = query.filter_by(id=id).first()
+        db.session.delete(platform_willdel)
+        db.session.commit()
+    except Exception as e:
+        raise Exception('Database operation exception')

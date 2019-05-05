@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
-from app.main.base.control.event_logs import log_list_c, log_delete_c
+
+from app.common.tool import set_return_val
+from app.main.base.control.event_logs import log_list, log_delete
+from app.main.base import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('event_request_id', type=str)
@@ -30,7 +33,7 @@ class LogEvent(Resource):
             type: string
             description: 任务id
           - in: query
-            name: page
+            name: pgnum
             type: int
             description: 页码
           - name: submitter
@@ -53,35 +56,29 @@ class LogEvent(Resource):
                   default: Steven Wilson
         """
         args = parser.parse_args()
-        page = args.get('pgnum')
-        event_request_id = args.get('event_request_id')
-        task_request_id = args.get('task_request_id')
-        submitter = args.get('submitter')
-        operation_resources_id = args.get('operation_resources_id')
-        if not page:
-            page = 1  # 默认第一页
-        options = {
-            'page': page,
-            'event_request_id': event_request_id,
-            'submitter': submitter,
-            'task_request_id': task_request_id,
-            'operation_resources_id': operation_resources_id,
-        }
-        if log_list_c(options=options):
-            event_logs, pg = log_list_c(options=options)
-            response_data['code'] = 1200
-            response_data['ok'] = True
-            response_data['data'] = event_logs
-            response_data['msg'] = '获取日志信息成功'
-            response_data['pg'] = pg
-            return response_data
-        else:
-            response_data['code'] = 1204
-            response_data['msg'] = '搜索日志结果不存在'
-            response_data['ok'] = False
-            response_data['data'] = ''
-            response_data['pg'] = ''
-            return response_data
+        pgnum = args['pgnum']
+        # event_request_id = args.get('event_request_id')
+        # task_request_id = args.get('task_request_id')
+        # submitter = args.get('submitter')
+        # operation_resources_id = args.get('operation_resources_id')
+        if not pgnum:
+            pgnum = 1  # 默认第一页
+        # options = {
+        #     'page': pgnum,
+        #     'event_request_id': event_request_id,
+        #     'submitter': submitter,
+        #     'task_request_id': task_request_id,
+        #     'operation_resources_id': operation_resources_id,
+        # }
+
+        try:
+
+            data, pg = control.event_logs.log_list(pgnum=pgnum, event_request_id=args['event_request_id'],
+                                                   task_request_id=args['task_request_id'], submitter=args['submitter'],
+                                                   operation_resources_id=args['operation_resources_id'])
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, data, 'request log list succeeded.', 1520, pg)
 
     def delete(self, id):
         """
@@ -106,25 +103,8 @@ class LogEvent(Resource):
                  description: The name of the event_logs
                  default: Steven Wilson
         """
-        response_data['data'] = ''
-        response_data['pg'] = ''
-        if id:
-            result = log_delete_c(id=id)
-            if result:
-                response_data['msg'] = '删除成功'
-                response_data['ok'] = True
-                response_data['code'] = 1200
-            else:
-                response_data['msg'] = '不存在的事件日志ID'
-                response_data['code'] = 3005
-                response_data['ok'] = False
-            return response_data
-        else:
-            response_data['msg'] = '请输入ID'
-            response_data['code'] = 3005
-            response_data['ok'] = False
-            return response_data
-
-
-
-
+        try:
+            result = control.event_logs.log_delete(id=id)
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, [], 'request log deleted succeeded.', 1520)

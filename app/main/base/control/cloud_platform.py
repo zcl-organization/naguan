@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
-from app.main.base.db import cloud_platform as db_platform
 from app.main.base import db
 
 
-def platform_create(options):
-    return db.cloud_platform.platform_create(options)
+# def platform_create(options):
+def platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip, remarks):
+    return db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
+                                             remarks)
 
 
 def platform_list(id=None, platform_type_id=None, platform_name=None):
@@ -27,17 +28,17 @@ def platform_list(id=None, platform_type_id=None, platform_name=None):
             # print(platform_tmp)
             platforms_list.append(platform_tmp)
         # print(platforms_list)
-    # print('platforms_list:', platforms_list)
     return platforms_list
 
 
-def platform_update(id, options=None):
-    # p判断是否有云平台信息
+# def platform_update(id, options=None):
+def platform_update(id, ip, admin_name, admin_password, port, remarks):
+    # 判断是否有云平台信息
     platform = db.cloud_platform.platform_list_by_id(id)
     if platform:
-        return db.cloud_platform.platform_update(id, options)
+        return db.cloud_platform.platform_update(id, ip, admin_name, admin_password, port, remarks)
     else:
-        return False
+        raise Exception('No current platform information exists')
 
 
 def platform_delete(id):
@@ -45,4 +46,4 @@ def platform_delete(id):
     if platform:
         return db.cloud_platform.platform_delete(id)
     else:
-        return False
+        raise Exception('No current platform information exists')

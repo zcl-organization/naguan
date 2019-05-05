@@ -87,7 +87,6 @@ ret_data = {
 }
 
 
-
 parser = reqparse.RequestParser()
 parser.add_argument('Action')
 parser.add_argument('ticket')

@@ -1,28 +1,34 @@
 # -*- coding=utf-8 -*-
-from app.main.base.db.event_logs import log_list_db, log_get, log_delete_db
-from app.main.base.db import event_logs as log_manage
+from app.main.base import db
 
 
 # 获取日志列表
-def log_list_c(options=None):
-    if log_list_db(options):
-        result, pg = log_list_db(options)
-        return result, pg
-    else:
-        return False
+def log_list(pgnum, event_request_id, task_request_id, submitter, operation_resources_id):
+    results, pg = db.event_logs.log_list(pgnum, event_request_id, task_request_id, submitter, operation_resources_id)
+
+    data = []
+    for result in results:
+        data_temp = {
+            'id': result.id,
+            'resource_type': result.resource_type,
+            'result': result.result,
+            'operation_resources_id': result.operation_resources_id,
+            'operation_event': result.operation_event,
+            'submitter': result.submitter,
+            'time': result.time.strftime('%Y-%m-%d %H:%M:%S'),
+            'event_request_id': result.event_request_id,
+            'task_request_id': result.task_request_id,
+        }
+        data.append(data_temp)
+    return data, pg
 
 
 # 删除日志
-def log_delete_c(id=None):
-    request_log = log_get(id=id)  # 根据id获取日志
-    if request_log:
-        result = log_delete_db(id=id)  # 再删除
-        if result:
-            return True
-        else:
-            return False
-    else:
-        return False
+def log_delete(log_id):
+    log = db.event_logs.log_list_by_id(log_id)
+    if not log:
+        raise Exception('No current log information exists')
+    return db.event_logs.log_delete(log_id)
 
 
 # 事件日志创建
@@ -33,5 +39,5 @@ def log_delete_c(id=None):
 #  'event': unicode('获取菜单信息'),
 #  'submitter': g.username,
 #   }
-def eventlog_create(options):
-    log_manage.log_create(options)
+def eventlog_create(type, result, resources_id, event, submitter):
+    db.event_logs.log_create(type, result, resources_id, event, submitter)

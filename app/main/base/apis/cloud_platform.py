@@ -2,7 +2,6 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-from app.main.base.control import cloud_platform as platform_manage
 from app.main.base import control
 
 parser = reqparse.RequestParser()
@@ -14,13 +13,6 @@ parser.add_argument('port')
 parser.add_argument('admin_name')
 parser.add_argument('admin_password')
 parser.add_argument('remarks')
-
-ret_status = {
-    'ok': True,
-    'code': 200,
-    'msg': '创建成功',
-    'data': ''
-}
 
 
 class CloudPlatformManage(Resource):
@@ -54,11 +46,7 @@ class CloudPlatformManage(Resource):
         """
         args = parser.parse_args()
         try:
-            options = {
-                'id': args['id'],
-                'platform_type_id': args['platform_type_id'],
-                'platform_name': args['platform_name'],
-            }
+
             data = control.cloud_platform.platform_list(id=args['id'],
                                                         platform_type_id=args['platform_type_id'],
                                                         platform_name=args['platform_name'])
@@ -114,34 +102,21 @@ class CloudPlatformManage(Resource):
                  default: Steven Wilson
         """
         args = parser.parse_args()
+        if not all([args['platform_type_id'], args['platform_name'], args['admin_name'], args['admin_password'],
+                    args['ip']]):
+            raise Exception('Parameter error')
         try:
-            options = {
-                'platform_type_id': args['platform_type_id'],
-                'platform_name': args['platform_name'],
-                'admin_name': args['admin_name'],
-                'admin_password': args['admin_password'],
-                'port': args['port'],
-                'ip': args['ip'],
-                'remarks': args['remarks']
-            }
-            result = platform_manage.platform_create(options)
-            if result:
-                ret_status['code'] = '1500'
-                ret_status['msg'] = '创建成功'
-                ret_status['data'] = ''
-                ret_status['ok'] = True
-                return ret_status
-            else:
-                ret_status['code'] = '1501'
-                ret_status['msg'] = '创建失败'
-                ret_status['data'] = ''
-                ret_status['ok'] = False
+
+
+            control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
+                                                   platform_name=args['platform_name'],
+                                                   admin_name=args['admin_name'],
+                                                   admin_password=args['admin_password'], port=args['port'],
+                                                   ip=args['ip'], remarks=args['remarks'])
+
         except Exception, e:
-            ret_status['code'] = '1509'
-            ret_status['msg'] = '创建失败'
-            ret_status['data'] = ''
-            ret_status['ok'] = False
-        return ret_status, 400
+            return set_return_val(False, [], str(e), 1501), 400
+        return set_return_val(False, [], str('The platform information was created successfully.'), 1500)
 
     def put(self, id):
         """
@@ -180,31 +155,12 @@ class CloudPlatformManage(Resource):
         """
         args = parser.parse_args()
         try:
-            options = {
-                'ip': args['ip'],
-                'admin_name': args['admin_name'],
-                'admin_password': args['admin_password'],
-                'port': args['port'],
-                'remarks': args['remarks']
-            }
-            result = platform_manage.platform_update(id, options)
-            if result:
-                ret_status['code'] = '1520'
-                ret_status['msg'] = '更新成功'
-                ret_status['data'] = ''
-                ret_status['ok'] = True
-                return ret_status
-            else:
-                ret_status['code'] = '1520'
-                ret_status['msg'] = '更新失败'
-                ret_status['data'] = ''
-                ret_status['ok'] = False
+            control.cloud_platform.platform_update(id, ip=args['ip'], admin_name=args['admin_name'],
+                                                   admin_password=args['admin_password'], port=args['port'],
+                                                   remarks=args['remarks'])
         except Exception, e:
-            ret_status['code'] = '1529'
-            ret_status['msg'] = '更新异常'
-            ret_status['data'] = ''
-            ret_status['ok'] = False
-        return ret_status, 400
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(False, [], str('The platform information was updated successfully.'), 1520)
 
     def delete(self, id):
         """
@@ -230,21 +186,8 @@ class CloudPlatformManage(Resource):
                  default: Steven Wilson
         """
         try:
-            result = platform_manage.platform_delete(id)
-            if result:
-                ret_status['code'] = '1510'
-                ret_status['msg'] = '删除成功'
-                ret_status['data'] = ''
-                ret_status['ok'] = True
-                return ret_status
-            else:
-                ret_status['code'] = '1511'
-                ret_status['msg'] = '删除失败'
-                ret_status['data'] = ''
-                ret_status['ok'] = False
+            control.cloud_platform.platform_delete(id)
+
         except Exception, e:
-            ret_status['code'] = '1519'
-            ret_status['msg'] = '删除异常'
-            ret_status['data'] = ''
-            ret_status['ok'] = False
-        return ret_status, 400
+            return set_return_val(False, [], str(e), 1519), 400
+        return set_return_val(False, [], str('The platform information was deleted successfully.'), 1510)

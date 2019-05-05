@@ -2,7 +2,6 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-from app.main.base.control import platform_type as platform_type_manage
 from app.main.base import control
 from flask import g
 
