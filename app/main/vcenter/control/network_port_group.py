@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyVmomi import vim
 
-from app.main.vcenter.control import get_obj, get_mor_name
+from app.main.vcenter.control.utils import get_obj, get_mor_name
 # from app.main.vcenter.control.vcenter import get_connect
 from app.main.vcenter import db
 

@@ -22,6 +22,8 @@ from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
 from app.main.vcenter.apis.network_port_group import NetworkPortGroupManage
 from app.main.vcenter.apis.datastores import DataStoreManage
+from app.main.vcenter.apis.disks import DiskManage
+from app.main.vcenter.apis.network_devices import NetWorkManage
 
 from flask_restful import Api
 from flasgger import Swagger
@@ -38,12 +40,12 @@ def swagger_init(app):
 
 
 # 登录管理
-api.add_resource(LoginManage, '/api/v1.0/login/', methods=['POST'], endpoint='LoginManage')
+api.add_resource(LoginManage, '/api/v1.0/login/', methods=['POST'], endpoint='LoginMg')
 
 # 用户管理
-api.add_resource(UserManage, '/api/v1.0/user/', methods=['POST', 'GET'], endpoint='UserManage')
+api.add_resource(UserManage, '/api/v1.0/user/', methods=['POST', 'GET'], endpoint='UserMg')
 api.add_resource(UserManage, '/api/v1.0/user/<id>', methods=['DELETE', 'PUT'], endpoint='UserMgById')
-api.add_resource(AuthManage, '/api/v1.0/sso/auth/', endpoint='AuthManage')
+api.add_resource(AuthManage, '/api/v1.0/sso/auth/', endpoint='AuthMg')
 
 # 菜单管理
 api.add_resource(MenuManage, '/api/v1.0/menu/', methods=['GET', 'POST'], endpoint='MenuMg')
@@ -85,14 +87,19 @@ api.add_resource(RolesUsersManage, '/api/v1.0/role_user/', methods=['GET', 'POST
 api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree/', methods=['GET', 'POST'], endpoint='TreeMg')
 api.add_resource(InstanceManage, '/api/v1.0/vm/', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
 api.add_resource(InstanceManage, '/api/v1.0/vm/<int:id>/<string:uuid>', methods=['DELETE'], endpoint='VmMgDel')
-api.add_resource(ImageManage, '/api/v1.0/image/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
+api.add_resource(ImageManage, '/api/v1.0/vCenter/image/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
-# vcenter 网络端口组管理
+# vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
-                 methods=['GET'], endpoint='NetworkMg')
+                 methods=['GET'], endpoint='NetworkPortGroupMg')
 
-# vcenter datastore
-api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore/', methods=['GET', 'POST', 'PUT', 'DELETE'],
+# vCenter datastore
+api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore/', methods=['GET'],
                  endpoint='DataStoreMg')
 
-# 网络管理
+# vCenter disk
+api.add_resource(DiskManage, '/api/v1.0/vCenter/disk/', methods=['GET'], endpoint='DiskMg')
+
+
+# vCenter network device
+api.add_resource(NetWorkManage, '/api/v1.0/vCenter/network/', methods=['GET'], endpoint='NetworkDeviceMg')

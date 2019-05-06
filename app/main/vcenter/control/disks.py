@@ -11,7 +11,7 @@ def sync_disk(platform_id, vm):
     # 获取云主机所有的硬盘信息
 
     # device_label = db_network.device_label_all_by_uuid(platform_id=platform_id, vm_uuid=vm.summary.config.uuid)
-    disk_uuid = db.disks.list_by_vm_uuid(platform_id=platform_id, vm_uuid=vm.summary.config.uuid)
+    disk_uuid = db.disks.get_disk_uuid_by_vm_uuid(platform_id=platform_id, vm_uuid=vm.summary.config.uuid)
     device_uuids = []
     for device in disk_uuid:
         device_uuids.append(device.disk_uuid)
@@ -56,3 +56,27 @@ def sync_disk(platform_id, vm):
         for device in device_uuids:
             db.disks.device_delete_by_uuid(platform_id=platform_id, disk_uuid=device)
 
+
+def get_disk_by_vm_uuid(platform_id, vm_uuid):
+    disks = db.disks.get_disk_by_vm_uuid(platform_id, vm_uuid)
+    disk_list = []
+    for disk in disks:
+        print(disk.id)
+        ds_tmp = {
+            'id': disk.id,
+            'platform_id': platform_id,
+            'vm_uuid': disk.vm_uuid,
+            'disk_uuid': disk.disk_uuid,
+            'label': disk.label,
+            'disk_size': disk.disk_size,
+            'disk_type': disk.disk_type,
+            'sharing': disk.sharing,
+            'disk_file': disk.disk_file,
+            'shares': disk.shares,
+            'level': disk.level,
+            'iops': disk.iops,
+            'cache': disk.cache,
+            'disk_mode': disk.disk_mode,
+        }
+        disk_list.append(ds_tmp)
+    return disk_list

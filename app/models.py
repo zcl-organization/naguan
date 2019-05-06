@@ -293,15 +293,20 @@ class VCenterDataStore(db.Model):
     __tablename__ = 'vcenter_datastore'
     id = db.Column(db.Integer, primary_key=True)
     platform_id = db.Column(db.Integer)
-    name = db.Column(db.String(255))
-    capacity = db.Column(db.String(255))
-    used_capacity = db.Column(db.String(255))
+    # name = db.Column(db.String(255))
+    capacity = db.Column(db.String(32))
+    used_capacity = db.Column(db.String(32))
+    free_capacity = db.Column(db.String(32))
     type = db.Column(db.String(55))
     version = db.Column(db.String(55))
     uuid = db.Column(db.Integer)
     ssd = db.Column(db.Boolean, nullable=False)
     local = db.Column(db.Boolean, nullable=False)
     host = db.Column(db.String(55))
+    ds_name = db.Column(db.String(32))
+    ds_mor_name = db.Column(db.String(32))
+    dc_name = db.Column(db.String(32), nullable=False)
+    dc_mor_name = db.Column(db.String(32))
 
 
 class VCenterDisk(db.Model):
@@ -320,3 +325,16 @@ class VCenterDisk(db.Model):
     iops = db.Column(db.String(16))
     cache = db.Column(db.Integer)
     disk_mode = db.Column(db.String(16))
+
+
+class VCenterImage(db.Model):
+    __tablename__ = 'vcenter_image'
+    id = db.Column(db.Integer, primary_key=True)
+    platform_id = db.Column(db.Integer)
+    iso_name = db.Column(db.String(256), nullable=False)  # name
+    path = db.Column(db.String(256))    # 路径
+    ds_name = db.Column(db.String(32))  #
+    ds_mor_name = db.Column(db.String(32))
+    size = db.Column(db.String(32))
+    file_type = db.Column(db.String(16), default='ISO')    # 文件类型
+    last_change_time = db.Column(db.String(32))  # 修改时间

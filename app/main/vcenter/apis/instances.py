@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 
+from app.common.tool import set_return_val
 from app.main.vcenter.control import instances as instance_manage
 from app.main.vcenter.control.instances import Instance
 import json
@@ -20,7 +21,8 @@ parser.add_argument('del_networks')
 parser.add_argument('dc_id')
 parser.add_argument('ds_id')
 parser.add_argument('new_disks')
-parser.add_argument('delete_disks')
+parser.add_argument('del_disks')
+parser.add_argument('image_id')
 
 ret_status = {
     'ok': True,
@@ -41,9 +43,9 @@ class InstanceManage(Resource):
           - in: query
             name: action
             type: string
-            description: '操作云主机 start stop suspend remove restart'
+            description: '操作云主机 start stop suspend remove restart create'
           - in: query
-            name: vmname
+            name: vm_name
             type: string
             description: 云主机名称
           - in: query
@@ -51,41 +53,33 @@ class InstanceManage(Resource):
             type: string
             description: 云平台id
           - in: query
+            name: uuid
+            type: string
+            description: 云主机id
+          - in: query
             name: cpu
             type: string
-            description: cpu
+            description: new_cpu
           - in: query
             name: memory
             type: string
-            description: memory
+            description: new_memory
           - in: query
-            name: dc_mor_name
+            name: ds_id
             type: string
-            description: datacenter mor name
+            description: datastore id
           - in: query
-            name: image_type
+            name: image_id
             type: string
-            description: 镜像类型
+            description: image id
           - in: query
-            name: arrDiskInputJson
+            name: new_disk
             type: string
-            description: '[{"diskInput":"1"}]'
+            description: [{"type":"thin","size":1},{"type":"thin","size":1}]
           - in: query
-            name: arrIsThinJson
+            name: net_network
             type: string
-            description: '[{"isThin":"true"}]'
-          - in: query
-            name: arrDiskOcNameJson
-            type: string
-            description: '[{"diskOcName":"Local_62"}]'
-          - in: query
-            name: arrNetNameJson
-            type: string
-            description: '[{"netName":"VM Network"}]'
-          - in: query
-            name: hostOcName
-            type: string
-            description: host name
+            description: [1,2] -- network_port_group_id
         responses:
           200:
             description: vCenter tree 信息
@@ -201,7 +195,7 @@ class InstanceManage(Resource):
 
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
                               ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['new_networks'],
-                              disks=args['new_disks'])
+                              disks=args['new_disks'], image_id=args['image_id'])
             else:
                 raise Exception('Parameter error')
         except Exception as e:
@@ -320,19 +314,12 @@ class InstanceManage(Resource):
             data = instance.list(host=args['host'], vm_name=args['vm_name'])
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
             #                                    vm_name=args['vm_name'])
-            ret_status['ok'] = True
-            ret_status['code'] = 1111
-            ret_status['data'] = data
-            ret_status['msg'] = '查询成功'
-        except Exception as e:
-            ret_status['ok'] = False
-            ret_status['code'] = 1111
-            ret_status['data'] = {}
-            ret_status['msg'] = '查询失败'
-            return ret_status, 400
-        return ret_status
 
-    def delete(self, platfrom_id, uuid):
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, data, 'instance gets success.', 1520)
+
+    def delete(self, platform_id, uuid):
         """
          操作 vm 信息
         ---
@@ -340,7 +327,7 @@ class InstanceManage(Resource):
           - instances
         parameters:
           - in: path
-            name: id
+            name: platform_id
             type: string
             description: platform_id
           - in: path
@@ -385,11 +372,15 @@ class InstanceManage(Resource):
                   items:
                     properties:
         """
-        args = parser.parse_args()
-        instance = Instance(platform_id=platfrom_id, uuid=uuid)
-        instance.delete()
+        # args = parser.parse_args()
+        try:
+            instance = Instance(platform_id=platform_id, uuid=uuid)
+            instance.delete()
+        except Exception as e:
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, [], 'instance delete success.', 1520)
 
-        return '删除成功'
+
 
     def put(self):
         """
@@ -399,7 +390,7 @@ class InstanceManage(Resource):
           - instances
         parameters:
           - in: path
-            name: id
+            name: platform_id
             type: string
             description: platform_id
           - in: path
@@ -407,21 +398,37 @@ class InstanceManage(Resource):
             type: string
             description: uuid
           - in: query
-            name: arrDiskOcNameJson
+            name: new_disks
             type: string
-            description: '[{"diskOcName":"Local_62"}]'
+            description: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
           - in: query
-            name: arrNetNameJson
+            name: del_disks
             type: string
-            description: '[{"netName":"VM Network"}]'
+            description: '[1,2]'
           - in: query
-            name: cpu
+            name: new_networks
             type: string
-            description: cpu
+            description: '[1,2]--network_port_group_id'
           - in: query
-            name: memory
+            name: del_networks
             type: string
-            description: memory
+            description: '[1,2]--network_device_id'
+          - in: query
+            name: new_cpu
+            type: string
+            description: new_cpu
+          - in: query
+            name: old_cpu
+            type: string
+            description: old_cpu
+          - in: query
+            name: new_memory
+            type: string
+            description: new_memory
+          - in: query
+            name: old_memory
+            type: string
+            description: old_memory
         responses:
           200:
             description: vCenter tree 信息
@@ -530,9 +537,9 @@ class InstanceManage(Resource):
             if args['new_disks']:
                 instance.add_disk(disks=args['new_disks'])
                 # pass
-            if args['delete_disks']:
-                instance.delete_disk(disks=args['delete_disks'])
+            if args['del_disks']:
+                instance.delete_disk(disks=args['del_disks'])
         except Exception as e:
-            print(e)
-            return 'vm update failed', 400
-        return 'vm update success'
+            # print(e)
+            return set_return_val(False, [], str(e), 1529), 400
+        return set_return_val(True, [], 'instance update success.', 1520)

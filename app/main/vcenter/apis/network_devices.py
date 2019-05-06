@@ -1,35 +1,40 @@
 # -*- coding:utf-8 -*-
+
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 
 parser = reqparse.RequestParser()
-parser.add_argument('image_id')
-parser.add_argument('name')
-parser.add_argument('ds_name')
+
+parser.add_argument('platform_id')  # 云主机ID
+parser.add_argument('vm_uuid')  # 虚拟机uuid
 
 
-class ImageManage(Resource):
+class NetWorkManage(Resource):
+
     def get(self):
         """
-         获取 images 信息
+         获取vCenter vm_network_device 信息
         ---
         tags:
-          - images
+          - vCenter network device
         parameters:
           - in: query
-            name: image_id
-            type: string
+            name: platform_id
+            type: integer
+            required: true
           - in: query
-            name: name
+            name: uuid
             type: string
+            required: false
           - in: query
-            name: ds_name
+            name: vm_name
             type: string
+            required: false
         responses:
           200:
-            description: vCenter tree 信息
+            description: vCenter disk 信息
             schema:
               properties:
                 ok:
@@ -44,12 +49,13 @@ class ImageManage(Resource):
                   type: array
                   items:
                     properties:
-                      id:
+                      label:
                         type: string
-                        default: 1
-                      MorName:
+                      disk_size:
                         type: string
-                      OcName:
+                      disk_file:
+                        type: string
+                      level:
                         type: string
           400:
             description: 获取失败
@@ -65,19 +71,17 @@ class ImageManage(Resource):
                   default: 1302
                 msg:
                   type: string
-                  default: "获取失败"
+                  default: "vm not found"
                 data:
                   type: array
                   items:
                     properties:
         """
         args = parser.parse_args()
-        # id = args.get('id')
-        # name = args.get('name')
-        # ds_name = args.get('ds_name')
-
         try:
-            data = control.images.images_list(image_id=args['image_id'], name=args['name'], ds_name=args['ds_name'])
+            if not all([args['platform_id'], args['vm_uuid']]):
+                raise Exception('Parameter error')
+            data = control.network_devices.get_network_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'image gets success.', 1520)
+        return set_return_val(True, data, 'Datastore gets success.', 1520)

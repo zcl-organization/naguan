@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 7ef9bacb2485
+Revision ID: 4892282ab07c
 Revises: 
-Create Date: 2019-04-19 14:55:48.299000
+Create Date: 2019-05-06 11:02:45.765000
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7ef9bacb2485'
+revision = '4892282ab07c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -117,6 +117,8 @@ def upgrade():
     sa.Column('last_login_ip', sa.String(length=45), nullable=False),
     sa.Column('current_login_ip', sa.String(length=45), nullable=False),
     sa.Column('login_count', sa.Integer(), nullable=False),
+    sa.Column('is_deleted', sa.Integer(), nullable=True),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
@@ -126,6 +128,54 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('vm_id', sa.String(length=40), nullable=False),
     sa.Column('platform_id', sa.Integer(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('vcenter_datastore',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('platform_id', sa.Integer(), nullable=True),
+    sa.Column('name', sa.String(length=255), nullable=True),
+    sa.Column('capacity', sa.String(length=32), nullable=True),
+    sa.Column('used_capacity', sa.String(length=32), nullable=True),
+    sa.Column('free_capacity', sa.String(length=32), nullable=True),
+    sa.Column('type', sa.String(length=55), nullable=True),
+    sa.Column('version', sa.String(length=55), nullable=True),
+    sa.Column('uuid', sa.Integer(), nullable=True),
+    sa.Column('ssd', sa.Boolean(), nullable=False),
+    sa.Column('local', sa.Boolean(), nullable=False),
+    sa.Column('host', sa.String(length=55), nullable=True),
+    sa.Column('ds_name', sa.String(length=32), nullable=True),
+    sa.Column('ds_mor_name', sa.String(length=32), nullable=True),
+    sa.Column('dc_name', sa.String(length=32), nullable=False),
+    sa.Column('dc_mor_name', sa.String(length=32), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('vcenter_disk',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('vm_uuid', sa.String(length=64), nullable=False),
+    sa.Column('disk_uuid', sa.String(length=64), nullable=False),
+    sa.Column('platform_id', sa.Integer(), nullable=True),
+    sa.Column('label', sa.String(length=32), nullable=True),
+    sa.Column('disk_size', sa.String(length=64), nullable=True),
+    sa.Column('disk_type', sa.Integer(), nullable=True),
+    sa.Column('sharing', sa.String(length=16), nullable=True),
+    sa.Column('disk_file', sa.String(length=64), nullable=True),
+    sa.Column('shares', sa.Integer(), nullable=True),
+    sa.Column('level', sa.String(length=16), nullable=True),
+    sa.Column('iops', sa.String(length=16), nullable=True),
+    sa.Column('cache', sa.Integer(), nullable=True),
+    sa.Column('disk_mode', sa.String(length=16), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('vcenter_image',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('platform_id', sa.Integer(), nullable=True),
+    sa.Column('iso_name', sa.String(length=256), nullable=False),
+    sa.Column('path', sa.String(length=256), nullable=True),
+    sa.Column('ds_name', sa.String(length=32), nullable=True),
+    sa.Column('ds_mor_name', sa.String(length=32), nullable=True),
+    sa.Column('size', sa.String(length=32), nullable=True),
+    sa.Column('file_type', sa.String(length=16), nullable=True),
+    sa.Column('last_change_time', sa.String(length=32), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('vcenter_instance',
@@ -146,6 +196,25 @@ def upgrade():
     sa.Column('host', sa.String(length=40), nullable=False),
     sa.Column('ip', sa.String(length=20), nullable=True),
     sa.Column('status', sa.String(length=40), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('vcenter_network_device',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('platform_id', sa.Integer(), nullable=True),
+    sa.Column('vm_uuid', sa.String(length=255), nullable=True),
+    sa.Column('label', sa.String(length=255), nullable=True),
+    sa.Column('mac', sa.String(length=255), nullable=True),
+    sa.Column('network_port_group', sa.String(length=255), nullable=True),
+    sa.Column('address_type', sa.String(length=255), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('vcenter_network_port_group',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=255), nullable=True),
+    sa.Column('mor_name', sa.String(length=255), nullable=True),
+    sa.Column('dc_name', sa.String(length=255), nullable=True),
+    sa.Column('dc_mor_name', sa.String(length=255), nullable=True),
+    sa.Column('platform_id', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('vcenter_tree',
@@ -192,7 +261,12 @@ def downgrade():
     op.drop_table('roles_users')
     op.drop_table('event_log')
     op.drop_table('vcenter_tree')
+    op.drop_table('vcenter_network_port_group')
+    op.drop_table('vcenter_network_device')
     op.drop_table('vcenter_instance')
+    op.drop_table('vcenter_image')
+    op.drop_table('vcenter_disk')
+    op.drop_table('vcenter_datastore')
     op.drop_table('user_insnstance')
     op.drop_table('user')
     op.drop_table('task_log')

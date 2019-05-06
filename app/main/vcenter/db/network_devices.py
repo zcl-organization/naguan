@@ -51,9 +51,9 @@ def device_delete_by_label(platform_id, vm_uuid, label):
 
 
 # 根据network device id 获取network device 信息
-def device_list_by_id(platform_id, vm_uuid, id):
+def device_list_by_id(platform_id, vm_uuid, device_id):
     return db.session.query(VCenterNetworkDevice).filter_by(platform_id=platform_id).filter_by(
-        vm_uuid=vm_uuid).filter_by(id=id).first()
+        vm_uuid=vm_uuid).filter_by(id=device_id).first()
 
 
 def device_delete_by_vm_uuid(platform_id, vm_uuid):
@@ -61,3 +61,7 @@ def device_delete_by_vm_uuid(platform_id, vm_uuid):
     network_willdel = query.filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).delete(
         synchronize_session=False)
     db.session.commit()
+
+
+def get_network_by_vm_uuid(platform_id, vm_uuid):
+    return db.session.query(VCenterNetworkDevice).filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).all()

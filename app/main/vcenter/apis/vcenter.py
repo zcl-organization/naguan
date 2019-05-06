@@ -6,12 +6,6 @@ from app.main.vcenter.control import vcenter as vcenter_manage
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
-ret_status = {
-    'ok': True,
-    'msg': '',
-    'code': '200',
-    'data': {}
-}
 
 
 class VCenterManage(Resource):
@@ -150,15 +144,9 @@ class VCenterManage(Resource):
 
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            # vcenter_manage.sync_tree(args['platform_id'])
-            vcenter_manage.sync_tree.apply_async(args=[args['platform_id']])
+            vcenter_manage.sync_tree(args['platform_id'])
+            # vcenter_manage.sync_tree.apply_async(args=[args['platform_id']])
         except Exception as e:
             return set_return_val(False, {}, 'Failed to sync vcneter tree', 1239), 400
 
         return set_return_val(True, {}, 'Sync vcneter tree success', 1239), 400
-
-    def delete(self):
-        pass
-
-    def put(self):
-        pass

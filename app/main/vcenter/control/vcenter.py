@@ -1,16 +1,15 @@
 # -*- coding:utf-8 -*-
-from app.main.vcenter.control import get_mor_name, connect_server, get_connect
+from app.main.vcenter.control.utils import get_mor_name, connect_server, get_connect
 from app.main.vcenter.control.network_port_group import sync_network_port_group
 from app.main.vcenter.control import network_devices as netowrk_device_manage
 from app.main.vcenter.control import disks as disk_manage
 from app.main.vcenter import db
-
+from app.main.vcenter.control.datastores import sync_datastore
 from pyVim import connect
 import atexit
 import time
 # import threadpool
 import threading
-
 
 from pyVmomi import vmodl
 from pyVmomi import vim
@@ -124,9 +123,10 @@ def sync_vcenter_tree(si, content, platform):
 
         # 同步vcenter port group
         netwroks = dc.network
-        # sync_vcenter_network(netwroks, dc.name, dc_mor, platform['id'])
-
         sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
+
+        # 同步datastore
+        sync_datastore(platform, dc, si, content)
 
         # 获取 dc tree
         # result = db_vcenter.vcenter_tree_get_by_dc(platform['id'], dc_mor, 2)

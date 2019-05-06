@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from app.main.vcenter.control import get_mor_name, wait_for_tasks, get_obj
+from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj,get_connect
 from app.main.vcenter.control.disks import sync_disk
 from app.main.vcenter.control.network_devices import sync_network_device
-from app.main.vcenter.control import get_connect
+
 from app.main.vcenter.control import network_port_group as network_port_group_manage
 from app.main.vcenter.control import network_devices as network_device_manage
 from app.main.vcenter.db import vcenter as db_vcenter
@@ -229,7 +229,7 @@ class Instance(object):
             raise Exception('vm memory update failed')
 
     # 创建云主机
-    def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks):
+    def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks,image_id):
         try:
 
             dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
@@ -442,6 +442,52 @@ class Instance(object):
             task = self.vm.ReconfigVM_Task(spec=spec)
             wait_for_tasks(self.si, [task])
         sync_disk(self.platform_id, self.vm)
+
+    # 添加iso文件
+    def add_image(self, image_id):
+
+        image = db.images.get_image_by_image_id(image_id)
+        # ds = image_path.split(']')
+        # datastore_name = ds[0][1:]
+        image_path = image.path
+        datastore_name = image.ds_name
+
+        # content = service_instance.RetrieveContent()
+        controller = vim.vm.device.VirtualIDEController()
+        for dev in self.vm.config.hardware.device:
+            if isinstance(dev, vim.vm.device.VirtualIDEController):
+                controller = dev
+
+        cdspec = None
+        cdspec = vim.vm.device.VirtualDeviceSpec()
+        cdspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+        cdspec.device = vim.vm.device.VirtualCdrom()
+        cdspec.device.key = 3000
+        cdspec.device.controllerKey = controller.key
+
+        # unit number == ide controller slot, 0 is first ide disk, 1 second
+        cdspec.device.unitNumber = 0
+        cdspec.device.deviceInfo = vim.Description()
+        cdspec.device.deviceInfo.label = 'CD/DVD drive 1'
+        cdspec.device.deviceInfo.summary = 'ISO'
+        cdspec.device.backing = vim.vm.device.VirtualCdrom.IsoBackingInfo()
+        cdspec.device.backing.fileName = image_path
+        datastore = get_obj(content=self.content, vimtype=[vim.Datastore], name=datastore_name)
+        cdspec.device.backing.datastore = datastore
+        # cdspec.device.backing.dynamicType =
+        # cdspec.device.backing.backingObjectId = '0'
+        cdspec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        cdspec.device.connectable.startConnected = True
+        cdspec.device.connectable.allowGuestControl = True
+        cdspec.device.connectable.connected = False
+        cdspec.device.connectable.status = 'untried'
+        vmconf = vim.vm.ConfigSpec()
+        vmconf.deviceChange = [cdspec]
+        dev_changes = []
+        dev_changes.append(cdspec)
+        vmconf.deviceChange = dev_changes
+        task = self.vm.ReconfigVM_Task(spec=vmconf)
+        wait_for_tasks(self.si, [task])
 
 
 def get_hdd_prefix_label(language):

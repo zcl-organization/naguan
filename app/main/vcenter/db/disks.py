@@ -2,7 +2,7 @@ from app.models import VCenterDisk
 from app.exts import db
 
 
-def list_by_vm_uuid(platform_id, vm_uuid):
+def get_disk_uuid_by_vm_uuid(platform_id, vm_uuid):
     device_info = db.session.query(VCenterDisk.disk_uuid).filter_by(
         platform_id=platform_id).filter_by(vm_uuid=vm_uuid).all()
     return device_info
@@ -55,8 +55,12 @@ def device_delete_by_uuid(platform_id, disk_uuid):
     db.session.commit()
 
 
-def device_delete_by_vm_uuid(platform_id,vm_uuid):
+def device_delete_by_vm_uuid(platform_id, vm_uuid):
     query = db.session.query(VCenterDisk)
     disk_willdel = query.filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).delete(
         synchronize_session=False)
     db.session.commit()
+
+
+def get_disk_by_vm_uuid(platform_id, vm_uuid):
+    return db.session.query(VCenterDisk).filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).all()
