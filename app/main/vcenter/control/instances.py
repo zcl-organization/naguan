@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj,get_connect
+from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj, get_connect
 from app.main.vcenter.control.disks import sync_disk
 from app.main.vcenter.control.network_devices import sync_network_device
 
@@ -229,7 +229,7 @@ class Instance(object):
             raise Exception('vm memory update failed')
 
     # 创建云主机
-    def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks,image_id):
+    def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks, image_id):
         try:
 
             dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
@@ -268,8 +268,12 @@ class Instance(object):
             # 获取vm 并为vm 添加network
             vm = get_obj(self.content, [vim.VirtualMachine], vm_name)
             self.vm = vm
-            self.add_network(networks)
-            self.add_disk(disks)
+            if networks:
+                self.add_network(networks)
+            if disks:
+                self.add_disk(disks)
+            if image_id:
+                self.add_image(image_id)
             # vm_add_network(self.platform_id, vm.summary.config.uuid, networks, vm)
         except Exception as e:
             raise Exception('vm create failed')

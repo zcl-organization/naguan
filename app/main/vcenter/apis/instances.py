@@ -79,7 +79,7 @@ class InstanceManage(Resource):
           - in: query
             name: net_network
             type: string
-            description: [1,2] -- network_port_group_id
+            description: '[1,2]--network_port_group_id'
         responses:
           200:
             description: vCenter tree 信息
@@ -168,7 +168,6 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        # print(args)
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
 
