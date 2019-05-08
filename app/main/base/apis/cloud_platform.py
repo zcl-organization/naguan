@@ -116,7 +116,7 @@ class CloudPlatformManage(Resource):
 
         except Exception, e:
             return set_return_val(False, [], str(e), 1501), 400
-        return set_return_val(False, [], str('The platform information was created successfully.'), 1500)
+        return set_return_val(True, [], str('The platform information was created successfully.'), 1500)
 
     def put(self, id):
         """
@@ -134,6 +134,9 @@ class CloudPlatformManage(Resource):
            name: admin_name
            type: string
          - name: admin_password
+           type: string
+           in: formData
+         - name: ip
            type: string
            in: formData
          - name: port
@@ -160,7 +163,7 @@ class CloudPlatformManage(Resource):
                                                    remarks=args['remarks'])
         except Exception, e:
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(False, [], str('The platform information was updated successfully.'), 1520)
+        return set_return_val(True, [], str('The platform information was updated successfully.'), 1520)
 
     def delete(self, id):
         """
@@ -190,4 +193,4 @@ class CloudPlatformManage(Resource):
 
         except Exception, e:
             return set_return_val(False, [], str(e), 1519), 400
-        return set_return_val(False, [], str('The platform information was deleted successfully.'), 1510)
+        return set_return_val(True, [], str('The platform information was deleted successfully.'), 1510)

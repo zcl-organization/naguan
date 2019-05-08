@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from app.main.vcenter import db
-# from app.main.vcenter import db
 from pyVmomi import vim
 
 

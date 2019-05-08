@@ -24,6 +24,7 @@ from app.main.vcenter.apis.network_port_group import NetworkPortGroupManage
 from app.main.vcenter.apis.datastores import DataStoreManage
 from app.main.vcenter.apis.disks import DiskManage
 from app.main.vcenter.apis.network_devices import NetWorkManage
+from app.main.vcenter.apis.snapshots import SnapshotManage
 
 from flask_restful import Api
 from flasgger import Swagger
@@ -103,3 +104,6 @@ api.add_resource(DiskManage, '/api/v1.0/vCenter/disk/', methods=['GET'], endpoin
 
 # vCenter network device
 api.add_resource(NetWorkManage, '/api/v1.0/vCenter/network/', methods=['GET'], endpoint='NetworkDeviceMg')
+
+# vCenter snapshot
+api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot/', methods=['GET'], endpoint='SnapshotMg')

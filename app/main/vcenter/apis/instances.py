@@ -23,13 +23,9 @@ parser.add_argument('ds_id')
 parser.add_argument('new_disks')
 parser.add_argument('del_disks')
 parser.add_argument('image_id')
-
-ret_status = {
-    'ok': True,
-    'code': 200,
-    'msg': '创建成功',
-    'data': {}
-}
+parser.add_argument('snapshot_name')
+parser.add_argument('description')
+parser.add_argument('snapshot_id')
 
 
 class InstanceManage(Resource):
@@ -379,8 +375,6 @@ class InstanceManage(Resource):
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'instance delete success.', 1520)
 
-
-
     def put(self):
         """
          更新 vm 信息
@@ -538,6 +532,13 @@ class InstanceManage(Resource):
                 # pass
             if args['del_disks']:
                 instance.delete_disk(disks=args['del_disks'])
+
+            if args['snapshot_name']:
+                print(args['snapshot_name'])
+                instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
+            if args['snapshot_id']:
+                print(args['snapshot_id'])
+                instance.delete_snapshot(snapshot_id=args['snapshot_id'])
         except Exception as e:
             # print(e)
             return set_return_val(False, [], str(e), 1529), 400

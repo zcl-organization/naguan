@@ -82,7 +82,7 @@ def sync_datastore(platform, dc, si, content):
     obj = content.viewManager.CreateContainerView(dc, [vim.Datastore], True)
     datastores = obj.view
     data_store_list = db.datastores.get_datastore_ds_name_by_platform_id(platform['id'], dc.name)
-    print(data_store_list)
+    # print(data_store_list)
 
     for ds in datastores:
         ds_capacity = ds.summary.capacity
@@ -122,7 +122,6 @@ def sync_datastore(platform, dc, si, content):
         for ds_name in data_store_list:
             print(ds_name)
             db.datastores.delete_datastore_by_ds_name(ds_name)
-    # print(22)
 
 
 def get_datastore_by_platform_id(platform_id):

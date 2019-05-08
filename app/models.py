@@ -332,9 +332,23 @@ class VCenterImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     platform_id = db.Column(db.Integer)
     iso_name = db.Column(db.String(256), nullable=False)  # name
-    path = db.Column(db.String(256))    # 路径
+    path = db.Column(db.String(256))  # 路径
     ds_name = db.Column(db.String(32))  #
     ds_mor_name = db.Column(db.String(32))
     size = db.Column(db.String(32))
-    file_type = db.Column(db.String(16), default='ISO')    # 文件类型
+    file_type = db.Column(db.String(16), default='ISO')  # 文件类型
     last_change_time = db.Column(db.String(32))  # 修改时间
+
+
+class VCenterSnapshot(db.Model):
+    __tablename__ = 'vcenter_snapshot'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32))
+    mor_name = db.Column(db.String(32))
+    vm_uuid = db.Column(db.String(32))
+    description = db.Column(db.String(32))
+    state = db.Column(db.String(32))
+    snapshot_id = db.Column(db.Integer)
+    snapshot_parent_id = db.Column(db.Integer)
+    current = db.Column(db.Boolean, nullable=False)
+    create_time = db.Column(db.String(32))

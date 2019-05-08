@@ -35,7 +35,7 @@ class DiskManage(Resource):
               properties:
                 ok:
                   type: boolean
-                  description: 状态
+                  description: status
                 code:
                   type: "integer"
                   format: "int64"

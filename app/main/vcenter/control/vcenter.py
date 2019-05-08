@@ -5,6 +5,7 @@ from app.main.vcenter.control import network_devices as netowrk_device_manage
 from app.main.vcenter.control import disks as disk_manage
 from app.main.vcenter import db
 from app.main.vcenter.control.datastores import sync_datastore
+from app.main.vcenter.control.snapshots import sync_snapshot
 from pyVim import connect
 import atexit
 import time
@@ -81,6 +82,9 @@ def sync_vcenter_vm(si, content, host, platform):
         netowrk_device_manage.sync_network_device(platform_id=platform['id'], vm=vm)
         disk_manage.sync_disk(platform_id=platform['id'], vm=vm)
 
+        sync_snapshot(platform_id=platform['id'], vm=vm)
+        # raise Exception('vm_test_CC')
+
     # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
     # 删除不存在的云主机
     if vm_list:
@@ -131,7 +135,7 @@ def sync_vcenter_tree(si, content, platform):
         # 获取 dc tree
         # result = db_vcenter.vcenter_tree_get_by_dc(platform['id'], dc_mor, 2)
         result = db.vcenter.vcenter_tree_get_by_dc(platform['id'], dc_mor, 2)
-
+        # print(22)
         if result:
             vcenter_list.remove(result.id)
             db.vcenter.vcenter_tree_update(tree_type=2, platform_id=platform['id'], name=dc.name, dc_mor_name=dc_mor,
@@ -141,11 +145,11 @@ def sync_vcenter_tree(si, content, platform):
             db.vcenter.vcenter_tree_create(tree_type=2, platform_id=platform['id'], name=dc.name, dc_mor_name=dc_mor,
                                            dc_oc_name=dc.name, mor_name=dc_mor, dc_host_folder_mor_name=dc_host_moc,
                                            dc_vm_folder_mor_name=dc_vm_moc)
-
+        # print(33)
         clusters = dc.hostFolder.childEntity
         # print(clusters.name)
         for cluster in clusters:
-
+            # print(44)
             resourcePool_mor = get_mor_name(cluster.resourcePool)
 
             cluster_mor = get_mor_name(cluster)

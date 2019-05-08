@@ -7,4 +7,5 @@ from app.main.vcenter.control import instances
 from app.main.vcenter.control import network_port_group
 from app.main.vcenter.control import network_devices
 from app.main.vcenter.control import vcenter
+from app.main.vcenter.control import snapshots
 

@@ -6,6 +6,7 @@ from app.main.vcenter.control.network_devices import sync_network_device
 
 from app.main.vcenter.control import network_port_group as network_port_group_manage
 from app.main.vcenter.control import network_devices as network_device_manage
+from app.main.vcenter.control import snapshots as snapshot_nanage
 from app.main.vcenter.db import vcenter as db_vcenter
 from flask_restful.representations import json
 from pyVim import connect
@@ -492,6 +493,45 @@ class Instance(object):
         vmconf.deviceChange = dev_changes
         task = self.vm.ReconfigVM_Task(spec=vmconf)
         wait_for_tasks(self.si, [task])
+
+    def add_snapshot(self, snapshot_name, description):
+
+        dumpMemory = False
+        quiesce = True
+        task = self.vm.CreateSnapshot(snapshot_name, description, dumpMemory, quiesce)
+        wait_for_tasks(self.si, [task])
+        snapshot_nanage.sync_snapshot(self.platform_id, self.vm)
+
+    def delete_snapshot(self, snapshot_id):
+        snapshots = self.vm.snapshot.rootSnapshotList
+        snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
+        # print(snapshot_db)
+        snapshot_name = snapshot_db.name
+        # print(snapshot_name)
+        for snapshot in snapshots:
+            # print(snapshot.name)
+            if snapshot_name == snapshot.name:
+                print('in')
+                snap_obj = snapshot.snapshot
+                # print "Removing snapshot ", snap_obj
+                task = snap_obj.RemoveSnapshot_Task(True)
+                wait_for_tasks(self.si, [task])
+                # break
+            else:
+                if len(snapshot.childSnapshotList) > 0:
+                    snap_obj = find_snapshot(snapshot, snapshot_name)
+                    print(snap_obj.name)
+                    task = snap_obj.snapshot.RemoveSnapshot_Task(True)
+                    wait_for_tasks(self.si, [task])
+        snapshot_nanage.sync_snapshot(self.platform_id, self.vm)
+
+
+def find_snapshot(snapshot, snapshot_name):
+    for snapshot in snapshot.childSnapshotList:
+        if snapshot.name == snapshot_name:
+            return snapshot
+        if hasattr(snapshot, "childSnapshotList"):
+            return find_snapshot(snapshot, snapshot_name)
 
 
 def get_hdd_prefix_label(language):
