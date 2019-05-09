@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
 
-from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj, get_connect
+from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj, get_connect, validate_input
 from app.main.vcenter.control.disks import sync_disk
 from app.main.vcenter.control.network_devices import sync_network_device
 
 from app.main.vcenter.control import network_port_group as network_port_group_manage
 from app.main.vcenter.control import network_devices as network_device_manage
 from app.main.vcenter.control import snapshots as snapshot_nanage
+from app.main.vcenter.control import disks as disk_manage
 from app.main.vcenter.db import vcenter as db_vcenter
 from flask_restful.representations import json
 from pyVim import connect
@@ -420,9 +421,12 @@ class Instance(object):
         language = 'English'
 
         disks = json.loads(disks)
-        for disk in disks:
+        for disk_id in disks:
 
-            hdd_prefix_label = get_hdd_prefix_label(language)
+            # 获取根据云盘id 获取 disk 信息
+            disk = disk_manage.get_disk_by_disk_id(disk_id)
+            hdd_prefix_label = disk.label
+            # hdd_prefix_label = get_hdd_prefix_label(language)
             if not hdd_prefix_label:
                 raise RuntimeError('Hdd prefix label could not be found')
 
@@ -505,25 +509,79 @@ class Instance(object):
     def delete_snapshot(self, snapshot_id):
         snapshots = self.vm.snapshot.rootSnapshotList
         snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
-        # print(snapshot_db)
+
         snapshot_name = snapshot_db.name
-        # print(snapshot_name)
+
         for snapshot in snapshots:
-            # print(snapshot.name)
             if snapshot_name == snapshot.name:
-                print('in')
                 snap_obj = snapshot.snapshot
-                # print "Removing snapshot ", snap_obj
+
                 task = snap_obj.RemoveSnapshot_Task(True)
                 wait_for_tasks(self.si, [task])
-                # break
+
             else:
                 if len(snapshot.childSnapshotList) > 0:
                     snap_obj = find_snapshot(snapshot, snapshot_name)
-                    print(snap_obj.name)
                     task = snap_obj.snapshot.RemoveSnapshot_Task(True)
                     wait_for_tasks(self.si, [task])
         snapshot_nanage.sync_snapshot(self.platform_id, self.vm)
+
+    def clone(self, new_vm_name, ds_id, dc_id=None, resourcepool=None):
+
+        template = self.vm.summary.config.name
+        try:
+            ds = db.datastores.get_ds_by_id(ds_id)
+            dc = db.vcenter.vcenter_tree_by_id(dc_id)
+        except Exception as e:
+            raise Exception('Unable to get DataStore or DataCenter')
+        if dc:
+            datacenter = get_obj(self.content, [vim.Datacenter], validate_input(dc.name))
+        else:
+            datacenter = self.content.rootFolder.childEntity[0]
+
+        vmfolder = datacenter.vmFolder
+        hosts = datacenter.hostFolder.childEntity
+
+        relospec = vim.vm.RelocateSpec()
+        if ds:
+            datastore = get_obj(self.content, [vim.Datastore], validate_input(ds.ds_name))
+            if datastore:
+                # print "Using datastore " + validate_input(ds)
+                relospec.datastore = datastore
+            else:
+                raise Exception('Unable to get DataStore')
+        else:
+            raise Exception('Unable to get DataStore')
+        if resourcepool:
+            resource_pool = get_obj(self.content, [vim.ResourcePool], validate_input(resourcepool))
+        else:
+
+            resource_pool = hosts[0].resourcePool
+        # resource_pool = cluster.resourcePool
+        if resource_pool:
+            relospec.pool = resource_pool
+        else:
+            print "Cloud not find resource pool, using resource pool of origin VM"
+
+        clonespec = vim.vm.CloneSpec()
+        clonespec.location = relospec
+        clonespec.powerOn = False
+
+        template = get_obj(self.content, [vim.VirtualMachine], validate_input(template))
+        if not template:
+            # print "VM or template not found"
+            raise Exception('VM or template not found')
+        try:
+            task = template.Clone(folder=vmfolder, name=validate_input(new_vm_name),
+                                  spec=clonespec, )
+
+            wait_for_tasks(self.si, [task])
+
+        except Exception as e:
+            raise Exception('Perform a clone operation error')
+
+    def snapshot_revert(self, snapshot_id):
+        pass
 
 
 def find_snapshot(snapshot, snapshot_name):

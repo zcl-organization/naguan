@@ -2,7 +2,9 @@
 from pyVmomi import vmodl
 from pyVmomi import vim
 from pyVim import connect
+from app.main.base.control import cloud_platform
 import atexit
+
 
 def get_mor_name(obj):
     obj_info = '%s' % obj
@@ -83,7 +85,7 @@ def connect_server(host, user, password, port, ssl=True):
     return service_instance
 
 
-from app.main.base.control import cloud_platform
+
 
 
 def get_connect(platform_id):
@@ -99,3 +101,7 @@ def get_connect(platform_id):
         raise Exception('unable to find platform')
     content = s.RetrieveContent()
     return s, content, platforms[0]
+
+
+def validate_input(name):
+    return str(name).replace("@", " ")

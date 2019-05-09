@@ -8,7 +8,7 @@ def log_list(pgnum, event_request_id, task_request_id, submitter, operation_reso
 
     data = []
     for result in results:
-        data_temp = {
+        _temp = {
             'id': result.id,
             'resource_type': result.resource_type,
             'result': result.result,
@@ -19,7 +19,7 @@ def log_list(pgnum, event_request_id, task_request_id, submitter, operation_reso
             'event_request_id': result.event_request_id,
             'task_request_id': result.task_request_id,
         }
-        data.append(data_temp)
+        data.append(_temp)
     return data, pg
 
 

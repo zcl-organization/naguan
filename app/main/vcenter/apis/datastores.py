@@ -11,6 +11,59 @@ parser.add_argument('platform_id')
 class DataStoreManage(Resource):
 
     def get(self):
+        """
+         获取vCenter vm_disk 信息
+        ---
+        tags:
+          - vCenter DataStore
+        parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+        responses:
+          200:
+            description: vCenter disk 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: status
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      label:
+                        type: string
+                      disk_size:
+                        type: string
+                      disk_file:
+                        type: string
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                  default: 1302
+                msg:
+                  type: string
+                  default: "vm not found"
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         args = parser.parse_args()
         # test_get_ds(args['platform_id'])
         try:

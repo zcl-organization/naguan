@@ -4,13 +4,11 @@ from app.models import CloudPlatform
 from app.exts import db
 
 
-def platform_list(id=None, platform_name=None, platform_type_id=None):
+def platform_list(id, platform_type_id, platform_name):
     query = db.session.query(CloudPlatform)
-    # print(options)
     try:
         if id:
             query = query.filter_by(id=id)
-            # print('query2:', query)
         if platform_name:
             query = query.filter_by(platform_name=platform_name)
         if platform_type_id:
@@ -24,7 +22,6 @@ def platform_list(id=None, platform_name=None, platform_type_id=None):
 # 添加第三方云平台
 # def platform_create(options):
 def platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip, remarks):
-
     new_platform = CloudPlatform()
     try:
         new_platform.platform_type_id = platform_type_id

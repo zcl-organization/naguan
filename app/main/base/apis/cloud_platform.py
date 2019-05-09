@@ -46,7 +46,6 @@ class CloudPlatformManage(Resource):
         """
         args = parser.parse_args()
         try:
-
             data = control.cloud_platform.platform_list(id=args['id'],
                                                         platform_type_id=args['platform_type_id'],
                                                         platform_name=args['platform_name'])
@@ -106,7 +105,6 @@ class CloudPlatformManage(Resource):
                     args['ip']]):
             raise Exception('Parameter error')
         try:
-
 
             control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
                                                    platform_name=args['platform_name'],

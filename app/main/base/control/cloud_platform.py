@@ -10,7 +10,6 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
 
 def platform_list(id=None, platform_type_id=None, platform_name=None):
     platforms = db.cloud_platform.platform_list(id, platform_type_id, platform_name)
-
     platforms_list = []
 
     if platforms:

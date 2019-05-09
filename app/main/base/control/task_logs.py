@@ -7,24 +7,27 @@ from app.main.base import db
 # 获取日志列表
 def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
     results, pg = db.task_logs.log_list(pgnum, task_id, rely_task_id, submitter, request_id)
+    # print(results)
+    # print(pg)
     data = []
-    for result in results:
-        data_tmp = {
-            'id': result.id,
-            'task_id': result.task_id,
-            'request_id': result.request_id,
-            'rely_task_id': result.rely_task_id,
-            'status': result.status,
-            'await_execute': result.await_execute,
-            'queue_name': result.queue_name,
-            'method_name': result.method_name,
-            'submitter': result.submitter,
-            'enqueue_time': str(result.enqueue_time),
-            'start_time': str(result.start_time),
-            'end_time': str(result.end_time),
-        }
-        data.append(data_tmp)
-    return data
+    if results:
+        for result in results:
+            data_tmp = {
+                'id': result.id,
+                'task_id': result.task_id,
+                'request_id': result.request_id,
+                'rely_task_id': result.rely_task_id,
+                'status': result.status,
+                'await_execute': result.await_execute,
+                'queue_name': result.queue_name,
+                'method_name': result.method_name,
+                'submitter': result.submitter,
+                'enqueue_time': str(result.enqueue_time),
+                'start_time': str(result.start_time),
+                'end_time': str(result.end_time),
+            }
+            data.append(data_tmp)
+    return data, pg
 
 
 # 删除日志

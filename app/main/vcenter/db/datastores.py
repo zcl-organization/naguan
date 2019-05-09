@@ -6,7 +6,7 @@ def get_datastore_by_platform_id(platform_id):
     return db.session.query(VCenterDataStore).filter_by(platform_id=platform_id).all()
 
 
-def get_datastore_ds_name_by_platform_id(platform_id,dc_name):
+def get_datastore_ds_name_by_platform_id(platform_id, dc_name):
     data_stores = db.session.query(VCenterDataStore).filter_by(platform_id=platform_id).filter_by(dc_name=dc_name).all()
     data_store_list = []
     for data_store in data_stores:
@@ -61,3 +61,7 @@ def delete_datastore_by_ds_name(ds_name):
     if data_store:
         db.session.delete(data_store)
         db.session.commit()
+
+
+def get_ds_by_id(ds_id):
+    return db.session.query(VCenterDataStore).filter_by(id=ds_id).first()

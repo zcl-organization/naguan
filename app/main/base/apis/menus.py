@@ -86,7 +86,7 @@ class MenuManage(Resource):
         #     'event': unicode('获取菜单信息'),
         #     'submitter': g.username,
         # }
-        event_logs.eventlog_create(type='menu', result=ret_status['ok'], resources_id='', event=unicode('获取菜单信息'),
+        event_logs.eventlog_create(type='menu', result=True, resources_id='', event=unicode('获取菜单信息'),
                                    submitter=g.username)
         return set_return_val(True, data, 'Get menu success', 1310)
 

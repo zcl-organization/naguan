@@ -64,3 +64,7 @@ def device_delete_by_vm_uuid(platform_id, vm_uuid):
 
 def get_disk_by_vm_uuid(platform_id, vm_uuid):
     return db.session.query(VCenterDisk).filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).all()
+
+
+def get_disk_by_disk_id(disk_id):
+    return db.session.query(VCenterDisk).filter_by(id=disk_id).first()

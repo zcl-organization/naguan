@@ -16,7 +16,7 @@ class ImageManage(Resource):
          获取 images 信息
         ---
         tags:
-          - images
+          - vCenter images
         parameters:
           - in: query
             name: image_id

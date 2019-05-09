@@ -53,7 +53,7 @@ def teardown_request(res):
         request_log.submitter = g.username
         request_log.status_num = res.status_code
         g.log_d['status_code'] = res.status_code
-        current_app.logger.info(g.log_d)
+        # current_app.logger.info(g.log_d)
         db.session.add(request_log)
         db.session.commit()
     except Exception as e:

@@ -79,3 +79,7 @@ def get_disk_by_vm_uuid(platform_id, vm_uuid):
         }
         disk_list.append(ds_tmp)
     return disk_list
+
+
+def get_disk_by_disk_id(disk_id):
+    return db.disks.get_disk_by_disk_id(disk_id)
