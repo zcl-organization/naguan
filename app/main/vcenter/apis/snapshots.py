@@ -168,7 +168,7 @@ class SnapshotManage(Resource):
         except Exception as e:
             # print(e)
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'disk update success.', 1520)
+        return set_return_val(True, [], 'snapshot update success.', 1520)
 
     def delete(self, snapshot_id):
         """

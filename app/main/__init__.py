@@ -86,8 +86,8 @@ api.add_resource(RolesUsersManage, '/api/v1.0/role_user', methods=['GET', 'POST'
 
 # vCenter 信息同步
 api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree/', methods=['GET', 'POST'], endpoint='TreeMg')
-api.add_resource(InstanceManage, '/api/v1.0/vm/', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
-api.add_resource(InstanceManage, '/api/v1.0/vm/<int:id>/<string:uuid>', methods=['DELETE'], endpoint='VmMgDel')
+api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
+api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:id>/<string:uuid>', methods=['DELETE'], endpoint='VmMgDel')
 api.add_resource(ImageManage, '/api/v1.0/vCenter/image/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
 # vCenter 网络端口组管理

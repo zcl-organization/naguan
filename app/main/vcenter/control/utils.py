@@ -54,9 +54,11 @@ def wait_for_tasks(s, tasks):
                             raise task.info.error
             # Move to next version
             version = update.version
+
     finally:
         if pcfilter:
             pcfilter.Destroy()
+    # return task.info.result
 
 
 def get_obj(content, vimtype, name):

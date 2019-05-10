@@ -8,7 +8,6 @@ from app.main.vcenter.control import network_port_group as network_port_group_ma
 from app.main.vcenter.control import network_devices as network_device_manage
 from app.main.vcenter.control import snapshots as snapshot_nanage
 from app.main.vcenter.control import disks as disk_manage
-from app.main.vcenter.db import vcenter as db_vcenter
 from flask_restful.representations import json
 from pyVim import connect
 from pyVmomi import vmodl
@@ -526,6 +525,32 @@ class Instance(object):
                     wait_for_tasks(self.si, [task])
         snapshot_nanage.sync_snapshot(self.platform_id, self.vm)
 
+    def snapshot_revert(self, snapshot_id):
+        snapshots = self.vm.snapshot.rootSnapshotList
+        snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
+
+        snapshot_name = snapshot_db.name
+        # print(snapshot_name)
+        for snapshot in snapshots:
+            print(snapshot.name)
+            if snapshot_name == snapshot.name:
+
+                snap_obj = snapshot.snapshot
+                task = snap_obj.RevertToSnapshot_Task()
+                wait_for_tasks(self.si, [task])
+
+            else:
+                if len(snapshot.childSnapshotList) > 0:
+
+                    snap_obj = find_snapshot(snapshot, snapshot_name)
+                    if snap_obj:
+                        task = snap_obj.snapshot.RevertToSnapshot_Task()
+                        wait_for_tasks(self.si, [task])
+                    else:
+                        raise Exception('unable to find snapshot,revert failed')
+                else:
+                    raise Exception('unable to find snapshot,revert failed')
+
     def clone(self, new_vm_name, ds_id, dc_id=None, resourcepool=None):
 
         template = self.vm.summary.config.name
@@ -580,8 +605,103 @@ class Instance(object):
         except Exception as e:
             raise Exception('Perform a clone operation error')
 
-    def snapshot_revert(self, snapshot_id):
-        pass
+    def cold_migrate(self, host_name=None, ds_id=None, dc_id=None, resourcepool=None):
+
+        vm_name_tmp = self.vm.summary.config.name + '_tmp'
+
+        template = self.vm.summary.config.name
+        try:
+            ds = db.datastores.get_ds_by_id(ds_id)
+            dc = db.vcenter.vcenter_tree_by_id(dc_id)
+        except Exception as e:
+            raise Exception('Unable to get DataStore or DataCenter')
+        if dc:
+            datacenter = get_obj(self.content, [vim.Datacenter], validate_input(dc.name))
+        else:
+            datacenter = self.content.rootFolder.childEntity[0]
+        vmfolder = datacenter.vmFolder
+        clusters = datacenter.hostFolder.childEntity
+
+        target_cluster = None
+        for cluster in clusters:
+
+            for host in cluster.host:
+                if host.name == host_name:
+                    target_cluster = cluster
+                    break
+
+        relospec = vim.vm.RelocateSpec()
+        if ds:
+            datastore = get_obj(self.content, [vim.Datastore], validate_input(ds.ds_name))
+            if datastore:
+                # print "Using datastore " + validate_input(ds)
+                relospec.datastore = datastore
+            else:
+                raise Exception('Unable to get DataStore')
+        else:
+            raise Exception('Unable to get DataStore')
+        if resourcepool:
+            resource_pool = get_obj(self.content, [vim.ResourcePool], validate_input(resourcepool))
+        else:
+
+            resource_pool = target_cluster.resourcePool
+        # resource_pool = cluster.resourcePool
+        if resource_pool:
+            relospec.pool = resource_pool
+        else:
+            print "Cloud not find resource pool, using resource pool of origin VM"
+
+        target_host = get_obj(self.content, [vim.HostSystem], host_name)
+
+        # relocate_spec = vim.vm.RelocateSpec()
+        # for datastore in target_host.datastore:
+        #     # Store the OVS vApp VM in local datastore of each host
+        #     if datastore.summary.type == 'VMFS':
+        #         print " Moving the VM in %s" % datastore.name
+        #         relocate_spec.datastore = datastore
+        #         break
+
+        # relospec.host = target_host
+
+        clonespec = vim.vm.CloneSpec()
+        clonespec.location = relospec
+        clonespec.powerOn = False
+
+        # template = get_obj(self.content, [vim.VirtualMachine], validate_input(template))
+        # if not template:
+        #     # print "VM or template not found"
+        #     raise Exception('VM or template not found')
+        try:
+
+            task = self.vm.Clone(folder=vmfolder, name=vm_name_tmp,
+                                 spec=clonespec)
+
+            wait_for_tasks(self.si, [task])
+
+            vmconf = vim.vm.ConfigSpec()
+            vmconf.name = self.vm.summary.config.name
+            vmconf.uuid = self.vm.summary.config.uuid
+
+            print "Destroying the source VM"
+            task = self.vm.Destroy()
+
+            # wait_for_task(task, si)
+            wait_for_tasks(self.si, [task])
+            print "Configuring the VM with old name and uuid"
+
+            new_vm = get_obj(self.content, [vim.VirtualMachine], vm_name_tmp)
+
+            task = new_vm.ReconfigVM_Task(vmconf)
+            wait_for_tasks(self.si, [task])
+
+            # relocate_spec = vim.vm.RelocateSpec(host=target_host)
+            # task = new_vm.Relocate(relocate_spec)
+            # wait_for_tasks(self.si, [task])
+
+            print "Successfully cold migrated"
+
+        except Exception as e:
+            raise Exception('cold migrate failed')
 
 
 def find_snapshot(snapshot, snapshot_name):
@@ -589,7 +709,9 @@ def find_snapshot(snapshot, snapshot_name):
         if snapshot.name == snapshot_name:
             return snapshot
         if hasattr(snapshot, "childSnapshotList"):
-            return find_snapshot(snapshot, snapshot_name)
+            snap_obj = find_snapshot(snapshot, snapshot_name)
+            if snap_obj:
+                return snap_obj
 
 
 def get_hdd_prefix_label(language):

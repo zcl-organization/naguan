@@ -50,7 +50,16 @@ def sync_datastore(platform, dc, si, content):
         uuid = ds.info.vmfs.uuid
         ssd = ds.info.vmfs.ssd
         local = ds.info.vmfs.local
-        host = platform['ip']
+
+        # host = platform['ip']
+
+        # print('ds:', dir(ds))
+        # print('ds:', dir(ds.host.index))
+        # print('ds:', ds.host)
+        host = ds.host[0].key.name
+        # for dhost in hosts:
+        #     print('host:', dhost.key.name)
+        # print('ds:', dir(ds.host.key))
 
         capacity = sizeof_fmt(ds_capacity)  # 存储容量
         free_capacity = sizeof_fmt(ds_freespace)  # 可用

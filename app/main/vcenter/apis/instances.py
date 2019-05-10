@@ -5,7 +5,6 @@ from app.common.tool import set_return_val
 
 from app.main.vcenter.control.instances import Instance
 
-
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
 parser.add_argument('host')
@@ -143,6 +142,10 @@ class InstanceManage(Resource):
             elif args['action'] == 'clone':
                 instance.clone(new_vm_name=args['vm_name'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                resourcepool=args['resourcepool'])
+
+            elif args['action'] == 'cold_migrate':
+                instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
+                                      resourcepool=args['resourcepool'])
             else:
                 raise Exception('Parameter error')
         except Exception as e:
