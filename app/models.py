@@ -142,7 +142,7 @@ class Menu(db.Model):
     icon = db.Column(db.String(20), default='')  # 图标
     url = db.Column(db.String(128), nullable=False)  # url
     name = db.Column(db.String(128), nullable=False)  # 名称
-    identifier = db.Column(db.String(20), default='')  # 标识
+    identifier = db.Column(db.String(50), default='')  # 标识
     is_hide = db.Column(db.Boolean, default=False)  # 时候隐藏
     is_hide_children = db.Column(db.Boolean, default=False)  # 是否隐藏子菜单
     important = db.Column(db.String(20), default=None)  # 重要
@@ -160,7 +160,7 @@ class RequestLog(db.Model):
     status_num = db.Column(db.Integer)  # 状态值
     submitter = db.Column(db.String(32), nullable=False)  # 提交者
     time = db.Column(db.DateTime, default=datetime.datetime.now())  # 创建时间
-    event_logs = db.relationship('EventLog', backref='request_logs', lazy=True)  # 关联表
+    # event_logs = db.relationship('EventLog', backref='request_logs', lazy=True)  # 关联表
 
 
 class TaskLog(db.Model):
@@ -176,7 +176,7 @@ class TaskLog(db.Model):
     enqueue_time = db.Column(db.DateTime, default=datetime.datetime.now())  # 入队时间
     start_time = db.Column(db.DateTime)  # 开始时间
     end_time = db.Column(db.DateTime)  # 结束时间
-    event_logs = db.relationship('EventLog', backref='task_logs', lazy=True)  # 关联表
+    # event_logs = db.relationship('EventLog', backref='task_logs', lazy=True)  # 关联表
 
 
 class EventLog(db.Model):
@@ -184,13 +184,16 @@ class EventLog(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     resource_type = db.Column(db.String(32), nullable=False)  # 操作资源类型
     result = db.Column(db.String(10))  # 操作结果
-    operation_resources_id = db.Column(db.Integer, nullable=False)  # 操作资源ID
+    operation_resources_id = db.Column(db.Integer)  # 操作资源ID
     operation_event = db.Column(db.String(255))  # 操作事件
     submitter = db.Column(db.String(32), nullable=False)  # 提交者
     time = db.Column(db.DateTime, default=datetime.datetime.now())  # 创建时间
     # 外键
-    event_request_id = db.Column(db.String, db.ForeignKey(RequestLog.request_id))  # 请求ID
-    task_request_id = db.Column(db.String, db.ForeignKey(TaskLog.task_id))  # 任务ID
+    # event_request_id = db.Column(db.String, db.ForeignKey(RequestLog.request_id))  # 请求ID
+    # task_request_id = db.Column(db.String, db.ForeignKey(TaskLog.task_id))  # 任务ID
+
+    event_request_id = db.Column(db.String(100))  # 请求ID
+    task_request_id = db.Column(db.String(100))  # 任务ID
 
 
 class VCenterVm(db.Model):
@@ -207,18 +210,19 @@ class VCenterVm(db.Model):
     cpu = db.Column(db.String(40), nullable=False)  # 总cpu
     # cpu_used = db.Column(db.String(40), nullable=False)                         # 已使用cpu
     num_ethernet_cards = db.Column(db.Integer, nullable=False)
-    num_virtual_disks = db.Column(db.Integer, nullable=False)
-    uuid = db.Column(db.String(40), nullable=False)
-    instance_uuid = db.Column(db.String(40), nullable=False)
+    num_virtual_disks = db.Column(db.String(255), nullable=False)
+    uuid = db.Column(db.String(255), nullable=False)
+    instance_uuid = db.Column(db.String(255), nullable=False)
     guest_id = db.Column(db.String(255), nullable=False)  # 镜像id
     guest_full_name = db.Column(db.String(255), nullable=False)
     host = db.Column(db.String(40), nullable=False)  # 所属HOST
     ip = db.Column(db.String(20))  # ip
     status = db.Column(db.String(40))
+    resource_pool_name = db.Column(db.String(32))
 
 
 class UsersInstances(db.Model):
-    __tablename__ = 'user_insnstance'
+    __tablename__ = 'user_instance'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     vm_id = db.Column(db.String(40), nullable=False)
@@ -266,6 +270,7 @@ class VCenterTree(db.Model):
     name = db.Column(db.String(255), nullable=False)
     cluster_mor_name = db.Column(db.String(255))
     cluster_oc_name = db.Column(db.String(255))
+    pid = db.Column(db.Integer)
 
 
 class VCenterNetworkPortGroup(db.Model):
@@ -299,27 +304,27 @@ class VCenterDataStore(db.Model):
     free_capacity = db.Column(db.String(32))
     type = db.Column(db.String(55))
     version = db.Column(db.String(55))
-    uuid = db.Column(db.Integer)
+    uuid = db.Column(db.String(255))
     ssd = db.Column(db.Boolean, nullable=False)
     local = db.Column(db.Boolean, nullable=False)
     host = db.Column(db.String(55))
-    ds_name = db.Column(db.String(32))
+    ds_name = db.Column(db.String(255))
     ds_mor_name = db.Column(db.String(32))
-    dc_name = db.Column(db.String(32), nullable=False)
+    dc_name = db.Column(db.String(255), nullable=False)
     dc_mor_name = db.Column(db.String(32))
 
 
 class VCenterDisk(db.Model):
     __tablename__ = 'vcenter_disk'
     id = db.Column(db.Integer, primary_key=True)
-    vm_uuid = db.Column(db.String(64), nullable=False)
-    disk_uuid = db.Column(db.String(64), nullable=False)
+    vm_uuid = db.Column(db.String(255), nullable=False)
+    disk_uuid = db.Column(db.String(255), nullable=False)
     platform_id = db.Column(db.Integer)
     label = db.Column(db.String(32))
     disk_size = db.Column(db.String(64))  #
-    disk_type = db.Column(db.Integer)  # 类型
+    disk_type = db.Column(db.String(16))  # 类型
     sharing = db.Column(db.String(16))  # 共享
-    disk_file = db.Column(db.String(64))
+    disk_file = db.Column(db.String(255))
     shares = db.Column(db.Integer)  # 份额数
     level = db.Column(db.String(16))  # 份额 等级
     iops = db.Column(db.String(16))
@@ -333,7 +338,7 @@ class VCenterImage(db.Model):
     platform_id = db.Column(db.Integer)
     iso_name = db.Column(db.String(256), nullable=False)  # name
     path = db.Column(db.String(256))  # 路径
-    ds_name = db.Column(db.String(32))  #
+    ds_name = db.Column(db.String(255))  #
     ds_mor_name = db.Column(db.String(32))
     size = db.Column(db.String(32))
     file_type = db.Column(db.String(16), default='ISO')  # 文件类型
@@ -343,12 +348,41 @@ class VCenterImage(db.Model):
 class VCenterSnapshot(db.Model):
     __tablename__ = 'vcenter_snapshot'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32))
+    name = db.Column(db.String(255))
     mor_name = db.Column(db.String(32))
-    vm_uuid = db.Column(db.String(32))
+    vm_uuid = db.Column(db.String(255))
     description = db.Column(db.String(32))
     state = db.Column(db.String(32))
     snapshot_id = db.Column(db.Integer)
     snapshot_parent_id = db.Column(db.Integer)
     current = db.Column(db.Boolean, nullable=False)
     create_time = db.Column(db.String(32))
+
+
+class VCenterResourcePool(db.Model):
+    __tablename__ = 'vcenter_resource_pool'
+    id = db.Column(db.Integer, primary_key=True)
+    platform_id = db.Column(db.Integer)
+    dc_name = db.Column(db.String(255))
+    dc_mor_name = db.Column(db.String(32))
+    cluster_name = db.Column(db.String(255))
+    cluster_mor_name = db.Column(db.String(32))
+    name = db.Column(db.String(255))
+    mor_name = db.Column(db.String(32))
+    parent_name = db.Column(db.String(255))
+
+    over_all_status = db.Column(db.String(32))
+    cpu_expand_able_reservation = db.Column(db.String(32))
+    cpu_reservation = db.Column(db.String(32))
+    cpu_limit = db.Column(db.String(32))
+    cpu_shares = db.Column(db.String(32))
+    cpu_level = db.Column(db.String(32))
+    cpu_over_all_usage = db.Column(db.String(32))
+    cpu_max_usage = db.Column(db.String(32))
+    memory_expand_able_reservation = db.Column(db.String(32))
+    memory_reservation = db.Column(db.String(32))
+    memory_limit = db.Column(db.String(32))
+    memory_shares = db.Column(db.String(32))
+    memory_level = db.Column(db.String(32))
+    memory_over_all_usage = db.Column(db.String(32))
+    memory_max_usage = db.Column(db.String(32))

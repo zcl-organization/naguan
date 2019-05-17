@@ -89,7 +89,7 @@ def list_by_name(username):
 
 def update_login_time(user):
     # task.user.add(1, 2)
-    sum_task = task.user.add.apply_async(args=[5, 7])
+    # sum_task = task.user.add.apply_async(args=[5, 7])
 
     # sum_task = task.user.add.apply_async(23, 42)
     # sum = sum_task.wait()

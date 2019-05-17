@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from flask_migrate import MigrateCommand
-from flask_script import Manager
+from flask_script import Manager, Server
 from app import create_app, db
 from flask import g, request, current_app
 from app.models import RequestLog
@@ -15,7 +15,7 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 
 
 @app.before_first_request
-def first_request():
+def before_first_request():
     with open('policy.json', 'r') as f:
         json_dict = json.load(f)
     # print(g.policy)
@@ -23,13 +23,13 @@ def first_request():
 
 
 @app.before_request
-def before_request_info():
+def before_request():
     base_url = request.base_url
     method = request.method
     g.ip = request.remote_addr
     g.url = method + '/' + base_url
-    g.time = datetime.datetime.strptime(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
-    g.username = ''
+    g.time = datetime.datetime.now()
+    g.username = 'anonymous'
 
     g.request_id = str(uuid.uuid5(uuid.uuid4(), 'kaopuyun'))
 
@@ -43,7 +43,7 @@ def before_request_info():
 
 
 @app.after_request
-def teardown_request(res):
+def after_request(res):
     try:
         request_log = RequestLog()
         request_log.request_id = g.request_id
@@ -61,64 +61,17 @@ def teardown_request(res):
     return res
 
 
-# @app.after_request
-# def after_request():
-#     print(g.username)
-#
-
-# def
-
-#
-# @app.before_request
-# @httpauth.login_required
-# def check_policy():
-#     # 从config中获取policy
-#     print('check_policy')
-#     g.policy = app.config['POLICY']
-#     if request.path.count('/') == 1:
-#         endpoint = request.path.strip('/')
-#     else:
-#         url_list = request.path.split('/')
-#         if url_list[0]:
-#             endpoint = ':'.join(url_list)
-#         else:
-#             del url_list[0]
-#             endpoint = ':'.join(url_list)
-#
-#     # 判断权限
-#     if endpoint in g.policy:
-#         policy = g.policy[endpoint]
-#         if policy:
-#             if '_or_' in policy:
-#                 need_policy_list = policy.split(':')[1].split('_or_')
-#             else:
-#                 need_policy_list = [policy.split(':')[1]]
-#
-#             print(need_policy_list)
-#         else:
-#             need_policy_list = []
-#         # print(dir(current_user))
-#         if need_policy_list:
-#             for policy_tmp in need_policy_list:
-#                 if current_user.has_role(policy_tmp):
-#                     policy_flag = True
-#                     break
-#                 else:
-#                     policy_flag = False
-#             if not policy_flag:
-#                 data = {
-#                     'status': 0,
-#                     'msg': '用户没有权限访问接口',
-#                     'data': ''
-#                 }
-#                 return jsonify(data)
-#
-#     else:
-#         print(endpoint, 'not in policy')
+# @app.teardown_appcontext
+# def shutdown_session(exception=None):
+#     db.session.remove()
+#     if exception and db.session.is_active:
+#         db.session.rollback()
 
 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+manager.add_command('runserver', Server(
+    host='0.0.0.0', port='5000', threaded=True))
 
 if __name__ == '__main__':
     manager.run()

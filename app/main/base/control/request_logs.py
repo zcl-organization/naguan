@@ -5,12 +5,12 @@ from app.main.base import db
 
 # 获取日志列表
 def log_list(pgnum, request_id, status_num):
-    print('ccc')
-    print(pgnum)
-    print(request_id)
-    print(status_num)
+    # print('ccc')
+    # print(pgnum)
+    # print(request_id)
+    # print(status_num)
     results, pg = db.request_logs.log_list(pgnum, request_id, status_num)
-    print(pg)
+    # print(pg)
     data = []
     for request in results:
         data_tmp = {

@@ -3,7 +3,7 @@
 from app.exts import celery
 
 
-@celery.task()
+# @celery.task()
 def add(x, y):
     print(x, y)
     return x + y

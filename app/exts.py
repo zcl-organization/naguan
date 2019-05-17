@@ -1,7 +1,7 @@
+# -*- coding: utf-8 -*-
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-# from flask import current_app
-from celery import Celery
+from celery import Celery, platforms
 from config import BaseConfig
 
 db = SQLAlchemy()
@@ -14,5 +14,5 @@ def init_ext(app):
 
 
 # celery = Celery()
-
+platforms.C_FORCE_ROOT =True
 celery = Celery(__name__, broker=BaseConfig.CELERY_BROKER_URL)

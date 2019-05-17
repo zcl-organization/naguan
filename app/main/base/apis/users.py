@@ -163,11 +163,15 @@ class UserManage(Resource):
 
             active = 1
             is_superuser = 1
+            if not args['sex']:
+                sex = 1
+            else:
+                sex = args['sex']
 
             control.user.user_create(username=args['username'], password=args['password'], email=args['email'],
                                      first_name=args['first_name'], uid=1, mobile=args['mobile'],
                                      department=args['department'], job='it', location='location',
-                                     company=args['company'], sex=int(args['sex']), uac='uac', active=active,
+                                     company=args['company'], sex=int(sex), uac='uac', active=active,
                                      is_superuser=is_superuser, remarks=args['remarks'], current_login_ip=g.ip)
 
         # 已存在

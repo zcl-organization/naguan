@@ -13,16 +13,12 @@ def log_list(pgnum, request_id, status_num):
     if pgnum:  # 默认获取分页获取所有日志
         query = query.paginate(page=pgnum, per_page=10, error_out=False)
     results = query.items
-    print(results)
-
     pg = {
         'has_next': query.has_next,
         'has_prev': query.has_prev,
         'page': query.page,
         'pages': query.pages,
         'total': query.total,
-        # 'prev_num': query.prev_num,
-        # 'next_num': query.next_num,
     }
 
     return results, pg

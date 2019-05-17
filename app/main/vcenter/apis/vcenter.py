@@ -2,7 +2,9 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-from app.main.vcenter.control import vcenter as vcenter_manage
+from app.main.vcenter import control
+from app.main.base import control as base_control
+from app.main.base import task
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -85,7 +87,7 @@ class VCenterManage(Resource):
         try:
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            data = vcenter_manage.vcenter_tree_list(int(args['platform_id']))
+            data = control.vcenter.vcenter_tree_list(int(args['platform_id']))
 
         except Exception as e:
             return set_return_val(False, {}, 'Failed to get vcneter tree', 1239), 400
@@ -144,9 +146,11 @@ class VCenterManage(Resource):
 
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            vcenter_manage.sync_tree(args['platform_id'])
-            # vcenter_manage.sync_tree.apply_async(args=[args['platform_id']])
+            # control.vcenter.sync_tree(args['platform_id'])
+            task = control.vcenter.sync_tree.apply_async(args=[args['platform_id']], queue='vsphere')
+            print(dir(task))
+            base_control.task_logs.create_log(task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:
             return set_return_val(False, {}, 'Failed to sync vcneter tree', 1239), 400
 
-        return set_return_val(True, {}, 'Sync vcneter tree success', 1239), 400
+        return set_return_val(True, {}, 'Sync vcneter tree success', 1239)

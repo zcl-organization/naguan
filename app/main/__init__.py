@@ -25,7 +25,7 @@ from app.main.vcenter.apis.datastores import DataStoreManage
 from app.main.vcenter.apis.disks import DiskManage
 from app.main.vcenter.apis.network_devices import NetWorkManage
 from app.main.vcenter.apis.snapshots import SnapshotManage
-
+from app.main.vcenter.apis.resource_pool import ResourcePoolManage
 from flask_restful import Api
 from flasgger import Swagger
 
@@ -85,26 +85,30 @@ api.add_resource(RolesUsersManage, '/api/v1.0/role_user', methods=['GET', 'POST'
                  endpoint='RoleUserMg')
 
 # vCenter 信息同步
-api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree/', methods=['GET', 'POST'], endpoint='TreeMg')
-api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
+api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree', methods=['GET', 'POST'], endpoint='TreeMg')
+api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
 api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:id>/<string:uuid>', methods=['DELETE'], endpoint='VmMgDel')
-api.add_resource(ImageManage, '/api/v1.0/vCenter/image/', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
+api.add_resource(ImageManage, '/api/v1.0/vCenter/image', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
 # vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
                  methods=['GET'], endpoint='NetworkPortGroupMg')
 
 # vCenter datastore
-api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore/', methods=['GET'],
+api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
                  endpoint='DataStoreMg')
 
 # vCenter disk
-api.add_resource(DiskManage, '/api/v1.0/vCenter/disk/', methods=['GET', 'POST', 'DELETE'], endpoint='DiskMg')
+api.add_resource(DiskManage, '/api/v1.0/vCenter/disk', methods=['GET', 'POST', 'DELETE'], endpoint='DiskMg')
 
 # vCenter network device
-api.add_resource(NetWorkManage, '/api/v1.0/vCenter/network/', methods=['GET', 'POST', 'DELETE'],
+api.add_resource(NetWorkManage, '/api/v1.0/vCenter/network', methods=['GET', 'POST', 'DELETE'],
                  endpoint='NetworkDeviceMg')
 
 # vCenter snapshot
-api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot/', methods=['GET', 'POST', 'DELETE'],
+api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot', methods=['GET', 'POST', 'DELETE'],
                  endpoint='SnapshotMg')
+
+# vCenter snapshot
+api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=['GET'],
+                 endpoint='ResourcePoolMg')

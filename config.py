@@ -22,7 +22,7 @@ class BaseConfig(object):
     CELERY_BROKER_URL = 'redis://:123456@118.24.10.85:6379/'
     CELERY_RESULT_BACKEND = 'redis://:123456@118.24.10.85:6379/'
 
-    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_ACCEPT_CONTENT = ['json', 'pickle']
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
 

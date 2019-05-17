@@ -26,6 +26,13 @@ parser.add_argument('snapshot_name')
 parser.add_argument('description')
 parser.add_argument('snapshot_id')
 parser.add_argument('resourcepool')
+parser.add_argument('ip')
+parser.add_argument('subnet')
+parser.add_argument('gateway')
+parser.add_argument('dns')
+parser.add_argument('domain')
+parser.add_argument('guest_id')
+parser.add_argument('pgnum')
 
 
 class InstanceManage(Resource):
@@ -45,7 +52,6 @@ class InstanceManage(Resource):
             name: uuid
             type: string
             description: 云主机id
-            required: true
           - in: query
             name: action
             type: string
@@ -56,17 +62,25 @@ class InstanceManage(Resource):
             type: string
             description: 云主机名称
           - in: query
-            name: cpu
+            name: new_cpu
             type: string
             description: new_cpu
           - in: query
-            name: memory
+            name: new_memory
             type: string
             description: new_memory
+          - in: query
+            name: dc_id
+            type: string
+            description: datacenter id
           - in: query
             name: ds_id
             type: string
             description: datastore id
+          - in: query
+            name: guest_id
+            type: string
+            description: guest_id
           - in: query
             name: image_id
             type: string
@@ -146,6 +160,9 @@ class InstanceManage(Resource):
             elif args['action'] == 'cold_migrate':
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
+            elif args['action'] == 'ip_assignment':
+                instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
+                                       gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
             else:
                 raise Exception('Parameter error')
         except Exception as e:
@@ -166,13 +183,17 @@ class InstanceManage(Resource):
             description: 平台id
             required: true
           - in: query
-            name: mor_name
+            name: host
             type: string
             description: host 名称
           - in: query
             name: vm_name
             type: string
             description: vmOcName
+          - in: query
+            name: pgnum
+            type: int
+            description: 页码
         responses:
           200:
             description: vCenter tree 信息
@@ -262,13 +283,17 @@ class InstanceManage(Resource):
         args = parser.parse_args()
         try:
             instance = Instance(platform_id=args['platform_id'])
-            data = instance.list(host=args['host'], vm_name=args['vm_name'])
+            # print(args['pgnum'])
+            pgnum = args['pgnum']
+            if not pgnum:
+                pgnum = 1  # 默认第一页
+            data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum)
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
             #                                    vm_name=args['vm_name'])
 
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'instance gets success.', 1520)
+        return set_return_val(True, data, 'instance gets success.', 1520, pg)
 
     def delete(self, platform_id, uuid):
         """

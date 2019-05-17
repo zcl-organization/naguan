@@ -1,6 +1,4 @@
 # -*- coding=utf-8 -*-
-from app.main.base.db.task_logs import log_list, log_delete, task_log_start_db, task_log_end_db
-from app.main.base.db import task_logs as log_manage
 from app.main.base import db
 
 
@@ -38,15 +36,15 @@ def log_delete(log_id):
     return db.task_logs.log_delete(log_id)
 
 
-def task_log_create(options):
-    db.task_logs.task_log_create_db(options)
+def create_log(task_id, state, queue, task):
+    db.task_logs.create_log(task_id, state, queue, task)
 
 
 # 开始任务日志
-def task_log_start_c(task_id=None):
-    return task_log_start_db(task_id)
+def task_start(task_id, state):
+    return db.task_logs.task_update(task_id, 'start', state)
 
 
 # 完成任务日志
-def task_log_en_c(task_id=None):
-    return task_log_end_db(task_id)
+def task_end(task_id, state):
+    return db.task_logs.task_update(task_id, 'end', state)

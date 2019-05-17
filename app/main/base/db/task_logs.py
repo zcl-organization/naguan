@@ -29,24 +29,7 @@ def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
         'prev_num': query.prev_num,
         'next_num': query.next_num,
     }
-    # result_item = []
-    # for result in results:
-    #     data = {
-    #         'id': result.id,
-    #         'task_id': result.task_id,
-    #         'request_id': result.request_id,
-    #         'rely_task_id': result.rely_task_id,
-    #         'status': result.status,
-    #         'await_execute': result.await_execute,
-    #         'queue_name': result.queue_name,
-    #         'method_name': result.method_name,
-    #         'submitter': result.submitter,
-    #         'enqueue_time': str(result.enqueue_time),
-    #         'start_time': str(result.start_time),
-    #         'end_time': str(result.end_time),
-    #
-    #     }
-    #     result_item.append(data)
+
     return results, pg
 
 
@@ -66,47 +49,35 @@ def log_delete(log_id):
 
 
 # 任务日志创建
-def task_log_create_db(options):
+def create_log(task_id, state, queue, task):
     newlog = TaskLog()
     newlog.request_id = g.request_id
-    newlog.task_id = str(uuid.uuid5(uuid.uuid4(), 'task_log'))
+    newlog.task_id = task_id
     try:
         newlog.rely_task_id = g.rely_task_id
     except Exception as e:
         newlog.rely_task_id = '--'
-    newlog.status = options['result']
+    newlog.status = state
     newlog.await_execute = '1' + '/' + '2'
-    newlog.queue_name = 'iass_web'  # options['queue_name']  # 暂定
-    newlog.method_name = 'task_callback'  # options['method_name']
+    newlog.queue_name = queue
+    newlog.method_name = task
     newlog.submitter = g.username
     db.session.add(newlog)
     db.session.commit()
     return True
 
 
-# 开始任务日志
-def task_log_start_db(task_id=None):
+# 更新任务日志状态
+def task_update(task_id, action, state):
     query = db.session.query(TaskLog)
     task_log = query.filter_by(task_id=task_id).first()
     if task_log:
-        task_log.status = 2
-        task_log.start_time = datetime.datetime.now()
+
+        task_log.status = state
+
+        if action == 'start':
+            task_log.start_time = datetime.datetime.now()
+        else:
+            task_log.end_time = datetime.datetime.now()
         db.session.add(task_log)
         db.session.commit()
-        return True
-    else:
-        return False
-
-
-# 完成任务日志
-def task_log_end_db(task_id=None):
-    query = db.session.query(TaskLog)
-    task_log = query.filter_by(task_id=task_id).first()
-    if task_log:
-        task_log.status = 3
-        task_log.end_time = datetime.datetime.now()
-        db.session.add(task_log)
-        db.session.commit()
-        return True
-    else:
-        return False

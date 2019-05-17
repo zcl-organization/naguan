@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import time
+
 from flask_restful.representations import json
 from pyVim import connect
 import atexit
@@ -6,11 +8,11 @@ import atexit
 from pyVmomi import vmodl
 from pyVmomi import vim
 
-# from app.main.vcenter.control import get_connect
 from app.main.vcenter.control.utils import get_connect, get_mor_name
-# from app.main.vcenter.control.vcenter import vcenter_tree_list
+
 from app.main.vcenter import db
 from app.main.vcenter.control.images import sync_image
+from app.exts import celery
 
 
 def sizeof_fmt(num):
@@ -26,7 +28,10 @@ def sizeof_fmt(num):
     return "%3.1f%s" % (num, 'TB')
 
 
-def sync_datastore(platform, dc, si, content):
+@celery.task()
+def sync_datastore(platform, dc, si, content=None):
+    print ('sync_dc_start:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
+    # content = si.RetrieveContent()
     obj = content.viewManager.CreateContainerView(dc, [vim.Datastore], True)
     datastores = obj.view
     data_store_list = db.datastores.get_datastore_ds_name_by_platform_id(platform['id'], dc.name)
@@ -49,21 +54,18 @@ def sync_datastore(platform, dc, si, content):
         version = ds.info.vmfs.version
         uuid = ds.info.vmfs.uuid
         ssd = ds.info.vmfs.ssd
-        local = ds.info.vmfs.local
+        # local = ds.info.vmfs.local
+        if ds.info.vmfs.local:
+            local = True
+        else:
+            local = False
 
         # host = platform['ip']
-
-        # print('ds:', dir(ds))
-        # print('ds:', dir(ds.host.index))
-        # print('ds:', ds.host)
         host = ds.host[0].key.name
-        # for dhost in hosts:
-        #     print('host:', dhost.key.name)
-        # print('ds:', dir(ds.host.key))
 
-        capacity = sizeof_fmt(ds_capacity)  # 存储容量
-        free_capacity = sizeof_fmt(ds_freespace)  # 可用
-        used_capacity = sizeof_fmt(ds_capacity - ds_freespace)
+        capacity = ds_capacity  # 存储容量
+        free_capacity = ds_freespace  # 可用
+        used_capacity = ds_capacity - ds_freespace
 
         if ds_name in data_store_list:
             data_store_list.remove(ds_name)
@@ -79,6 +81,8 @@ def sync_datastore(platform, dc, si, content):
         for ds_name in data_store_list:
             print(ds_name)
             db.datastores.delete_datastore_by_ds_name(ds_name)
+
+    print ('sync_dc_stop:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
 
 
 def get_datastore_by_platform_id(platform_id):

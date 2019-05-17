@@ -5,7 +5,8 @@ from app.exts import db
 
 # 添加vcenter tree 信息
 def vcenter_tree_create(tree_type, platform_id, name, dc_host_folder_mor_name=None, dc_mor_name=None, dc_oc_name=None,
-                        dc_vm_folder_mor_name=None, mor_name=None, cluster_mor_name=None, cluster_oc_name=None):
+                        dc_vm_folder_mor_name=None, mor_name=None, cluster_mor_name=None, cluster_oc_name=None,
+                        pid=None):
     # print(options)
     new_vcenter = VCenterTree()
     new_vcenter.type = tree_type
@@ -18,10 +19,15 @@ def vcenter_tree_create(tree_type, platform_id, name, dc_host_folder_mor_name=No
     new_vcenter.name = name
     new_vcenter.cluster_mor_name = cluster_mor_name
     new_vcenter.cluster_oc_name = cluster_oc_name
+    new_vcenter.pid = pid
 
     # print(new_vcenter)
     db.session.add(new_vcenter)
+    db.session.flush()
+
+    vcenter_id = new_vcenter.id
     db.session.commit()
+    return vcenter_id
     # pass
 
 
@@ -46,19 +52,20 @@ def vcenter_tree_get_by_cluster(platform_id, cluster_mor_name, tree_type):
     return query.first()
 
 
-def vcenter_tree_get_by_cluster(platform_id, host_mor_name, tree_type):
+def vcenter_tree_get_by_mor_name(platform_id, mor_name, tree_type):
     query = db.session.query(VCenterTree)
     query = query.filter(VCenterTree.platform_id == platform_id).filter(VCenterTree.type == tree_type).filter(
-        VCenterTree.mor_name == host_mor_name)
+        VCenterTree.mor_name == mor_name)
     return query.first()
 
 
 # 更新vcenter tree信息
 def vcenter_tree_update(tree_type, platform_id, mor_name, name=None, dc_host_folder_mor_name=None,
                         dc_mor_name=None, dc_oc_name=None, dc_vm_folder_mor_name=None, cluster_mor_name=None,
-                        cluster_oc_name=None):
+                        cluster_oc_name=None, pid=None):
     if tree_type == 1:
-        vcenter_info = db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(type=tree_type).first()
+        vcenter_info = db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(
+            type=tree_type).first()
     else:
         vcenter_info = db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(
             type=tree_type).filter_by(mor_name=mor_name).first()
@@ -76,6 +83,8 @@ def vcenter_tree_update(tree_type, platform_id, mor_name, name=None, dc_host_fol
         vcenter_info.cluster_mor_name = cluster_mor_name
     if cluster_oc_name:
         vcenter_info.cluster_oc_name = cluster_oc_name
+    if pid:
+        vcenter_info.pid = pid
     db.session.commit()
 
 

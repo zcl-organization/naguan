@@ -16,16 +16,6 @@ from flask_session import Session
 
 from app.exts import celery
 
-# from celery import Celery
-#
-# celery = Celery(__name__, broker=BaseConfig.CELERY_BROKER_URL)
-
-
-# def make_celery(app):
-#     celery = Celery(app.import_name)
-#     celery.conf.update(app.config)
-#     return celery
-
 
 def create_app(config_name):
     app = Flask(__name__, template_folder='templates')
@@ -34,13 +24,6 @@ def create_app(config_name):
     app.config.update(RESTFUL_JSON=dict(ensure_ascii=False))
     config[config_name].init_app(app)
 
-    # datastore = SQLAlchemyUserDatastore(db, Users, Roles)
-    # Security(app, datastore)
-
-    # system_config = SystemConfig.query.first()
-    # SystemConfig.query.first()
-    # if system_config:
-    #     print(system_config.copyright)
     Session(app)
     init_ext(app)
     restful_init(app)
@@ -48,14 +31,6 @@ def create_app(config_name):
     security_init(app)
 
     celery.conf.update(app.config)
-    # celery.init_app(app=app)
-
-    # from app.main.auth import auth
-    # app.register_blueprint(auth)
-    # from main import main_v1_bp
-    # app.register_blueprint(main_v1_bp)
-
-    # app.register_blueprint(auth, url_prefix='/api_v1')
 
     @app.route('/')
     def index():
