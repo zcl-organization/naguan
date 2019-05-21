@@ -67,14 +67,117 @@ class UserManage(Resource):
             description: 单页显示个数
         responses:
           200:
-            description: A single user item
+            description: 获取用户信息
             schema:
-              id: User
               properties:
-                username:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: The name of the user
-                  default: Steven Wilson
+                msg:
+                  type: string
+                pg:
+                  type: array
+                  items:
+                    properties:
+                      has_next:
+                        type: boolean
+                        default: kpy
+                        description: has_next
+                      has_prev:
+                        type: boolean
+                        default: kpy
+                        description: has_prev
+                      page:
+                        type: string
+                        default: kpy
+                        description: page
+                      pages:
+                        type: string
+                        default: kpy
+                        description: pages
+                      size:
+                        type: string
+                        default: kpy
+                        description: size
+                      total:
+                        type: string
+                        default: kpy
+                        description: total
+                data:
+                  type: array
+                  items:
+                    properties:
+                      company:
+                        type: string
+                        default: kpy
+                        description: 公司
+                      current_login_ip:
+                        type: string
+                        default: kpy
+                        description: current_login_ip
+                      date_created:
+                        type: string
+                        default: kpy
+                        description: date_created
+                      department:
+                        type: string
+                        default: kpy
+                        description: department
+                      email:
+                        type: string
+                        default: kpy
+                        description: email
+                      first_name:
+                        type: string
+                        default: kpy
+                        description: first_name
+                      id:
+                        type: string
+                        default: kpy
+                        description: id
+                      job:
+                        type: string
+                        default: kpy
+                        description: job
+                      last_login_at:
+                        type: string
+                        default: kpy
+                        description: last_login_at
+                      last_login_ip:
+                        type: string
+                        default: kpy
+                        description: last_login_ip
+                      location:
+                        type: string
+                        default: kpy
+                        description: location
+                      login_count:
+                        type: string
+                        default: kpy
+                        description: login_count
+                      mobile:
+                        type: string
+                        default: kpy
+                        description: mobile
+                      name:
+                        type: string
+                        default: kpy
+                        description: name
+                      sex:
+                        type: string
+                        default: kpy
+                        description: sex
+                      uac:
+                        type: string
+                        default: kpy
+                        description: uac
+                      uid:
+                        type: string
+                        default: kpy
+                        description: uid
         """
 
         args = parser.parse_args()
@@ -143,14 +246,21 @@ class UserManage(Resource):
            type: string
        responses:
          200:
-           description: A single user create item
-           schema:
-             id: User
-             properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+            description: 添加用户信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             args = parser.parse_args()
@@ -218,14 +328,21 @@ class UserManage(Resource):
            in: query
         responses:
          200:
-           description: 更新用户名和状态
-           schema:
-             id: User
-             properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+            description: 更新用户信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
 
         args = parser.parse_args()
@@ -265,14 +382,21 @@ class UserManage(Resource):
            required: true
        responses:
          200:
-           description: 根据用户id删除用户信息
-           schema:
-             id: User
-             properties:
-               id:
-                 type: string
-                 description: 用户id
-                 default: Steven Wilson
+            description: 删除用户信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             control.user.user_delete(id=id)

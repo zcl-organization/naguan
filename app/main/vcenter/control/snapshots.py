@@ -48,6 +48,7 @@ def sync_snap_info(platform_id, snapshotlist, vm, parent_id=None, depth=1):
                     snapshot_id_list = snapshot_id_list + snapshot_id
     return snapshot_id_list
 
+
 #
 # @celery.task()
 # def sync_snapshot(platform_id, vm_uuid):
@@ -84,7 +85,6 @@ def sync_snap_info(platform_id, snapshotlist, vm, parent_id=None, depth=1):
 #         db.snapshots.delete_snapshot_by_vm_uuid(vm.summary.config.uuid)
 
 
-
 @celery.task()
 def sync_snapshot(platform_id, vm):
     if vm.snapshot is not None:
@@ -114,7 +114,6 @@ def sync_snapshot(platform_id, vm):
     else:
         # 删除 vm_uuid 相关的snapshot
         db.snapshots.delete_snapshot_by_vm_uuid(vm.summary.config.uuid)
-
 
 
 def get_snapshot_by_snapshot_id(vm, snapshot_id):

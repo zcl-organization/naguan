@@ -33,14 +33,37 @@ class RolesUsersManage(Resource):
              description: 角色名
          responses:
            200:
-             description: 获取用户角色列表成功
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 获取用户角色信息
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      role_id:
+                        type: string
+                        default: 1
+                        description: role_id
+                      role_name:
+                        type: string
+                        default: admin
+                        description: role_name
+                      user_id:
+                        type: string
+                        default: 1
+                        description: user_id
+                      user_name:
+                        type: string
+                        default: admin
+                        description: user_name
          """
         try:
 
@@ -71,14 +94,21 @@ class RolesUsersManage(Resource):
              description: 角色id
          responses:
            200:
-             description: 用户角色分配成功
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 用户角色分配
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
          """
         try:
             args = parser.parse_args()
@@ -114,14 +144,21 @@ class RolesUsersManage(Resource):
              description: 旧角色id
          responses:
            200:
-             description: 用户角色更新成功
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 用户角色重新分配
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
          """
         # 更新用户角色
         try:
@@ -151,14 +188,21 @@ class RolesUsersManage(Resource):
              description: 用户id
          responses:
            200:
-             description: 用户角色删除
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 删除用户角色
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
          """
         # 删除用户所有角色
         try:

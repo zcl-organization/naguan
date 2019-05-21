@@ -12,7 +12,7 @@ class NetworkPortGroupManage(Resource):
 
     def get(self):
         """
-         获取vCenter vm_network_device 信息
+         获取vCenter network port group 信息
         ---
         tags:
           - vCenter network port group
@@ -23,7 +23,7 @@ class NetworkPortGroupManage(Resource):
             required: true
         responses:
           200:
-            description: vCenter disk 信息
+            description: vCenter port group 信息
             schema:
               properties:
                 ok:
@@ -38,14 +38,30 @@ class NetworkPortGroupManage(Resource):
                   type: array
                   items:
                     properties:
-                      label:
+                      dc_mor_name:
                         type: string
-                      disk_size:
+                        default: datacenter-661
+                        description: dc_mor_name
+                      dc_name:
                         type: string
-                      disk_file:
+                        default: Datacenter
+                        description: dc_name
+                      id:
                         type: string
-                      level:
+                        default: 1
+                        description: id
+                      mor_name:
                         type: string
+                        default: dvportgroup-1284
+                        description: mor_name
+                      name:
+                        type: string
+                        default: NSX-DVUplinks-1283
+                        description: name
+                      platform_id:
+                        type: string
+                        default: 1
+                        description: platform_id
           400:
             description: 获取失败
             schema:

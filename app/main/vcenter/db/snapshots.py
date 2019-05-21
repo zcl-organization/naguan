@@ -53,8 +53,8 @@ def get_snapshot_by_snapshot_id(vm_uuid, snapshot_id):
 
 def get_snapshot_list(platform_id, snapshot_id, vm_uuid):
     query = db.session.query(VCenterSnapshot)
-    if platform_id:
-        query = query.filter_by(platform_id=platform_id)
+    # if platform_id:
+    #     query = query.filter_by(platform_id=platform_id)
     if snapshot_id:
         query = query.filter_by(snapshot_id=snapshot_id)
     if vm_uuid:

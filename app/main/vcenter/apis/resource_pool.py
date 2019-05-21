@@ -45,12 +45,102 @@ class ResourcePoolManage(Resource):
                   type: array
                   items:
                     properties:
-                      label:
+                      cluster_mor_name:
                         type: string
-                      disk_size:
+                        default: domain-c666
+                        description: cluster_mor_name
+                      cluster_name:
                         type: string
-                      disk_file:
+                        default: gat
+                        description: cluster_name
+                      cpu_expand_able_reservation:
                         type: string
+                        default: 1
+                        description: cpu_expand_able_reservation
+                      cpu_level:
+                        type: string
+                        default: 4000
+                        description: cpu_level
+                      cpu_limit:
+                        type: string
+                        default: 35932
+                        description: cpu_limit
+                      cpu_max_usage:
+                        type: string
+                        default: 35932
+                        description: cpu_max_usage
+                      cpu_over_all_usage:
+                        type: string
+                        default: 532
+                        description: cpu_over_all_usage
+                      cpu_reservation:
+                        type: string
+                        default: 35932
+                        description: cpu_reservation
+                      cpu_shares:
+                        type: string
+                        default: 4000
+                        description: cpu_shares
+                      dc_mor_name:
+                        type: string
+                        default: datacenter-661
+                        description: dc_mor_name
+                      dc_name:
+                        type: string
+                        default: Datacenter
+                        description: dc_name
+                      id:
+                        type: string
+                        default: 1
+                        description: id
+                      memory_expand_able_reservation:
+                        type: string
+                        default: 1
+                        description: memory_expand_able_reservation
+                      memory_level:
+                        type: string
+                        default: normal
+                        description: memory_level
+                      memory_limit:
+                        type: string
+                        default: 121616
+                        description: memory_limit
+                      memory_max_usage:
+                        type: string
+                        default: 127527813120
+                        description: memory_max_usage
+                      memory_over_all_usage:
+                        type: string
+                        default: 37671141376
+                        description: memory_over_all_usage
+                      memory_reservation:
+                        type: string
+                        default: 121616
+                        description: memory_reservation
+                      memory_shares:
+                        type: string
+                        default: 163840
+                        description: memory_shares
+                      mor_name:
+                        type: string
+                        default: resgroup-667
+                        description: mor_name
+                      name:
+                        type: string
+                        default: Resources
+                        description: name
+                      over_all_status:
+                        type: string
+                        default: green
+                        description: over_all_status
+                      parent_name:
+                        type: string
+                        default: gat
+                        description: parent_name
+                      platform_id:
+                        type: string
+                        default: 1
+                        description: platform_id
           400:
             description: 获取失败
             schema:

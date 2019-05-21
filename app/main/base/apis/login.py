@@ -39,13 +39,49 @@ class LoginManage(Resource):
           200:
             description: 用户登录
             schema:
-              id: User
-              properties:
-                id:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: 用户id
-                  default: Steven Wilson
-                  name: code
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      department:
+                        type: string
+                        default: 研发三部
+                      email:
+                        type: string
+                        default: 843050672@qq.com
+                      id:
+                        type: int
+                        default: 1
+                      job:
+                        type: string
+                        default: it
+                      location:
+                        type: string
+                        default: location
+                      mobile:
+                        type: string
+                        default: 15060011111
+                      remarks:
+                        type: string
+                        default: remarks
+                      sex:
+                        type: int
+                        default: 1
+                      token:
+                        type: string
+                        default: eyJhbGciOiJIUzU3rKdzH6FW4HohJ32LQqnQ1sLzVqXiuArh8Nco3KJpA_CsLlxwM9-EZe5P_XF8I4US9WN6Q
+                      username:
+                        type: string
+                        default: zcl
         """
         args = parser.parse_args()
         try:
@@ -80,5 +116,3 @@ class LoginManage(Resource):
         except Exception as e:
             return set_return_val(False, {}, str(e), 1301), 400
         return set_return_val(True, data, 'login successful', 1300)
-
-

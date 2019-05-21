@@ -77,38 +77,50 @@ class System(Resource):
     @marshal_with(result_fields)
     def post(self):
         """
-            初始化系统配置
-            ---
-            tags:
-              - system config
-            parameters:
-              - name: platform_name
-                in: query
-                type: string
-                description: 平台名称
-                required: true
-              - name: version_information
-                type: string
-                in: query
-                description: 版本信息
-              - name: copyright
-                type: string
-                in: query
-                description: 版权
-              - name: user_authentication_mode
-                type: string
-                in: query
-                description: 用户验证模式
-              - name: debug
-                type: boolean
-                in: query
-                description: debug
-            responses:
-              200:
-                description: A single user item
-                schema:
-                  description: The system configuration was initialized successfully
-                  default: success
+        初始化系统配置
+        ---
+        tags:
+          - system config
+        parameters:
+          - name: platform_name
+            in: query
+            type: string
+            description: 平台名称
+            required: true
+          - name: version_information
+            type: string
+            in: query
+            description: 版本信息
+          - name: copyright
+            type: string
+            in: query
+            description: 版权
+          - name: user_authentication_mode
+            type: string
+            in: query
+            description: 用户验证模式
+          - name: debug
+            type: string
+            in: query
+            description: debug
+        responses:
+          200:
+            description: 创建系统配置
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+
         """
         args = parser.parse_args()
 
@@ -136,24 +148,45 @@ class System(Resource):
          - system config
         responses:
           200:
-            description: A single user item
+            description: 创建系统配置
             schema:
-              id: SystemConfiguration
               properties:
-                platform_name:
-                  type: string
-                version_information:
-                  type: string
-                logo:
-                  type: string
-                copyright:
-                  type: string
-                user_authentication_mode:
-                  type: string
-                debug:
+                ok:
                   type: boolean
-                store_log:
+                  default: 200
+                  description: 状态
+                code:
                   type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      copyright:
+                        type: string
+                        default: 2019
+                        description: copyright
+                      debug:
+                        type: string
+                        default: True
+                        description: debug
+                      id:
+                        type: string
+                        default: 1
+                        description: id
+                      platform_name:
+                        type: string
+                        default: naguan
+                        description: platform_name
+                      user_authentication_mode:
+                        type: string
+                        default: local
+                        description: user_authentication_mode
+                      version:
+                        type: string
+                        default: 1.0.1
+                        description: version
             """
 
         try:
@@ -167,37 +200,48 @@ class System(Resource):
     @marshal_with(result_fields2)
     def put(self):
         """
-            更新系统配置
-            ---
-            tags:
-              - system config
-            parameters:
-              - in: query
-                name: platform_name
-                type: string
-                description: 平台名称
-              - name: version_information
-                type: string
-                in: query
-                description: 版本信息
-              - name: copyright
-                type: string
-                in: query
-                description: 版权
-              - name: user_authentication_mode
-                type: string
-                in: query
-                description: 用户验证模式
-              - name: debug
-                type: int
-                in: query
-                description: debug
-            responses:
-              200:
-                description: A single user item
-                schema:
-                  description: The system configuration was updated successfully
-                  default: success
+        更新系统配置
+        ---
+        tags:
+          - system config
+        parameters:
+          - in: query
+            name: platform_name
+            type: string
+            description: 平台名称
+          - name: version_information
+            type: string
+            in: query
+            description: 版本信息
+          - name: copyright
+            type: string
+            in: query
+            description: 版权
+          - name: user_authentication_mode
+            type: string
+            in: query
+            description: 用户验证模式
+          - name: debug
+            type: int
+            in: query
+            description: debug
+        responses:
+          200:
+            description: 更新系统配置
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
 

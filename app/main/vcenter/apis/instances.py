@@ -224,55 +224,79 @@ class InstanceManage(Resource):
                   type: array
                   items:
                     properties:
-                      id:
-                        type: string
-                        default: 1
-                      vmtitle:
-                        type: string
-                      vmMorName:
-                        type: string
-                      vmOcName:
-                        type: string
-                      toolsVersion:
-                        type: string
-                      toolsRun:
-                        type: string
-                      sys:
-                        type: string
-                      poolMorName:
-                        type: string
-                      poolOcName:
-                        type: string
-                      kvmVVType:
-                        type: string
-                      isThin:
-                        type: string
-                      ip:
-                        type: string
-                      hostMorName:
-                        type: string
-                      hostOcName:
-                        type: string
-                      hSpace:
-                        type: string
-                      dSpace:
-                        type: string
-                      cpuHzRate:
-                        type: string
-                      cpuHzOverhead:
-                        type: string
                       cpu:
                         type: string
-                      State:
+                        default: 2
+                        description: cpu
+                      created_at:
                         type: string
-                      Network:
+                        default: 2019-05-17 14:39:00
+                        description: created_at
+                      guest_full_name:
                         type: string
-                      MemoryRate:
+                        default: 'Red Hat Enterprise Linux 6 (64-bit)'
+                        description: guest_full_name
+                      guest_id:
                         type: string
-                      Memory:
+                        default: rhel6_64Guest
+                        description: guest_id
+                      host:
                         type: string
-                      DiskRate:
+                        default: 192.168.12.203
+                        description: host
+                      id:
                         type: string
+                        default: 2
+                        description: id
+                      instance_uuid:
+                        type: string
+                        default: 500114bd-a861-f0ae-0f8d-f6e70d7c2c5c
+                        description: instance_uuid
+                      ip:
+                        type: string
+                        default: NUll
+                        description: ip
+                      memory:
+                        type: string
+                        default: 2048
+                        description: memory
+                      num_ethernet_cards:
+                        type: string
+                        default: 2
+                        description: num_ethernet_cards
+                      num_virtual_disks:
+                        type: string
+                        default: 2
+                        description: num_virtual_disks
+                      platform_id:
+                        type: string
+                        default: 2
+                        description: platform_id
+                      status:
+                        type: string
+                        default: poweredOff
+                        description: status
+                      template:
+                        type: string
+                        default: false
+                        description: template
+                      uuid:
+                        type: string
+                        default: 42018b9a-5e13-796b-02fa-57d6f56f3ac8
+                        description: uuid
+                      vm_mor_name:
+                        type: string
+                        default: vm-1362
+                        description: vm_mor_name
+                      vm_name:
+                        type: string
+                        default: 测试菜单1
+                        description: vm_name
+                      vm_path_name:
+                        type: string
+                        default: 测试菜单1
+                        description: '[datastore1] 测试菜单1/测试菜单1.vmx'
+
           400:
             description: 获取失败
             schema:
@@ -424,55 +448,7 @@ class InstanceManage(Resource):
                   type: array
                   items:
                     properties:
-                      id:
-                        type: string
-                        default: 1
-                      vmtitle:
-                        type: string
-                      vmMorName:
-                        type: string
-                      vmOcName:
-                        type: string
-                      toolsVersion:
-                        type: string
-                      toolsRun:
-                        type: string
-                      sys:
-                        type: string
-                      poolMorName:
-                        type: string
-                      poolOcName:
-                        type: string
-                      kvmVVType:
-                        type: string
-                      isThin:
-                        type: string
-                      ip:
-                        type: string
-                      hostMorName:
-                        type: string
-                      hostOcName:
-                        type: string
-                      hSpace:
-                        type: string
-                      dSpace:
-                        type: string
-                      cpuHzRate:
-                        type: string
-                      cpuHzOverhead:
-                        type: string
-                      cpu:
-                        type: string
-                      State:
-                        type: string
-                      Network:
-                        type: string
-                      MemoryRate:
-                        type: string
-                      Memory:
-                        type: string
-                      DiskRate:
-                        type: string
+
           400:
             description: 获取失败
             schema:

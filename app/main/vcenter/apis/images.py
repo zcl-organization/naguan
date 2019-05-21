@@ -44,13 +44,38 @@ class ImageManage(Resource):
                   type: array
                   items:
                     properties:
+                      ds_mor_name:
+                        type: string
+                        default: 1
+                        description: ds_mor_name
+                      ds_name:
+                        type: string
+                        default: 1
+                        description: ds_name
+                      file_type:
+                        type: string
+                        default: 1
+                        description: file_type
                       id:
                         type: string
                         default: 1
-                      MorName:
+                        description: id
+                      iso_name:
                         type: string
-                      OcName:
+                        default: 1
+                        description: iso_name
+                      last_change_time:
                         type: string
+                        default: 1
+                        description: last_change_time
+                      path:
+                        type: string
+                        default: 1
+                        description: path
+                      size:
+                        type: string
+                        default: 1
+                        description: size
           400:
             description: 获取失败
             schema:

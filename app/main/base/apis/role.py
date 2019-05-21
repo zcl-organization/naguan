@@ -31,14 +31,33 @@ class RoleManage(Resource):
              description: 页码
          responses:
            200:
-             description: 获取角色信息
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 获取角色信息
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: string
+                        default: 200
+                        description: id
+                      name:
+                        default: admin
+                        type: string
+                        description: name
+                      description:
+                        default: admin
+                        type: string
+                        description: admin
          """
         args = parser.parse_args()
 
@@ -72,14 +91,21 @@ class RoleManage(Resource):
              description: 描述
          responses:
            200:
-             description: 创建角色信息
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 创建角色信息
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
          """
         args = parser.parse_args()
 
@@ -114,14 +140,21 @@ class RoleManage(Resource):
              description: 描述
          responses:
            200:
-             description: 更新角色名和描述
-             schema:
-               id: Role
-               properties:
-                 name:
-                   type: string
-                   description: The name of the user
-                   default: Steven Wilson
+            description: 更新角色信息
+            schema:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
          """
         args = parser.parse_args()
         try:
@@ -144,14 +177,21 @@ class RoleManage(Resource):
             required: true
         responses:
           200:
-            description: 删除角色
+            description: 删除角色信息
             schema:
-              id: Role
-              properties:
-                name:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: The name of the user
-                  default: Steven Wilson
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
           """
         try:
             control.role.role_delete(id)

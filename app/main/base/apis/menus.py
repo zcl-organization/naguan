@@ -35,7 +35,7 @@ ret_status = {
 
 class MenuManage(Resource):
     # @roles_accepted('admin', 'user')
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def get(self):
         """
         获取菜单信息
@@ -60,15 +60,59 @@ class MenuManage(Resource):
             type: string
         responses:
           200:
-            description: 菜单获取
+            description: 用户登录
             schema:
-              id: User
-              properties:
-                id:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: 用户id
-                  default: Steven Wilson
-                  name: code
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      icon:
+                        type: string
+                        default: icon
+                      id:
+                        type: string
+                        default: icon
+                      identifier:
+                        type: string
+                        default: icon
+                      name:
+                        type: string
+                        default: icon
+                      url:
+                        type: string
+                        default: icon
+                      menus:
+                        type: array
+                        items:
+                          properties:
+                            icon:
+                              type: string
+                              default: icon
+                            id:
+                              type: string
+                              default: icon
+                            identifier:
+                              type: string
+                              default: icon
+                            name:
+                              type: string
+                              default: icon
+                            url:
+                              type: string
+                              default: icon
+                            menus:
+                              type: array
+                              items:
+                                properties:
         """
         # print('role:', current_user.is_active)
         try:
@@ -125,15 +169,21 @@ class MenuManage(Resource):
             type: string
         responses:
           200:
-            description: 菜单获取
+            description: 删除菜单信息
             schema:
-              id: User
-              properties:
-                id:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: 用户id
-                  default: Steven Wilson
-                  name: code
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
         try:
@@ -168,14 +218,21 @@ class MenuManage(Resource):
            required: true
        responses:
          200:
-           description: A single user item
-           schema:
-             id: User
+            description: 删除菜单信息
+            schema:
              properties:
-               id:
-                 type: string
-                 description: 用户id
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             control.menu.menu_delete(id=id)
@@ -223,14 +280,21 @@ class MenuManage(Resource):
            in: formData
         responses:
          200:
-           description: 更新菜单信息
-           schema:
-             id: User
+            description: 删除菜单信息
+            schema:
              properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
         try:

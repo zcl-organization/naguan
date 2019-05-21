@@ -83,8 +83,7 @@ def sync_vcenter_vm(si, content, host, platform):
                                                    guest_id=vm.summary.config.guestId,
                                                    guest_full_name=vm.summary.config.guestFullName,
                                                    host=host.name, ip=ip, status=vm.summary.runtime.powerState,
-                                                   resource_pool_name=resource_pool_name,
-                                                   created_at=vm.config.createDate)
+                                                   resource_pool_name=resource_pool_name)
 
         else:
 

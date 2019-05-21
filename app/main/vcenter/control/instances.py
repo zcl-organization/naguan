@@ -202,30 +202,30 @@ class Instance(object):
     # 更新cpu信息
     def update_vcpu(self, new_cpu, old_cpu):
         try:
-            if self.local_vm.cpu == old_cpu:
-                cspec = vim.vm.ConfigSpec()
-                cspec.numCPUs = int(new_cpu)
-                cspec.numCoresPerSocket = 1
-                task = self.vm.Reconfigure(cspec)
-                wait_for_tasks(self.si, [task])
-                self.update_vm_local()
-            else:
-                raise Exception('参数错误')
+            # if self.local_vm.cpu == old_cpu:
+            cspec = vim.vm.ConfigSpec()
+            cspec.numCPUs = int(new_cpu)
+            cspec.numCoresPerSocket = 1
+            task = self.vm.Reconfigure(cspec)
+            wait_for_tasks(self.si, [task])
+            self.update_vm_local()
+            # else:
+            #     raise Exception('参数错误')
         except Exception as e:
             raise Exception('vm cpu update failed')
 
     # 更新内存信息
     def update_vmemory(self, new_memory, old_memory):
         try:
-            if self.local_vm.memory == old_memory:
-                print ('cccc')
-                cspec = vim.vm.ConfigSpec()
-                cspec.memoryMB = int(new_memory)
-                task = self.vm.Reconfigure(cspec)
-                wait_for_tasks(self.si, [task])
-                self.update_vm_local()
-            else:
-                raise Exception('参数错误')
+            # if self.local_vm.memory == old_memory:
+            print ('cccc')
+            cspec = vim.vm.ConfigSpec()
+            cspec.memoryMB = int(new_memory)
+            task = self.vm.Reconfigure(cspec)
+            wait_for_tasks(self.si, [task])
+            self.update_vm_local()
+            # else:
+            #     raise Exception('参数错误')
         except Exception as e:
             raise Exception('vm memory update failed')
 
@@ -389,8 +389,8 @@ class Instance(object):
                                                    guest_full_name=self.vm.summary.config.guestFullName,
                                                    host=self.local_vm.host, ip=ip,
                                                    status=self.vm.summary.runtime.powerState,
-                                                   resource_pool_name=resource_pool_name,
-                                                   created_at=self.vm.config.createDate)
+                                                   resource_pool_name=resource_pool_name)
+            print('update_vm2')
         else:
             db.instances.vcenter_vm_create(uuid=self.vm.summary.config.uuid, platform_id=self.platform_id,
                                            vm_name=self.vm.summary.config.name,

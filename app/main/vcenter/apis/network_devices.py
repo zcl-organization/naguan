@@ -31,7 +31,7 @@ class NetWorkManage(Resource):
             required: true
         responses:
           200:
-            description: vCenter disk 信息
+            description: vCenter network device  信息
             schema:
               properties:
                 ok:
@@ -46,14 +46,34 @@ class NetWorkManage(Resource):
                   type: array
                   items:
                     properties:
+                      address_type:
+                        type: string
+                        default: assigned
+                        description: address_type
+                      id:
+                        type: string
+                        default: 1
+                        description: id
                       label:
                         type: string
-                      disk_size:
+                        default: Network adapter 1
+                        description: label
+                      mac:
                         type: string
-                      disk_file:
+                        default: 00:50:56:81:bd:78
+                        description: mac
+                      network_port_group:
                         type: string
-                      level:
+                        default: VM Network
+                        description: network_port_group
+                      platform_id:
                         type: string
+                        default: 1
+                        description: platform_id
+                      vm_uuid:
+                        type: string
+                        default: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                        description: vm_uuid
           400:
             description: 获取失败
             schema:
@@ -108,7 +128,7 @@ class NetWorkManage(Resource):
             required: true
         responses:
           200:
-            description: vCenter tree 信息
+            description:  vm 添加 network device  信息
             schema:
               properties:
                 ok:

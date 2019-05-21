@@ -23,42 +23,94 @@ class DataStoreManage(Resource):
             required: true
         responses:
           200:
-            description: vCenter DataStore 信息
+            description: 获取datastore 成功
             schema:
               properties:
                 ok:
                   type: boolean
-                  description: status
+                  default: 200
+                  description: 状态
                 code:
-                  type: "integer"
-                  format: "int64"
+                  type: string
                 msg:
                   type: string
                 data:
                   type: array
                   items:
                     properties:
-                      label:
+                      capacity:
                         type: string
-                      disk_size:
+                        default: 591363309568
+                        description: capacity
+                      dc_mor_name:
                         type: string
-                      disk_file:
+                        default: datacenter-661
+                        description: dc_mor_name
+                      dc_name:
                         type: string
+                        default: 200
+                        description: Datacenter
+                      ds_mor_name:
+                        type: string
+                        default: datastore-671
+                        description: ds_mor_name
+                      ds_name:
+                        type: string
+                        default: datastore1
+                        description: ds_name
+                      free_capacity:
+                        type: string
+                        default: 173924155392
+                        description: free_capacity
+                      host:
+                        type: string
+                        default: 192.168.12.203
+                        description: host
+                      id:
+                        type: string
+                        default: 200
+                        description: id
+                      local:
+                        type: boolean
+                        default: 200
+                        description: local
+                      platform_id:
+                        type: string
+                        default: 200
+                        description: platform_id
+                      ssd:
+                        type: boolean
+                        default: true
+                        description: ssd
+                      type:
+                        type: string
+                        default: VMFS
+                        description: type
+                      used_capacity:
+                        type: string
+                        default: 417439154176
+                        description: type
+                      uuid:
+                        type: string
+                        default: 5c19f5d5-ada3c960-acd7-b8ca3af5a86b
+                        description: type
+                      version:
+                        type: string
+                        default: 6.8.2
+                        description: type
+
           400:
-            description: 获取失败
+            description: 获取datastore失败
             schema:
               properties:
                 ok:
                   type: boolean
+                  default: 200
                   description: 状态
-                  default: False
                 code:
-                  type: "integer"
-                  format: "int64"
-                  default: 1302
+                  type: string
                 msg:
                   type: string
-                  default: "vm not found"
                 data:
                   type: array
                   items:

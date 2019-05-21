@@ -45,14 +45,58 @@ class LogTask(Resource):
             description: 请求id
         responses:
           200:
-            description: A single logs item a
+            description: 任务日志信息
             schema:
-              id: EventLog
               properties:
-                username:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: The name of the user
-                  default: Steven Wilson
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: int
+                        default: 1
+                      await_execute:
+                        type: string
+                        default: 1/2
+                      end_time:
+                        type: string
+                        default: 2019-05-20 15:59:26.096000
+                      enqueue_time:
+                        type: string
+                        default: 2019-05-20 15:58:26.096000
+                      method_name:
+                        type: string
+                        default: sync_tree
+                      queue_name:
+                        type: string
+                        default: vsphere
+                      rely_task_id:
+                        type: string
+                        default: --
+                      request_id:
+                        type: string
+                        default: 96be5461-abb2-508f-aba5-38cf027efe48
+                      start_time:
+                        type: string
+                        default: None
+                      status:
+                        type: string
+                        default: wait
+                      submitter:
+                        type: string
+                        default: anonymous
+                      task_id:
+                        type: string
+                        default: eb054bcd-3360-4eff-a10d-1f2c35a977fb
+
         """
         args = parser.parse_args()
         task_id = args.get('task_id')
@@ -95,12 +139,19 @@ class LogTask(Resource):
          200:
            description: 根据任务日志id删除信息
            schema:
-             id: TaskLog
              properties:
-               username:
-                 type: string
-                 description: The name of the task_logs
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             control.task_logs.log_delete(id)

@@ -34,19 +34,31 @@ class PlatformTypeMg(Resource):
            type: string
            description: 平台类型名称
        responses:
-         200:
-           description: 查询云平台类型
-           schema:
-             id: platform_type
+          200:
+            description: 查询平台类型
+            schema:
              properties:
-               id:
-                 type: string
-                 description: 类型ID
-                 default: 1
-               name:
-                 type: string
-                 description: 类型名称
-                 default: vCenter
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: string
+                        default: 1
+                        description: id
+                      name:
+                        type: string
+                        default: vcenter
+                        description: 平台类型名称
+
         """
         args = parser.parse_args()
         try:
@@ -59,7 +71,7 @@ class PlatformTypeMg(Resource):
 
     def post(self):
         """
-        根据id更新云平台类型信息
+        创建平台类型
        ---
        tags:
           - cloudplatformtype
@@ -70,18 +82,21 @@ class PlatformTypeMg(Resource):
            description: 平台类型名称
        responses:
          200:
-           description: 根据用户id删除云平台类型
-           schema:
-             id: platform_type
+            description: 创建平台类型
+            schema:
              properties:
-               id:
-                 type: string
-                 description: 类型ID
-                 default: 1
-               name:
-                 type: string
-                 description: 类型名称
-                 default: vCenter
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
 
@@ -113,18 +128,21 @@ class PlatformTypeMg(Resource):
            description: 平台类型名称
        responses:
          200:
-           description: 根据用户id删除云平台类型
-           schema:
-             id: platform_type
+            description: 更新平台类型
+            schema:
              properties:
-               id:
-                 type: string
-                 description: 类型ID
-                 default: 1
-               name:
-                 type: string
-                 description: 类型名称
-                 default: vCenter
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
 
         args = parser.parse_args()
@@ -151,18 +169,21 @@ class PlatformTypeMg(Resource):
            required: true
        responses:
          200:
-           description: 根据用户id删除云平台类型
-           schema:
-             id: platform_type
+            description: 删除平台类型
+            schema:
              properties:
-               id:
-                 type: string
-                 description: 类型ID
-                 default: 1
-               name:
-                 type: string
-                 description: 类型名称
-                 default: vCenter
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             control.platform_type.type_delete(id)

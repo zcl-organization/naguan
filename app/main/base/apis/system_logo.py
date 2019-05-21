@@ -19,19 +19,33 @@ parser.add_argument('logo', type=werkzeug.datastructures.FileStorage, location='
 class SystemLogo(Resource):
     def put(self):
         """
-            update logo
-            ---
-            tags:
-             - system config
-            parameters:
-            - name: "logo"
-              in: "formData"
-              required: true
-              type: file
-              format: "int64"
-            responses:
-                200:
-                  description: "successful operation"
+        update logo
+        ---
+        tags:
+         - system config
+        parameters:
+        - name: "logo"
+          in: "formData"
+          required: true
+          type: file
+          format: "int64"
+        responses:
+            200:
+              description: 更新系统配置
+              schema:
+                properties:
+                  ok:
+                    type: boolean
+                    default: 200
+                    description: 状态
+                  code:
+                    type: string
+                  msg:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      properties:
         """
         args = parser.parse_args()
         try:

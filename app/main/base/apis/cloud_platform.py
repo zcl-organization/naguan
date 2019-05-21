@@ -34,15 +34,53 @@ class CloudPlatformManage(Resource):
             type: string
         responses:
           200:
-            description: 获取云平台信息
+            description: 获取平台信息
             schema:
-              id: User
-              properties:
-                id:
+             properties:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: 用户id
-                  default: Steven Wilson
-                  name: code
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: string
+                        default: 200
+                        description: id
+                      ip:
+                        type: string
+                        default: 192.168.12.205
+                        description: ip
+                      name:
+                        type: string
+                        default: vcenter
+                        description: name
+                      password:
+                        type: string
+                        default: 123456
+                        description: passwd
+                      platform_name:
+                        type: string
+                        default: vcenter
+                        description: platform_name
+                      platform_type_id:
+                        type: string
+                        default: 1
+                        description: platform_type_id
+                      port:
+                        type: string
+                        default: 443
+                        description: port
+                      remarks:
+                        type: string
+                        default: ddddcv
+                        description: remarks
         """
         args = parser.parse_args()
         try:
@@ -91,14 +129,21 @@ class CloudPlatformManage(Resource):
            required: true
        responses:
          200:
-           description: A single user create item
-           schema:
-             id: User
+            description: 新增平台信息
+            schema:
              properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
         if not all([args['platform_type_id'], args['platform_name'], args['admin_name'], args['admin_password'],
@@ -145,14 +190,21 @@ class CloudPlatformManage(Resource):
            in: formData
         responses:
          200:
-           description: 更新云平台信息
-           schema:
-             id: User
+            description: 更新平台信息
+            schema:
              properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
         try:
@@ -177,14 +229,21 @@ class CloudPlatformManage(Resource):
            required: true
        responses:
          200:
-           description: 根据用户id删除用户信息
-           schema:
-             id: User
+            description: 删除平台信息
+            schema:
              properties:
-               id:
-                 type: string
-                 description: 用户id
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             control.cloud_platform.platform_delete(id)

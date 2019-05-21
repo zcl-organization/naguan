@@ -34,15 +34,13 @@ class SnapshotManage(Resource):
             name: vm_uuid
             type: string
             description: vm_uuid
-            required: true
           - in: query
             name: snapshot_id
             type: string
             description: snapshot_id
-            required: true
         responses:
           200:
-            description: vCenter tree 信息
+            description: 获取vm snapshot 信息
             schema:
               properties:
                 ok:
@@ -58,6 +56,46 @@ class SnapshotManage(Resource):
                   type: array
                   items:
                     properties:
+                      create_time:
+                        type: string
+                        default: 2019-04-08 14:09:40
+                        description: create_time
+                      current:
+                        type: string
+                        default: true
+                        description: current
+                      description:
+                        type: string
+                        default: internal-template-snapshot
+                        description: description
+                      id:
+                        type: string
+                        default: 1
+                        description: id
+                      mor_name:
+                        type: string
+                        default: snapshot-739
+                        description: mor_name
+                      name:
+                        type: string
+                        default: internal-template-snapshot
+                        description: name
+                      snapshot_id:
+                        type: string
+                        default: 1
+                        description: snapshot_id
+                      snapshot_parent_id:
+                        type: string
+                        default: null
+                        description: snapshot_parent_id
+                      state:
+                        type: string
+                        default: poweredOff
+                        description: state
+                      vm_uuid:
+                        type: string
+                        default: 420181c1-ff55-fde5-1b16-1568bd38c6b3
+                        description: vm_uuid
           400:
             description: 获取失败
             schema:
@@ -112,6 +150,10 @@ class SnapshotManage(Resource):
             name: description
             type: string
             description: description
+          - in: query
+            name: action
+            type: string
+            description: create  revert
         responses:
           200:
             description: vCenter tree 信息
@@ -155,7 +197,7 @@ class SnapshotManage(Resource):
         try:
 
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if args['action'] == 'clone':
+            if args['action'] == 'create':
 
                 if not args['snapshot_name']:
                     raise Exception('Parameter error')

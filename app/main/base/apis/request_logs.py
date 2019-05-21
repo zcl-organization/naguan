@@ -20,7 +20,7 @@ class LogRequest(Resource):
         ---
         tags:
           - logs
-        summary: Add a new pet to the store
+        summary: 请求日志信息
         parameters:
           - in: query
             name: request_id
@@ -36,14 +36,42 @@ class LogRequest(Resource):
             description: 状态码
         responses:
           200:
-            description: A single logs item
+            description: 请求日志信息
             schema:
-              id: RequestLog
               properties:
-                username:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: The name of the user
-                  default: Steven Wilson
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: string
+                        default: 1
+                      ip:
+                        type: string
+                        default: 127.0.0.1
+                      request_id:
+                        type: string
+                        default: bd14307d-1dc0-57c5-bde8-0e44fa4a9903
+                      status:
+                        type: string
+                        default: 200
+                      submitter:
+                        type: string
+                        default: anonymous
+                      time:
+                        type: string
+                        default: 2019-05-17 16:05:37
+                      url:
+                        type: string
+                        default: GET/http://127.0.0.1:5000/api/v1.0/vCenter/tree
         """
         args = parser.parse_args()
         pgnum = args['pgnum']
@@ -73,12 +101,19 @@ class LogRequest(Resource):
          200:
            description: 根据请求日志id删除信息
            schema:
-             id: RequestLog
              properties:
-               username:
-                 type: string
-                 description: The name of the request_logs
-                 default: Steven Wilson
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
+                  type: string
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
 
         try:

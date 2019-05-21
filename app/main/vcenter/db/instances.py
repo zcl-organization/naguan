@@ -42,7 +42,7 @@ def vcenter_get_vm_by_uuid(uuid, platform_id):
 
 def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template, vm_path_name, memory, cpu,
                               num_ethernet_cards, num_virtual_disks, instance_uuid, guest_id, guest_full_name, host,
-                              ip, status, resource_pool_name, created_at):
+                              ip, status, resource_pool_name, created_at=None):
     # print('uuid:', uuid)
     # print('platform_id:', platform_id)
     if uuid and platform_id:
@@ -65,11 +65,15 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
         vm_info.status = status
         vm_info.resource_pool_name = resource_pool_name
         # print(created_at)
-        vm_info.created_at = created_at
+        if created_at:
+            vm_info.created_at = created_at
+    try:
 
         db.session.commit()
-    else:
-        return False
+    except Exception as e:
+        print(str(e))
+        raise Exception(e)
+
 
 
 def vcenter_get_vm_by_platform_id(platform_id, host):

@@ -28,7 +28,7 @@ class DiskManage(Resource):
           - in: query
             name: vm_uuid
             type: string
-            required: false
+            required: true
         responses:
           200:
             description: vCenter disk 信息
@@ -46,26 +46,62 @@ class DiskManage(Resource):
                   type: array
                   items:
                     properties:
-                      label:
-                        type: string
-                      disk_size:
-                        type: string
-                      disk_file:
-                        type: string
-                      level:
-                        type: string
-                      shares:
-                        type: integer
-                      IOPs:
-                        type: string
                       cache:
                         type: string
-                      type:
+                        default: 200
+                        description: cache
+                      disk_file:
                         type: string
+                        default: '[ssd-1]clone2/clone2.vmdk'
+                        description: disk_file
+                      disk_mode:
+                        type: string
+                        default: persistent
+                        description: disk_mode
+                      disk_size:
+                        type: string
+                        default: 54,525,952 KB
+                        description: disk_size
+                      disk_type:
+                        type: integer
+                        default: Provisioned
+                        description: disk_type
+                      disk_uuid:
+                        type: string
+                        default: 6000C298-91e2-7c1d-d4b6-0b53feba44bd
+                        description: disk_uuid
+                      id:
+                        type: string
+                        default: 43
+                        description: id
+                      iops:
+                        type: string
+                        default: -1
+                        description: iops
+                      label:
+                        type: string
+                        default: Hard disk 1
+                        description: label
+                      level:
+                        type: string
+                        default: normal
+                        description: level
+                      platform_id:
+                        type: string
+                        default: 1
+                        description: platform_id
+                      shares:
+                        type: string
+                        default: 1000
+                        description: shares
                       sharing:
                         type: string
-                      diskMode:
+                        default: sharingNone
+                        description: sharing
+                      vm_uuid:
                         type: string
+                        default: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                        description: vm_uuid
           400:
             description: 获取失败
             schema:
