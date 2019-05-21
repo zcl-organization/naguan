@@ -33,6 +33,7 @@ parser.add_argument('dns')
 parser.add_argument('domain')
 parser.add_argument('guest_id')
 parser.add_argument('pgnum')
+parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
@@ -55,7 +56,7 @@ class InstanceManage(Resource):
           - in: query
             name: action
             type: string
-            description: 'start stop suspend remove restart create clone'
+            description: 'start stop suspend remove restart create clone cold_migrate'
             required: true
           - in: query
             name: vm_name
@@ -70,6 +71,10 @@ class InstanceManage(Resource):
             type: string
             description: new_memory
           - in: query
+            name: host
+            type: string
+            description: host
+          - in: query
             name: dc_id
             type: string
             description: datacenter id
@@ -77,6 +82,10 @@ class InstanceManage(Resource):
             name: ds_id
             type: string
             description: datastore id
+          - in: query
+            name: resourcepool
+            type: string
+            description: resourcepool
           - in: query
             name: guest_id
             type: string
@@ -191,6 +200,10 @@ class InstanceManage(Resource):
             type: string
             description: vmOcName
           - in: query
+            name: pgsort
+            type: string
+            description: pgsort
+          - in: query
             name: pgnum
             type: int
             description: 页码
@@ -287,7 +300,9 @@ class InstanceManage(Resource):
             pgnum = args['pgnum']
             if not pgnum:
                 pgnum = 1  # 默认第一页
-            data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum)
+            print(args['pgsort'])
+            data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
+                                     pgsort=args['pgsort'])
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
             #                                    vm_name=args['vm_name'])
 

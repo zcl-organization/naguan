@@ -49,7 +49,7 @@ def log_delete(log_id):
 
 
 # 任务日志创建
-def create_log(task_id, state, queue, task):
+def create_log(request_id,task_id, state, queue, task):
     newlog = TaskLog()
     newlog.request_id = g.request_id
     newlog.task_id = task_id

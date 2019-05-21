@@ -176,6 +176,7 @@ class TaskLog(db.Model):
     enqueue_time = db.Column(db.DateTime, default=datetime.datetime.now())  # 入队时间
     start_time = db.Column(db.DateTime)  # 开始时间
     end_time = db.Column(db.DateTime)  # 结束时间
+    request_id = db.Column(db.String(100))  # 请求ID
     # event_logs = db.relationship('EventLog', backref='task_logs', lazy=True)  # 关联表
 
 
@@ -219,6 +220,7 @@ class VCenterVm(db.Model):
     ip = db.Column(db.String(20))  # ip
     status = db.Column(db.String(40))
     resource_pool_name = db.Column(db.String(32))
+    created_at = db.Column(db.DateTime) # 创建时间
 
 
 class UsersInstances(db.Model):

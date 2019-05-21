@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
@@ -146,10 +147,11 @@ class VCenterManage(Resource):
 
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            # control.vcenter.sync_tree(args['platform_id'])
-            task = control.vcenter.sync_tree.apply_async(args=[args['platform_id']], queue='vsphere')
-            print(dir(task))
-            base_control.task_logs.create_log(task.task_id, 'wait', 'vsphere', 'sync_tree')
+            control.vcenter.sync_tree(args['platform_id'])
+            #task = control.vcenter.sync_tree.apply_async(args=[args['platform_id']], queue='vsphere')
+            # print(dir(task))
+            #request_id = g.request_id
+            #base_control.task_logs.create_log(request_id, task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:
             return set_return_val(False, {}, 'Failed to sync vcneter tree', 1239), 400
 

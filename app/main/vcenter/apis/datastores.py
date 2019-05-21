@@ -12,7 +12,7 @@ class DataStoreManage(Resource):
 
     def get(self):
         """
-         获取vCenter vm_disk 信息
+         获取vCenter datastore 信息
         ---
         tags:
           - vCenter DataStore
@@ -23,7 +23,7 @@ class DataStoreManage(Resource):
             required: true
         responses:
           200:
-            description: vCenter disk 信息
+            description: vCenter DataStore 信息
             schema:
               properties:
                 ok:

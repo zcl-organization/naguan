@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import datetime
+
 from app.main.vcenter.control.resource_pool import sync_resourcepool
 from app.main.vcenter.control.utils import get_mor_name, connect_server, get_connect
 from app.main.vcenter.control.network_port_group import sync_network_port_group
@@ -9,9 +11,10 @@ from app.main.vcenter.control.datastores import sync_datastore
 from app.main.vcenter.control.snapshots import sync_snapshot
 from pyVim import connect
 import atexit
+from flask import g
 import time
 # import threadpool
-import threading
+# import threading
 
 from pyVmomi import vmodl
 from pyVmomi import vim
@@ -20,12 +23,13 @@ from app.exts import celery
 from app.main.base import task
 from app.main.base.control import task_logs
 
+
 @celery.task(base=task.tasks_log.call_sync_tree)
 def sync_tree(platform_id):
     # task_logs.task_end(task_id, 'ok')
+    g.start_time = datetime.datetime.now()
     si, content, platform = get_connect(platform_id)
     sync_vcenter_tree(si, content, platform)
-
 
 
 # @celery.task()
@@ -47,6 +51,11 @@ def sync_vcenter_vm(si, content, host, platform):
         vm_list.append(vm.uuid)
     # print(vm_list)
     for vm in vms:
+        # print(dir(vm.config))
+
+        # print(vm.summary.config.name)
+        # print(vm.config.createDate)
+        # return 'ccc'
         if vm.resourcePool:
             resource_pool_name = vm.resourcePool.name
             # db.instances.update_vm_rp_name_by_vm_mor_name(platform['id'], get_mor_name(vm), vm.resourcePool.name)
@@ -74,7 +83,8 @@ def sync_vcenter_vm(si, content, host, platform):
                                                    guest_id=vm.summary.config.guestId,
                                                    guest_full_name=vm.summary.config.guestFullName,
                                                    host=host.name, ip=ip, status=vm.summary.runtime.powerState,
-                                                   resource_pool_name=resource_pool_name)
+                                                   resource_pool_name=resource_pool_name,
+                                                   created_at=vm.config.createDate)
 
         else:
 
@@ -90,7 +100,7 @@ def sync_vcenter_vm(si, content, host, platform):
                                            guest_id=vm.summary.config.guestId,
                                            guest_full_name=vm.summary.config.guestFullName,
                                            host=host.name, ip=ip, status=vm.summary.runtime.powerState,
-                                           resource_pool_name=resource_pool_name)
+                                           resource_pool_name=resource_pool_name, created_at=vm.config.createDate)
 
         # 同步 vm network device
         netowrk_device_manage.sync_network_device(platform_id=platform['id'], vm=vm)

@@ -22,7 +22,7 @@ class LogEvent(Resource):
         ---
         tags:
           - logs
-        summary: Add a new pet to the store
+        summary: 事件日志
         parameters:
           - in: query
             name: event_request_id
@@ -46,14 +46,49 @@ class LogEvent(Resource):
             description: 资源id
         responses:
           200:
-            description: A single logs item
+            description: 事件日志信息
             schema:
-              id: EventLog
               properties:
-                username:
+                ok:
+                  type: boolean
+                  default: 200
+                  description: 状态
+                code:
                   type: string
-                  description: The name of the user
-                  default: Steven Wilson
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: string
+                        default: 1
+                      event_request_id:
+                        type: string
+                        default: 4418f216-5956-5df7-a33c-990c2f53e5c8
+                      operation_event:
+                        type: string
+                        default: 4418f216-5956-5df7-a33c-990c2f53e5c8
+                      operation_resources_id:
+                        type: string
+                        default: 1111
+                      resource_type:
+                        type: string
+                        default: menu
+                      result:
+                        type: string
+                        default: 1
+                      submitter:
+                        type: string
+                        default: anonymous
+                      task_request_id:
+                        type: string
+                        default: 4418f216-5956-5df7-a33c-990c2f53e5c8
+                      time:
+                        type: string
+                        default: 2019-05-20 10:17:40
+
         """
         args = parser.parse_args()
         pgnum = args['pgnum']
@@ -63,13 +98,6 @@ class LogEvent(Resource):
         # operation_resources_id = args.get('operation_resources_id')
         if not pgnum:
             pgnum = 1  # 默认第一页
-        # options = {
-        #     'page': pgnum,
-        #     'event_request_id': event_request_id,
-        #     'submitter': submitter,
-        #     'task_request_id': task_request_id,
-        #     'operation_resources_id': operation_resources_id,
-        # }
 
         try:
 
@@ -96,15 +124,22 @@ class LogEvent(Resource):
          200:
            description: 根据事件日志id删除信息
            schema:
-             id: EventLog
              properties:
-               username:
+               ok:
+                 type: boolean
+                 default: 200
+                 description: 状态
+               code:
                  type: string
-                 description: The name of the event_logs
-                 default: Steven Wilson
+               msg:
+                 type: string
+               data:
+                 type: array
+                 items:
+                   properties:
         """
         try:
-            result = control.event_logs.log_delete(id=id)
+            result = control.event_logs.log_delete(log_id=id)
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'request log deleted succeeded.', 1520)

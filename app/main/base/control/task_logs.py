@@ -36,8 +36,8 @@ def log_delete(log_id):
     return db.task_logs.log_delete(log_id)
 
 
-def create_log(task_id, state, queue, task):
-    db.task_logs.create_log(task_id, state, queue, task)
+def create_log(request_id, task_id, state, queue, task):
+    db.task_logs.create_log(request_id, task_id, state, queue, task)
 
 
 # 开始任务日志

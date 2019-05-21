@@ -1,18 +1,13 @@
 # -*- coding:utf-8 -*-
+from sqlalchemy import desc, asc
 from app.models import VCenterVm
 from app.exts import db
-
-
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf8')
 
 
 # 添加vcenter tree 信息
 def vcenter_vm_create(uuid, platform_id, vm_name, vm_mor_name, template, vm_path_name, memory, cpu,
                       num_ethernet_cards, num_virtual_disks, instance_uuid, guest_id, guest_full_name, host, ip,
-                      status, resource_pool_name):
-
+                      status, resource_pool_name, created_at):
     new_vm = VCenterVm()
     new_vm.platform_id = platform_id
     new_vm.vm_name = unicode(vm_name)
@@ -31,7 +26,7 @@ def vcenter_vm_create(uuid, platform_id, vm_name, vm_mor_name, template, vm_path
     new_vm.ip = ip
     new_vm.status = status
     new_vm.resource_pool_name = resource_pool_name
-
+    new_vm.created_at = created_at
     db.session.add(new_vm)
     db.session.commit()
 
@@ -47,7 +42,7 @@ def vcenter_get_vm_by_uuid(uuid, platform_id):
 
 def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template, vm_path_name, memory, cpu,
                               num_ethernet_cards, num_virtual_disks, instance_uuid, guest_id, guest_full_name, host,
-                              ip, status, resource_pool_name):
+                              ip, status, resource_pool_name, created_at):
     # print('uuid:', uuid)
     # print('platform_id:', platform_id)
     if uuid and platform_id:
@@ -69,6 +64,8 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
         vm_info.ip = ip
         vm_info.status = status
         vm_info.resource_pool_name = resource_pool_name
+        # print(created_at)
+        vm_info.created_at = created_at
 
         db.session.commit()
     else:
@@ -93,7 +90,8 @@ def vm_delete_by_uuid(platform_id, host, uuid):
     # return True
 
 
-def vm_list(platform_id, host, vm_name, pgnum):
+def vm_list(platform_id, host, vm_name, pgnum, pgsort):
+    print(pgsort)
     query = db.session.query(VCenterVm)
     if platform_id:
         query = query.filter_by(platform_id=platform_id)
@@ -101,6 +99,11 @@ def vm_list(platform_id, host, vm_name, pgnum):
         query = query.filter_by(host=host)
     if vm_name:
         query = query.filter_by(vm_name=vm_name)
+
+    if pgsort == 'time':
+        query = query.order_by(asc(VCenterVm.created_at))
+    else:
+        query = query.order_by(desc(VCenterVm.created_at))
     if pgnum:  # 默认获取分页获取所有日志
         query = query.paginate(page=int(pgnum), per_page=10, error_out=False)
     # print(query)

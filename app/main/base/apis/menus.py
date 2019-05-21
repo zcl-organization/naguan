@@ -35,7 +35,7 @@ ret_status = {
 
 class MenuManage(Resource):
     # @roles_accepted('admin', 'user')
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def get(self):
         """
         获取菜单信息

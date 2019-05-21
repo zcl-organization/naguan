@@ -222,20 +222,18 @@ def verify_password(username_or_token, password):
     ldap = False
     if password == '':
 
-        if session.get('token'):
-            print('token:', session.get('token'))
-            return True
+        if session.get(username_or_token):
+            print('token:', session.get(username_or_token))
+            # return True
         else:
             print('unable get session')
+            return False
 
         data, token_flag = Users.verify_auth_token(username_or_token)
         # data, token_flag = parse_token(username_or_token)
         if token_flag == 1:  # 认证成功
             print('verify success')
-            # print(data)
-            # g.username = 'zcl'
-            # g.user_id = data.username
-            # print(data)
+
             g.username = data['username']
             print(g.username)
 
@@ -277,68 +275,4 @@ def verify_password(username_or_token, password):
     # g.user = user
     return True
 
-# auth = Blueprint('auth', __name__, url_prefix='/auth')
-#
-#
-# @auth.route('/login', endpoint='login', methods=['post', 'get'])
-# def login():
-#     form = LoginForm()
-#     # 校验 是否是从form提交进入
-#     if not form.validate_on_submit():
-#         return render_template('index.html', form=form)
-#     else:
-#         email = form.email.data
-#         password = form.password.data
-#         # 未进行密码校验
-#         users = User.query.filter_by(email=email).first()
-#         if users:
-#
-#             print('user_id:', users.id)
-#             login_user(users, True)
-#             # print('url 重定向 到admin 视图')
-#             print(url_for('auth.admin'))
-#             # return redirect(url_for('admin'))
-#             return 'cccc'
-#         else:
-#             return redirect('/')
-#         return '登录成功'
-#
-#
-# @auth.route('/admin', endpoint='admin')
-# @set_unauth_view('user')
-# @roles_accepted('admin')
-# def admin():
-#     # print('管理员界面')
-#     # print(current_user.has_role('admin'))
-#     return 'admin view'
-#
-#
-# @auth.route('/admin/edit', endpoint='admin_edit')
-# @set_unauth_view('user')
-# @roles_accepted('admin')
-# def admin_edit():
-#     # print('管理员界面')
-#     # print(current_user.has_role('admin'))
-#     return 'admin edit view'
-#
-#
-# @auth.route('/admin/<int:id>/test', endpoint='admin_user_test')
-# # @set_unauth_view('user')
-# @roles_accepted('admin')
-# def admin_test(id):
-#     # print('管理员界面')
-#     # print(current_user.has_role('admin'))
-#     return 'admin test  view'
-#
-#
-# @auth.route('/user', endpoint='user')
-# @login_required
-# def user():
-#     return 'user view'
-#
-#
-# @auth.route('/edit', endpoint='edit')
-# # @set_unauth_view('/')
-# @roles_accepted('admin', 'special-edit')
-# def edit():
-#     return 'user view'
+
