@@ -153,7 +153,6 @@ class CloudPlatformManage(Resource):
                     args['ip']]):
             raise Exception('Parameter error')
         try:
-
             control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
                                                    platform_name=args['platform_name'],
                                                    admin_name=args['admin_name'],
@@ -161,6 +160,8 @@ class CloudPlatformManage(Resource):
                                                    ip=args['ip'], remarks=args['remarks'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id='',
+                                               event=unicode('新增云平台信息'), submitter='jhjj')
             return set_return_val(False, [], str(e), 1501), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id='', event=unicode('新增云平台信息')
                                            , submitter=g.username)

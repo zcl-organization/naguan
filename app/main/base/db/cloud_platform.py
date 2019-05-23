@@ -77,3 +77,8 @@ def get_cloud_platform():
     cloud_platform = db.session.query(CloudPlatform).order_by(-CloudPlatform.id).first()
     cloud_id = cloud_platform.id
     return cloud_id
+
+
+def get_platform_by_name(platform_name):
+    print (platform_name)
+    return db.session.query(CloudPlatform).filter_by(platform_name=platform_name).first()

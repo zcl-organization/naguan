@@ -44,6 +44,10 @@ def log_delete(log_id):
 def eventlog_create(type, result, resources_id, event, submitter):
     # if not resources_id:
         # resources_id = str(uuid.uuid5(uuid.uuid4(), 'event_log'))
+    resources_ids = 'kaopu'
+    if result is False and resources_id == '':
+        resources_ids = ''
+
     if type == 'user' and not resources_id:
         resources_id = db.user.get_user_id()
     elif type == 'menu' and not resources_id:
@@ -59,5 +63,6 @@ def eventlog_create(type, result, resources_id, event, submitter):
             resources_id = db.roles_users.get_roles_users(resources_id)
         else:
             resources_id = db.roles_users.get_roles_users()
-
+    if not resources_ids:
+        resources_id = ''
     db.event_logs.log_create(type, result, resources_id, event, submitter)

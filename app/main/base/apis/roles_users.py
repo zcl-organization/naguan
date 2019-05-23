@@ -123,6 +123,7 @@ class RolesUsersManage(Resource):
 
             user_username, role_name = control.roles_users.role_user_add(user_id, role_id)
         except Exception as e:
+
             return set_return_val(False, {}, str(e), 1234), 400
         control.event_logs.eventlog_create(type='roles_users', result=True, resources_id='',
                                            event=unicode('用户:%s 分配角色:%s' % (user_username, role_name)), submitter=g.username)
