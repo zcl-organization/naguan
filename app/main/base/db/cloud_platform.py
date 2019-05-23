@@ -70,3 +70,10 @@ def platform_delete(id):
         db.session.commit()
     except Exception as e:
         raise Exception('Database operation exception')
+
+
+# 获取资源id
+def get_cloud_platform():
+    cloud_platform = db.session.query(CloudPlatform).order_by(-CloudPlatform.id).first()
+    cloud_id = cloud_platform.id
+    return cloud_id

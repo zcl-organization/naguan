@@ -97,8 +97,10 @@ def children_menu_list(id):
 def menu_delete(id=None):
     query = db.session.query(Menu)
     menu_dellist = query.filter_by(id=id).first()
+    name = menu_dellist.name
     db.session.delete(menu_dellist)
     db.session.commit()
+    return name
 
 
 def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, parent_id, important):
@@ -136,6 +138,7 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
             menu.important = important
         # db.session.add(menu)
         db.session.commit()
+        return menu.name
     except Exception as e:
         raise Exception('Database operation exception')
 
@@ -143,3 +146,10 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
 # 根据父id获取菜单
 def menu_list_by_parent_id(parent_id):
     return db.session.query(Menu).filter_by(parent_id=parent_id).all()
+
+
+# 获取资源id
+def get_menu_id():
+    menu = db.session.query(Menu).order_by(-Menu.id).first()
+    mid = menu.id
+    return mid

@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 
+from auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.base.control import roles_users as role_user_manage
 from app.main.base import control
@@ -77,6 +79,7 @@ class RolesUsersManage(Resource):
             return set_return_val(False, {}, str(e), 1234), 400
         return set_return_val(True, data, '获取列表成功', 1234)
 
+    @basic_auth.login_required
     def post(self):
         """
          用户角色分配
@@ -118,11 +121,14 @@ class RolesUsersManage(Resource):
             if not all([user_id, role_id]):
                 raise Exception('参数错误,参数不能为空')
 
-            control.roles_users.role_user_add(user_id, role_id)
+            user_username, role_name = control.roles_users.role_user_add(user_id, role_id)
         except Exception as e:
             return set_return_val(False, {}, str(e), 1234), 400
+        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id='',
+                                           event=unicode('用户:%s 分配角色:%s' % (user_username, role_name)), submitter=g.username)
         return set_return_val(True, {}, '用户角色添加成功', 1234)
 
+    @basic_auth.login_required
     def put(self):
         """
          用户角色更新
@@ -170,11 +176,14 @@ class RolesUsersManage(Resource):
             if not all([user_id, new_role_id, old_role_id]):
                 raise Exception('参数错误,参数不能为空')
 
-            control.roles_users.role_user_update(user_id, new_role_id, old_role_id)
+            username = control.roles_users.role_user_update(user_id, new_role_id, old_role_id)
         except Exception as e:
             return set_return_val(False, {}, str(e), 1234), 400
+        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id=user_id,
+                                           event=unicode('更新用户:%s 的角色' % username), submitter=g.username)
         return set_return_val(True, {}, '用户角色更新成功', 1234)
 
+    @basic_auth.login_required
     def delete(self):
         """
          用户角色删除
@@ -210,7 +219,9 @@ class RolesUsersManage(Resource):
             user_id = args.get('user_id')
             if not user_id:
                 raise Exception('参数错误,参数不能为空')
-            control.roles_users.role_user_delete(user_id)
+            username = control.roles_users.role_user_delete(user_id)
         except Exception as e:
             return set_return_val(False, {}, str(e), 1234), 400
+        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id=user_id,
+                                           event=unicode('删除用户:%s 的角色' % username), submitter=g.username)
         return set_return_val(True, {}, '用户角色删除成功', 1234)

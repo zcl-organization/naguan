@@ -8,7 +8,7 @@ UPLOAD_DIR = os.path.join(BASE_DIR, 'app\\static\\img\\')
 
 
 class BaseConfig(object):
-    DEBUG = False
+    DEBUG = True
     TESTING = False
     CSRF_ENABLED = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
@@ -93,7 +93,7 @@ class BaseConfig(object):
 
 
 class DevelopConfig(BaseConfig):
-    DEBUG = False
+    DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'develop.db')
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:aaaaaa@192.168.125.160:3306/Code3?charset=utf8'
 

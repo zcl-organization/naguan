@@ -22,3 +22,14 @@ def role_user_list_by_id(user_id):
     query = db.session.query(RolesUsers).filter(RolesUsers.user_id == user_id)
 
     return query.all()
+
+
+# 获取资源id
+def get_roles_users(user_id=None):
+    if user_id:
+        roles_users = db.session.query(RolesUsers).filter_by(user_id=user_id).first()
+    else:
+        roles_users = db.session.query(RolesUsers).order_by(-RolesUsers.id).first()
+    roles_users_id = roles_users.id
+    return roles_users_id
+

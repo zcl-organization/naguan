@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 
+from auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.base import control
 
@@ -92,6 +94,7 @@ class CloudPlatformManage(Resource):
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, data, 'Platform list succeeded.', 1520)
 
+    @basic_auth.login_required
     def post(self):
         """
        新增云平台信息
@@ -159,8 +162,11 @@ class CloudPlatformManage(Resource):
 
         except Exception, e:
             return set_return_val(False, [], str(e), 1501), 400
+        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id='', event=unicode('新增云平台信息')
+                                           , submitter=g.username)
         return set_return_val(True, [], str('The platform information was created successfully.'), 1500)
 
+    @basic_auth.login_required
     def put(self, id):
         """
         更新云平台信息
@@ -213,8 +219,11 @@ class CloudPlatformManage(Resource):
                                                    remarks=args['remarks'])
         except Exception, e:
             return set_return_val(False, [], str(e), 1529), 400
+        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('更新云平台信息')
+                                           , submitter=g.username)
         return set_return_val(True, [], str('The platform information was updated successfully.'), 1520)
 
+    @basic_auth.login_required
     def delete(self, id):
         """
         根据id删除云平台信息
@@ -250,4 +259,6 @@ class CloudPlatformManage(Resource):
 
         except Exception, e:
             return set_return_val(False, [], str(e), 1519), 400
+        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('删除云平台信息')
+                                           , submitter=g.username)
         return set_return_val(True, [], str('The platform information was deleted successfully.'), 1510)

@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 
+from auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.base.control.role import role_list, role_create, role_update, role_delete
 from app.main.base import control
@@ -73,6 +75,7 @@ class RoleManage(Resource):
 
         return set_return_val(True, data, 'Get the role information successfully', 1200, pg)
 
+    @basic_auth.login_required
     def post(self):
         """
          创建角色信息
@@ -115,9 +118,11 @@ class RoleManage(Resource):
             control.role.role_create(name=args['name'], description=args['description'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1319), 400
-
+        control.event_logs.eventlog_create(type='role', result=True, resources_id='',
+                                           event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'The role information is created successfully.', 1200)
 
+    @basic_auth.login_required
     def put(self, id):
         """
          更新角色信息
@@ -158,11 +163,14 @@ class RoleManage(Resource):
          """
         args = parser.parse_args()
         try:
-            control.role.role_update(role_id=int(id), name=args['name'], description=args['description'])
+            name = control.role.role_update(role_id=int(id), name=args['name'], description=args['description'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='role', result=True, resources_id=id, event=unicode('更新角色:%s' % name),
+                                           submitter=g.username)
         return set_return_val(True, [], 'Role information updated successfully', 1200)
 
+    @basic_auth.login_required
     def delete(self, id):
         """
         删除角色信息
@@ -194,7 +202,9 @@ class RoleManage(Resource):
                     properties:
           """
         try:
-            control.role.role_delete(id)
+            name = control.role.role_delete(id)
         except Exception as e:
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='role', result=True, resources_id=id, event=unicode('删除角色:%s' % name),
+                                           submitter=g.username)
         return set_return_val(True, [], 'The role information was deleted successfully.', 1200)

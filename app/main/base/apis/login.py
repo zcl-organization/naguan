@@ -5,7 +5,7 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.models import Users
 from flask_security import login_user
-from flask import session, request
+from flask import session, request, g
 
 from app.main.base import control
 
@@ -111,8 +111,12 @@ class LoginManage(Resource):
                         'sex': user.sex,
                         'remarks': user.remarks
                     }
+                    # session['username'] = user.username
+                    g.username = user.username
                     session[token] = True
                     control.user.update_login_time(user)
         except Exception as e:
             return set_return_val(False, {}, str(e), 1301), 400
+        control.event_logs.eventlog_create(type='login', result=True, resources_id=user.id, event=unicode('登陆'),
+                                           submitter=g.username)
         return set_return_val(True, data, 'login successful', 1300)

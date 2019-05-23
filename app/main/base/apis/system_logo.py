@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 import os
 import werkzeug
+from flask import g
 from flask_restful import Resource, reqparse
-
+from auth import basic_auth
 from app.common.tool import set_return_val
 from app.models import SystemConfig
 import sys
@@ -17,6 +18,7 @@ parser.add_argument('logo', type=werkzeug.datastructures.FileStorage, location='
 
 
 class SystemLogo(Resource):
+    @basic_auth.login_required
     def put(self):
         """
         update logo
@@ -31,7 +33,7 @@ class SystemLogo(Resource):
           format: "int64"
         responses:
             200:
-              description: 更新系统配置
+              description: 更新系统logo
               schema:
                 properties:
                   ok:
@@ -53,6 +55,8 @@ class SystemLogo(Resource):
             control.system.system_config_update_logo(logo)
         except Exception as e:
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统logo'),
+                                           submitter=g.username)
         return set_return_val(True, [], 'System logo upload succeeded', 1300)
         # system = SystemConfig.query.get(1)
         # if system:

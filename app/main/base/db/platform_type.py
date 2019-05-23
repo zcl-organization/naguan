@@ -61,3 +61,10 @@ def platform_type_delete(type_id):
         db.session.commit()
     except Exception:
         raise Exception('Deleting platform type failed', type_id)
+
+
+# 获取资源id
+def get_platform_type():
+    cloud_platform_type = db.session.query(CloudPlatformType).order_by(-CloudPlatformType.id).first()
+    cloud_type_id = cloud_platform_type.id
+    return cloud_type_id
