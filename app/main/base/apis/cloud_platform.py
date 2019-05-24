@@ -153,17 +153,17 @@ class CloudPlatformManage(Resource):
                     args['ip']]):
             raise Exception('Parameter error')
         try:
-            control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
-                                                   platform_name=args['platform_name'],
-                                                   admin_name=args['admin_name'],
-                                                   admin_password=args['admin_password'], port=args['port'],
-                                                   ip=args['ip'], remarks=args['remarks'])
+            id = control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
+                                                        platform_name=args['platform_name'],
+                                                        admin_name=args['admin_name'],
+                                                        admin_password=args['admin_password'], port=args['port'],
+                                                        ip=args['ip'], remarks=args['remarks'])
 
         except Exception, e:
             control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id='',
-                                               event=unicode('新增云平台信息'), submitter='jhjj')
+                                               event=unicode('新增云平台信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1501), 400
-        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id='', event=unicode('新增云平台信息')
+        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('新增云平台信息')
                                            , submitter=g.username)
         return set_return_val(True, [], str('The platform information was created successfully.'), 1500)
 
@@ -219,6 +219,8 @@ class CloudPlatformManage(Resource):
                                                    admin_password=args['admin_password'], port=args['port'],
                                                    remarks=args['remarks'])
         except Exception, e:
+            control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id=id,
+                                               event=unicode('更新云平台信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('更新云平台信息')
                                            , submitter=g.username)
@@ -259,6 +261,8 @@ class CloudPlatformManage(Resource):
             control.cloud_platform.platform_delete(id)
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id=id,
+                                               event=unicode('删除云平台信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1519), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('删除云平台信息')
                                            , submitter=g.username)

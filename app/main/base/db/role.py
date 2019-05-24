@@ -43,7 +43,9 @@ def role_create(name, description):
         role.name = name
         role.description = description
         db.session.add(role)
+        db.session.flush()
         db.session.commit()
+        return role
     except Exception as e:
         raise Exception('Database operation exception')
 
@@ -82,8 +84,8 @@ def list_by_id(role_id):
     return data
 
 
-# 获取资源id
-def get_role():
-    role = db.session.query(Roles).order_by(-Roles.id).first()
-    role_id = role.id
-    return role_id
+# # 获取资源id
+# def get_role():
+#     role = db.session.query(Roles).order_by(-Roles.id).first()
+#     role_id = role.id
+#     return role_id

@@ -196,15 +196,17 @@ class MenuManage(Resource):
             if int(args['is_hide_children']) not in [1, 2]:
                 raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-            control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
-                                     identifier=args['identifier'], is_hide=int(args['is_hide']),
-                                     is_hide_children=int(args['is_hide_children']), important=args['important'],
-                                     parent_id=args['parent_id'])
+            id = control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
+                                          identifier=args['identifier'], is_hide=int(args['is_hide']),
+                                          is_hide_children=int(args['is_hide_children']), important=args['important'],
+                                          parent_id=args['parent_id'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id='',
+                                               event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
-        control.event_logs.eventlog_create(type='menu', result=True, resources_id='', event=unicode('创建菜单:%s' % args['name']),
-                                           submitter=g.username)
+        control.event_logs.eventlog_create(type='menu', result=True, resources_id=id,
+                                           event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'Create menu successfully', 1300)
 
     @basic_auth.login_required
@@ -241,6 +243,8 @@ class MenuManage(Resource):
         try:
             name = control.menu.menu_delete(id=id)
         except Exception as e:
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
+                                               event=unicode('删除菜单信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('删除菜单:%s' % name),
                                            submitter=g.username)
@@ -318,6 +322,8 @@ class MenuManage(Resource):
                                             parent_id=args['parent_id'], important=args['important'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
+                                               event=unicode('更新菜单信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('更新菜单:%s' % name),
                                            submitter=g.username)

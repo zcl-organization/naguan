@@ -77,7 +77,9 @@ def menu_create(icon, url, name, identifier, is_hide, is_hide_children, importan
             new_menu.parent_id = 0
 
         db.session.add(new_menu)
+        db.session.flush()
         db.session.commit()
+        return new_menu.id
     except Exception as e:
         # print(e)
         raise Exception('Database operation exception')
@@ -147,9 +149,9 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
 def menu_list_by_parent_id(parent_id):
     return db.session.query(Menu).filter_by(parent_id=parent_id).all()
 
-
-# 获取资源id
-def get_menu_id():
-    menu = db.session.query(Menu).order_by(-Menu.id).first()
-    mid = menu.id
-    return mid
+#
+# # 获取资源id
+# def get_menu_id():
+#     menu = db.session.query(Menu).order_by(-Menu.id).first()
+#     mid = menu.id
+#     return mid

@@ -33,7 +33,9 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
         new_platform.remarks = remarks
 
         db.session.add(new_platform)
+        db.session.flush()
         db.session.commit()
+        return new_platform.id
         # return db.session.query(CloudPlatform).filter_by(platform_name=options['platform_name']).first()
 
     except Exception as e:
@@ -72,13 +74,12 @@ def platform_delete(id):
         raise Exception('Database operation exception')
 
 
-# 获取资源id
-def get_cloud_platform():
-    cloud_platform = db.session.query(CloudPlatform).order_by(-CloudPlatform.id).first()
-    cloud_id = cloud_platform.id
-    return cloud_id
+# # 获取资源id
+# def get_cloud_platform():
+#     cloud_platform = db.session.query(CloudPlatform).order_by(-CloudPlatform.id).first()
+#     cloud_id = cloud_platform.id
+#     return cloud_id
 
 
 def get_platform_by_name(platform_name):
-    print (platform_name)
     return db.session.query(CloudPlatform).filter_by(platform_name=platform_name).first()

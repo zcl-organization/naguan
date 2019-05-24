@@ -116,6 +116,8 @@ class LoginManage(Resource):
                     session[token] = True
                     control.user.update_login_time(user)
         except Exception as e:
+            control.event_logs.eventlog_create(type='login', result=False, resources_id='', event=unicode('登陆'),
+                                               submitter=args['username'])
             return set_return_val(False, {}, str(e), 1301), 400
         control.event_logs.eventlog_create(type='login', result=True, resources_id=user.id, event=unicode('登陆'),
                                            submitter=g.username)

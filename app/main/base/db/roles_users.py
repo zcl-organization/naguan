@@ -25,11 +25,12 @@ def role_user_list_by_id(user_id):
 
 
 # 获取资源id
-def get_roles_users(user_id=None):
+def get_roles_users(user_id=None, role_id=None):
     if user_id:
-        roles_users = db.session.query(RolesUsers).filter_by(user_id=user_id).first()
+        roles_users = db.session.query(RolesUsers).filter_by(user_id=user_id).\
+            filter_by(role_id=role_id).first()
     else:
         roles_users = db.session.query(RolesUsers).order_by(-RolesUsers.id).first()
     roles_users_id = roles_users.id
     return roles_users_id
-
+#

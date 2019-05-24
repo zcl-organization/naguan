@@ -39,7 +39,7 @@ def role_user_update(user_id, new_role_id, old_role_id):
 
     user_datastore.remove_role_from_user(user_info.email, old_role_info.name)
     user_datastore.add_role_to_user(user_info.email, new_role_info.name)
-    return user_info.username
+    return user_info.username, new_role_info.name, old_role_info.name
 
 
 def role_user_add(user_id, role_id):

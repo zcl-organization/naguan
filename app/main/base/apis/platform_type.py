@@ -106,11 +106,13 @@ class PlatformTypeMg(Resource):
             raise Exception('Please pass in the platform type name.')
 
         try:
-            control.platform_type.type_create(name=args['name'])
+            id = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
+                                               event=unicode('增加平台类型'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id='', event=unicode('增加平台类型'),
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type create succeeded.', 1430)
 
@@ -157,6 +159,8 @@ class PlatformTypeMg(Resource):
             control.platform_type.type_update(id, args['name'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
+                                               event=unicode('更新平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('更新平台类型信息'),
                                            submitter=g.username)
@@ -196,7 +200,8 @@ class PlatformTypeMg(Resource):
         try:
             control.platform_type.type_delete(id)
         except Exception as e:
-
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
+                                               event=unicode('删除平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('删除平台类型信息'),
                                            submitter=g.username)

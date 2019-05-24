@@ -86,7 +86,9 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
     newuser.remarks = remarks
     try:
         db.session.add(newuser)
+        db.session.flush()
         db.session.commit()
+        return newuser
     except Exception, e:
         raise Exception('User information creation failed')
 
@@ -149,8 +151,8 @@ def update_login_time(user):
     db.session.commit()
 
 
-# 获取资源id
-def get_user_id():
-    user = db.session.query(Users).order_by(-Users.id).first()
-    uid = user.id
-    return uid
+# # 获取资源id
+# def get_user_id():
+#     user = db.session.query(Users).order_by(-Users.id).first()
+#     uid = user.id
+#     return uid

@@ -23,7 +23,7 @@ def type_create(name):
 
     if platform_type:
         raise Exception('Existing platform type', name)
-    db.platform_type.platform_type_create(name)
+    return db.platform_type.platform_type_create(name)
 
 
 def type_update(id, name=None):
