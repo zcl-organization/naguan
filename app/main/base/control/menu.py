@@ -81,7 +81,7 @@ def menu_delete(id=None):
             if sub_menu:
                 raise Exception('Menu deletion failed, submenu exists')
             else:
-                db.menu.menu_delete(id)
+                return db.menu.menu_delete(id)
         else:
             raise Exception('No current menu exists')
     except Exception as e:

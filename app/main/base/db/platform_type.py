@@ -27,8 +27,9 @@ def platform_type_create(name):
         new_platform_type.name = name
 
         db.session.add(new_platform_type)
+        db.session.flush()
         db.session.commit()
-
+        return new_platform_type.id
     except Exception as e:
         raise Exception('create platform_type error', name)
 
@@ -61,3 +62,10 @@ def platform_type_delete(type_id):
         db.session.commit()
     except Exception:
         raise Exception('Deleting platform type failed', type_id)
+
+
+# # 获取资源id
+# def get_platform_type():
+#     cloud_platform_type = db.session.query(CloudPlatformType).order_by(-CloudPlatformType.id).first()
+#     cloud_type_id = cloud_platform_type.id
+#     return cloud_type_id

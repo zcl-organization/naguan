@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 
+from auth import basic_auth
 from app.common.my_exceptions import ExistsException
 from app.common.tool import set_return_val
 from app.main.base import control
@@ -32,7 +33,7 @@ parser.add_argument('pgsize')
 
 
 class UserManage(Resource):
-
+    @basic_auth.login_required
     def get(self):
         """
         获取用户信息
@@ -195,8 +196,10 @@ class UserManage(Resource):
                                               remarks=args['remarks'], next_page=pgnum, limit=limit)
         except Exception as e:
             return set_return_val(True, [], 'Failed to get user information', 1101), 400
+
         return set_return_val(True, data, 'Successfully obtained user information', 1100, pg)
 
+    # @basic_auth.login_required
     def post(self):
         """
        新增用户信息
@@ -278,21 +281,28 @@ class UserManage(Resource):
             else:
                 sex = args['sex']
 
-            control.user.user_create(username=args['username'], password=args['password'], email=args['email'],
-                                     first_name=args['first_name'], uid=1, mobile=args['mobile'],
-                                     department=args['department'], job='it', location='location',
-                                     company=args['company'], sex=int(sex), uac='uac', active=active,
-                                     is_superuser=is_superuser, remarks=args['remarks'], current_login_ip=g.ip)
+            user = control.user.user_create(username=args['username'], password=args['password'], email=args['email'],
+                                            first_name=args['first_name'], uid=1, mobile=args['mobile'],
+                                            department=args['department'], job='it', location='location',
+                                            company=args['company'], sex=int(sex), uac='uac', active=active,
+                                            is_superuser=is_superuser, remarks=args['remarks'], current_login_ip=g.ip)
+            id = user.id
 
         # 已存在
         except ExistsException as e:
+            control.event_logs.eventlog_create(type='user', result=False, resources_id='',
+                                               event=unicode('创建新用户：已存在'), submitter=g.username)
             return set_return_val(False, [], str(e), 1002), 400
 
         except Exception as e:
+            control.event_logs.eventlog_create(type='user', result=False, resources_id='',
+                                               event=unicode('创建新用户'), submitter=g.username)
             return set_return_val(False, [], str(e), 1001), 400
-
+        control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
+                                           event=unicode('创建新用户:%s' % args['username']), submitter=g.username)
         return set_return_val(True, [], 'User created successfully', 1000)
 
+    @basic_auth.login_required
     def put(self, id):
         """
         更新用户信息
@@ -359,15 +369,19 @@ class UserManage(Resource):
                                   1001), 400
         try:
 
-            control.user.user_update(id=id, active=int(args['active']), username=args['username'],
-                                     password=args['password'], mobile=args['mobile'], company=args['company'],
-                                     department=args['department'], remarks=args['remarks'])
+            username = control.user.user_update(id=id, active=int(args['active']), username=args['username'],
+                                                password=args['password'], mobile=args['mobile'], company=args['company'],
+                                                department=args['department'], remarks=args['remarks'])
 
         except Exception, e:
-
+            control.event_logs.eventlog_create(type='user', result=False, resources_id=id,
+                                               event=unicode('更新用户'), submitter=g.username)
             return set_return_val(False, [], str(e), 1001), 400
+        control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
+                                           event=unicode('更新用户:%s' % username), submitter=g.username)
         return set_return_val(True, [], 'User update successfully', 3000)
 
+    @basic_auth.login_required
     def delete(self, id):
         """
         根据id用户信息
@@ -399,9 +413,12 @@ class UserManage(Resource):
                     properties:
         """
         try:
-            control.user.user_delete(id=id)
+            username = control.user.user_delete(id=id)
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
+                                               event=unicode('删除用户'), submitter=g.username)
             return set_return_val(False, [], str(e), 1001), 400
-
+        control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
+                                           event=unicode('删除用户:%s' % username), submitter=g.username)
         return set_return_val(True, [], 'User delete successfully', 3000)

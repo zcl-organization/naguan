@@ -35,7 +35,7 @@ ret_status = {
 
 class MenuManage(Resource):
     # @roles_accepted('admin', 'user')
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def get(self):
         """
         获取菜单信息
@@ -130,10 +130,11 @@ class MenuManage(Resource):
         #     'event': unicode('获取菜单信息'),
         #     'submitter': g.username,
         # }
-        event_logs.eventlog_create(type='menu', result=True, resources_id='', event=unicode('获取菜单信息'),
-                                   submitter=g.username)
+        # control.event_logs.eventlog_create(type='menu', result=True, resources_id='menu_id', event=unicode('获取菜单信息'),
+        #                                    submitter=g.username)
         return set_return_val(True, data, 'Get menu success', 1310)
 
+    @basic_auth.login_required
     def post(self):
         """
         提交新的菜单
@@ -195,15 +196,20 @@ class MenuManage(Resource):
             if int(args['is_hide_children']) not in [1, 2]:
                 raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-            control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
-                                     identifier=args['identifier'], is_hide=int(args['is_hide']),
-                                     is_hide_children=int(args['is_hide_children']), important=args['important'],
-                                     parent_id=args['parent_id'])
+            id = control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
+                                          identifier=args['identifier'], is_hide=int(args['is_hide']),
+                                          is_hide_children=int(args['is_hide_children']), important=args['important'],
+                                          parent_id=args['parent_id'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id='',
+                                               event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='menu', result=True, resources_id=id,
+                                           event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'Create menu successfully', 1300)
 
+    @basic_auth.login_required
     def delete(self, id):
         """
         根据ID删除菜单信息
@@ -235,11 +241,16 @@ class MenuManage(Resource):
                     properties:
         """
         try:
-            control.menu.menu_delete(id=id)
+            name = control.menu.menu_delete(id=id)
         except Exception as e:
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
+                                               event=unicode('删除菜单信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('删除菜单:%s' % name),
+                                           submitter=g.username)
         return set_return_val(False, [], 'Menu deletion successfully', 1300)
 
+    @basic_auth.login_required
     def put(self, id):
         """
         更新菜单信息
@@ -305,11 +316,15 @@ class MenuManage(Resource):
                 if int(args['is_hide']) not in [1, 2]:
                     raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
-            control.menu.menu_update(id=id, icon=args['icon'], name=args['name'], url=args['url'],
-                                     identifier=args['identifier'], is_hide=int(args['is_hide']),
-                                     is_hide_children=int(args['is_hide_children']),
-                                     parent_id=args['parent_id'], important=args['important'])
+            name = control.menu.menu_update(id=id, icon=args['icon'], name=args['name'], url=args['url'],
+                                            identifier=args['identifier'], is_hide=int(args['is_hide']),
+                                            is_hide_children=int(args['is_hide_children']),
+                                            parent_id=args['parent_id'], important=args['important'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
+                                               event=unicode('更新菜单信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('更新菜单:%s' % name),
+                                           submitter=g.username)
         return set_return_val(True, [], 'Update menu successfully', 1300)

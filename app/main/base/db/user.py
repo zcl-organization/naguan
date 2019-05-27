@@ -86,7 +86,9 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
     newuser.remarks = remarks
     try:
         db.session.add(newuser)
+        db.session.flush()
         db.session.commit()
+        return newuser
     except Exception, e:
         raise Exception('User information creation failed')
 
@@ -96,10 +98,12 @@ def user_delete(id=None):
     query = db.session.query(Users)
     try:
         user_willdel = query.filter_by(id=id).first()
+        username = user_willdel.username
         # db.session.delete(user_willdel)
         user_willdel.is_deleted = id
         user_willdel.deleted_at = datetime.datetime.now()
         db.session.commit()
+        return username
     except Exception as e:
         raise Exception('User information delete failed')
 
@@ -134,6 +138,7 @@ def user_update(id, active, username, password, mobile, company, department, rem
         user.remarks = remarks
     try:
         db.session.commit()
+        return user.username
     except Exception as e:
         raise Exception('Database update exception')
 
@@ -144,3 +149,10 @@ def update_login_time(user):
     user.current_login_at = datetime.datetime.now()
     db.session.add(user)
     db.session.commit()
+
+
+# # 获取资源id
+# def get_user_id():
+#     user = db.session.query(Users).order_by(-Users.id).first()
+#     uid = user.id
+#     return uid

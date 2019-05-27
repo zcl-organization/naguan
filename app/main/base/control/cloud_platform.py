@@ -4,6 +4,9 @@ from app.main.base import db
 
 # def platform_create(options):
 def platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip, remarks):
+    platform = db.cloud_platform.get_platform_by_name(platform_name)
+    if platform:
+        raise Exception('platform name already exist.')
     return db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
                                              remarks)
 

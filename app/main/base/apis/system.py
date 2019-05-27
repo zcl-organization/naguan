@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import reqparse, Resource, fields, marshal_with
 
 from app.common.tool import set_return_val
-
-from app.main.base.apis.auth import basic_auth
+from auth import basic_auth
 from app.main.base import control
 import sys
 
@@ -61,9 +61,6 @@ sysconfig_fields = {
     'STORE_LOG': fields.String,  # 日志存储位置
 }
 
-
-
-# 最终显示格式2
 result_fields2 = {
     'code': fields.Integer,
     'msg': fields.String,
@@ -134,10 +131,12 @@ class System(Resource):
                                                 user_authentication_mode=args['user_authentication_mode'],
                                                 debug=args['debug'])
         except Exception as e:
+            control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('创建系统配置'),
+                                               submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('创建系统配置'),
+                                           submitter=g.username)
         return set_return_val(True, [], 'System config created successfully', 1300)
-
-
 
     @basic_auth.login_required
     def get(self):
@@ -195,8 +194,7 @@ class System(Resource):
             return set_return_val(False, [], str(e), 1319), 400
         return set_return_val(True, data, 'System configuration succeeded', 1300)
 
-
-    # @basic_auth.login_required
+    @basic_auth.login_required
     @marshal_with(result_fields2)
     def put(self):
         """
@@ -253,6 +251,10 @@ class System(Resource):
                                                 debug=args['debug'])
 
         except Exception as e:
+            control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('更新系统配置'),
+                                               submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统配置'),
+                                           submitter=g.username)
         return set_return_val(True, [], 'System configuration updated succeeded', 1300)
 

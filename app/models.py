@@ -388,3 +388,5 @@ class VCenterResourcePool(db.Model):
     memory_level = db.Column(db.String(32))
     memory_over_all_usage = db.Column(db.String(32))
     memory_max_usage = db.Column(db.String(32))
+
+
