@@ -221,13 +221,13 @@ def verify_password(username_or_token, password):
 
     ldap = False
     if password == '':
-
+        print username_or_token
         if session.get(username_or_token):
             print('token:', session.get(username_or_token))
             # return True
         else:
             print('unable get session')
-            return False
+            # return False
 
         data, token_flag = Users.verify_auth_token(username_or_token)
         # data, token_flag = parse_token(username_or_token)

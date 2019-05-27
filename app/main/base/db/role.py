@@ -43,7 +43,9 @@ def role_create(name, description):
         role.name = name
         role.description = description
         db.session.add(role)
+        db.session.flush()
         db.session.commit()
+        return role
     except Exception as e:
         raise Exception('Database operation exception')
 
@@ -58,6 +60,7 @@ def role_update(role_id, name, description):
             role.description = description
 
         db.session.commit()
+        return role.name
     except Exception as e:
         raise Exception('Database operation exception')
 
@@ -67,8 +70,10 @@ def role_delete(role_id):
     query = db.session.query(Roles)
     try:
         role_willdel = query.filter_by(id=role_id).first()
+        name = role_willdel.name
         db.session.delete(role_willdel)
         db.session.commit()
+        return name
     except Exception as e:
         raise Exception('Database operation exception')
 
@@ -77,3 +82,10 @@ def list_by_id(role_id):
 
     data = db.session.query(Roles).filter(Roles.id == role_id).first()
     return data
+
+
+# # 获取资源id
+# def get_role():
+#     role = db.session.query(Roles).order_by(-Roles.id).first()
+#     role_id = role.id
+#     return role_id

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 
+from auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.base import control
 from flask import g
@@ -69,6 +70,7 @@ class PlatformTypeMg(Resource):
 
         return set_return_val(True, data, 'Platform type query succeeded.', 1430)
 
+    @basic_auth.login_required
     def post(self):
         """
         创建平台类型
@@ -104,12 +106,17 @@ class PlatformTypeMg(Resource):
             raise Exception('Please pass in the platform type name.')
 
         try:
-            control.platform_type.type_create(name=args['name'])
+            id = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
+                                               event=unicode('增加平台类型'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
+                                           submitter=g.username)
         return set_return_val(True, [], 'Platform type create succeeded.', 1430)
 
+    @basic_auth.login_required
     def put(self, id):
         """
         根据id更新云平台类型信息
@@ -152,9 +159,14 @@ class PlatformTypeMg(Resource):
             control.platform_type.type_update(id, args['name'])
 
         except Exception, e:
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
+                                               event=unicode('更新平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('更新平台类型信息'),
+                                           submitter=g.username)
         return set_return_val(True, [], 'Platform type update succeeded.', 1520)
 
+    @basic_auth.login_required
     def delete(self, id):
         """
         根据id删除云平台类型信息
@@ -188,6 +200,9 @@ class PlatformTypeMg(Resource):
         try:
             control.platform_type.type_delete(id)
         except Exception as e:
-
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
+                                               event=unicode('删除平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('删除平台类型信息'),
+                                           submitter=g.username)
         return set_return_val(True, [], 'Platform type delete succeeded.', 1520)

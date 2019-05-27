@@ -1,4 +1,6 @@
 # -*- coding=utf-8 -*-
+import uuid
+
 from app.main.base import db
 
 
@@ -39,5 +41,23 @@ def log_delete(log_id):
 #  'event': unicode('获取菜单信息'),
 #  'submitter': g.username,
 #   }
-def eventlog_create(type, result, resources_id, event, submitter):
+def eventlog_create(type, result, resources_id, event, submitter, role_id=None, user_id=None):
+    # if type == 'user' and not resources_id:
+    #     resources_id = db.user.get_user_id()
+    # elif type == 'menu' and not resources_id:
+    #     resources_id = db.menu.get_menu_id()
+    # elif type == 'cloud_platform' and not resources_id:
+    #     resources_id = db.cloud_platform.get_cloud_platform()
+    # elif type == 'platform_type' and not resources_id:
+    #     resources_id = db.platform_type.get_platform_type()
+    # elif type == 'role' and not resources_id:
+    #     resources_id = db.role.get_role()
+    if type == 'roles_users':
+        if result:
+            if resources_id:
+                resources_id = db.roles_users.get_roles_users(resources_id, role_id)
+            else:
+                resources_id = db.roles_users.get_roles_users()
+        if user_id:
+            resources_id = user_id
     db.event_logs.log_create(type, result, resources_id, event, submitter)

@@ -1,6 +1,6 @@
 # -*- coding=utf-8 -*-
 from app.exts import db
-from app.models import EventLog
+from app.models import EventLog, Users, Menu, CloudPlatform, CloudPlatformType, Roles, RolesUsers
 from flask import g
 
 
@@ -62,3 +62,7 @@ def log_create(type, result, resources_id, event, submitter):
     db.session.add(new_log)
     db.session.commit()
     # return True
+
+
+
+
