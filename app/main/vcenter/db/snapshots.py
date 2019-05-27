@@ -51,7 +51,7 @@ def get_snapshot_by_snapshot_id(vm_uuid, snapshot_id):
     return db.session.query(VCenterSnapshot).filter_by(vm_uuid=vm_uuid).filter_by(snapshot_id=snapshot_id).first()
 
 
-def get_snapshot_list(platform_id, snapshot_id, vm_uuid):
+def get_snapshot_list(platform_id, snapshot_id, vm_uuid, pgnum):
     query = db.session.query(VCenterSnapshot)
     # if platform_id:
     #     query = query.filter_by(platform_id=platform_id)
@@ -59,5 +59,16 @@ def get_snapshot_list(platform_id, snapshot_id, vm_uuid):
         query = query.filter_by(snapshot_id=snapshot_id)
     if vm_uuid:
         query = query.filter_by(vm_uuid=vm_uuid)
-    data = query.all()
-    return data
+    if pgnum:  # 默认获取分页获取所有日志
+        query = query.paginate(page=int(pgnum), per_page=10, error_out=False)
+    # print(query)
+    results = query.items
+    pg = {
+        'has_next': query.has_next,
+        'has_prev': query.has_prev,
+        'page': query.page,
+        'pages': query.pages,
+        'total': query.total,
+    }
+    # data = query.all()
+    return results, pg

@@ -70,10 +70,10 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
     newuser.first_name = first_name
     newuser.uid = uid
     newuser.mobile = mobile
-    newuser.department = department
+    newuser.department = unicode(department)
     newuser.job = job
     newuser.location = location
-    newuser.company = company
+    newuser.company = unicode(company)
     newuser.sex = sex
     newuser.uac = uac
     # newuser.active = args['active']

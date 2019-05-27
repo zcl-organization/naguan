@@ -120,8 +120,8 @@ def get_snapshot_by_snapshot_id(vm, snapshot_id):
     return db.snapshots.get_snapshot_by_snapshot_id(vm.summary.config.uuid, snapshot_id)
 
 
-def get_snapshot_list(platform_id, snapshot_id, vm_uuid):
-    results = db.snapshots.get_snapshot_list(platform_id, snapshot_id, vm_uuid)
+def get_snapshot_list(platform_id, snapshot_id, vm_uuid, pgnum):
+    results, pg = db.snapshots.get_snapshot_list(platform_id, snapshot_id, vm_uuid, pgnum)
 
     snapshot_list = []
 
@@ -139,4 +139,4 @@ def get_snapshot_list(platform_id, snapshot_id, vm_uuid):
             'create_time': result.create_time,
         }
         snapshot_list.append(snapshot_tmp)
-    return snapshot_list
+    return snapshot_list, pg

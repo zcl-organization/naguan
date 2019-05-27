@@ -24,7 +24,7 @@ from app.main.base import task
 from app.main.base.control import task_logs
 
 
-@celery.task(base=task.tasks_log.call_sync_tree)
+@celery.task(base=task.tasks_log.SyncTreeCall)
 def sync_tree(platform_id):
     # task_logs.task_end(task_id, 'ok')
     g.start_time = datetime.datetime.now()

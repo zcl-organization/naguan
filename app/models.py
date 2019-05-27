@@ -56,7 +56,7 @@ class Users(db.Model, UserMixin):
     location = db.Column(db.String(30), nullable=False)  # 地点
     company = db.Column(db.String(100), nullable=False)  # 公司
     sex = db.Column(db.String(3), nullable=False)  # 性别
-    uac = db.Column(db.Integer, nullable=False)  # UAC
+    uac = db.Column(db.String(30), nullable=False)  # UAC
     active = db.Column(db.Boolean, nullable=False)  # 激活状态
     is_superuser = db.Column(db.Boolean, nullable=False)  # 是否是超管
     remarks = db.Column(db.String(255))  # 备注
@@ -90,7 +90,7 @@ class Users(db.Model, UserMixin):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
 
         return s.dumps({'id': self.id, 'username': self.username})
