@@ -1,15 +1,18 @@
 # -*- coding:utf-8 -*-
+import json
 
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
-
+from app.main.base import control as base_control
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
+parser.add_argument('disks')  # disk磁盘
 
 
 class DiskManage(Resource):
@@ -191,15 +194,26 @@ class DiskManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-
+        datas = []
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if not args['disks']:
                 raise Exception('Parameter error')
             instance.add_disk(disks=args['disks'])
 
+            for disk in json.loads(args['disks']):
+                datas.append(dict(type='vm_disk', result=True, resources_id='',
+                                  event=unicode('创建磁盘，类型：%s，大小： %s'
+                                                % (disk.get('type'), disk.get('size'))),
+                                  submitter=g.username))
+
         except Exception as e:
+            datas.append(dict(
+                type='vm_disk', result=False, resources_id='', event=unicode('创建磁盘'), submitter=g.username
+            ))
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'Instance attack disk successfully.', 1520)
 
     def delete(self):
@@ -260,12 +274,21 @@ class DiskManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        datas = []
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
 
             if not args['disks']:
                 raise Exception('Parameter error')
             instance.delete_disk(disks=args['disks'])
+
+            for disk in json.loads(args['disks']):
+                datas.append(dict(type='vm_disk', result=True, resources_id=disk.get('disk_id'),
+                                  event=unicode('删除磁盘'), submitter=g.username))
         except Exception as e:
+            datas.append(dict(type='vm_disk', result=False, resources_id='',
+                              event=unicode('删除磁盘'), submitter=g.username))
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'Instance deattach disk successfully', 1520)

@@ -1,15 +1,18 @@
 # -*- coding:utf-8 -*-
-
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
+parser.add_argument('networks')  # 虚拟机uuid
+
 
 
 class NetWorkManage(Resource):
@@ -166,13 +169,22 @@ class NetWorkManage(Resource):
         """
 
         args = parser.parse_args()
-
+        data = dict(
+            type='vm_network',
+            result=False,
+            resources_id='',
+            event=unicode('创建网络'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['networks']:
                 instance.add_network(networks=args['networks'])
+            data['result'] = True
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'network update success.', 1520)
 
     def delete(self):
@@ -236,11 +248,21 @@ class NetWorkManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vm_network',
+            result=False,
+            resources_id='',
+            event=unicode('删除网络'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['networks']:
                 instance.del_network(networks=args['networks'])
+            data['result'] = True
         except Exception as e:
             # print(e)
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'network update success.', 1520)
+        finally:
+            base_control.event_logs.eventlog_create(**data)
+        return set_return_val(True, [], 'network delete success.', 1520)

@@ -106,8 +106,10 @@ api.add_resource(NetWorkManage, '/api/v1.0/vCenter/network', methods=['GET', 'PO
                  endpoint='NetworkDeviceMg')
 
 # vCenter snapshot
-api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot', methods=['GET', 'POST', 'DELETE'],
+api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot', methods=['GET', 'POST'],
                  endpoint='SnapshotMg')
+api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot/<int:snapshot_id>', methods=['DELETE'],
+                 endpoint='SnapshotMgDel')
 
 # vCenter resource_pool
 api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=['GET'],

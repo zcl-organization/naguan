@@ -2,7 +2,7 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-
+from app.main.base import control as base_control
 from app.main.vcenter.control.instances import Instance
 
 parser = reqparse.RequestParser()
@@ -141,41 +141,61 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='instances_vm',
+            result=True,
+            resources_id='',
+            event=unicode('虚拟机操作'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
 
             if args['action'] == 'start':
                 instance.start()
+                data['event'] = unicode('开启虚拟机')
 
             elif args['action'] == 'stop':
                 instance.stop()
+                data['event'] = unicode('关闭虚拟机')
 
             elif args['action'] == 'suspend':
                 instance.suspend()
+                data['event'] = unicode('挂起虚拟机')
 
             elif args['action'] == 'restart':
                 instance.restart()
+                data['event'] = unicode('重启虚拟机')
 
             elif args['action'] == 'create':
 
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
                               ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['networks'],
                               disks=args['disks'], image_id=args['image_id'])
+                data['event'] = unicode('创建虚拟机')
 
             elif args['action'] == 'clone':
                 instance.clone(new_vm_name=args['vm_name'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                resourcepool=args['resourcepool'])
+                data['event'] = unicode('克隆虚拟机')
 
             elif args['action'] == 'cold_migrate':
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
+                data['event'] = unicode('虚拟机转化模板')
+
             elif args['action'] == 'ip_assignment':
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
+                data['event'] = unicode('虚拟机分配ip地址')
+
             else:
+                data['result'] = False
                 raise Exception('Parameter error')
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance action success.', 1520)
 
     # 获取 instance 列表
@@ -390,11 +410,21 @@ class InstanceManage(Resource):
                     properties:
         """
         # args = parser.parse_args()
+        data = dict(
+            type='instances_vm',
+            result=False,
+            resources_id='',
+            event=unicode('删除虚拟机'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=platform_id, uuid=uuid)
             instance.delete()
+            data['result'] = True
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance delete success.', 1520)
 
     def put(self):
@@ -469,9 +499,14 @@ class InstanceManage(Resource):
                   items:
                     properties:
         """
-
         args = parser.parse_args()
-
+        data = dict(
+            type='instances_vm',
+            result=False,
+            resources_id='',
+            event=unicode('更新虚拟机'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
             if all([args['new_cpu'], args['old_cpu']]):
@@ -479,7 +514,7 @@ class InstanceManage(Resource):
 
             if all([args['new_memory'], args['old_memory']]):
                 instance.update_vmemory(new_memory=args['new_memory'], old_memory=args['old_memory'])
-
+            data['result'] = True
             # # 添加网络
             # if args['new_networks']:
             #     instance.add_network(networks=args['new_networks'])
@@ -501,4 +536,6 @@ class InstanceManage(Resource):
             #     instance.delete_snapshot(snapshot_id=args['snapshot_id'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance update success.', 1520)
