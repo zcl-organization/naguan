@@ -81,28 +81,45 @@ class System(Resource):
         ---
         tags:
           - system config
+        produces:
+          - "application/json"
         parameters:
-          - name: platform_name
-            in: query
-            type: string
-            description: 平台名称
+          - in: body
+            name: body
             required: true
-          - name: version_information
-            type: string
-            in: query
-            description: 版本信息
-          - name: copyright
-            type: string
-            in: query
-            description: 版权
-          - name: user_authentication_mode
-            type: string
-            in: query
-            description: 用户验证模式
-          - name: debug
-            type: string
-            in: query
-            description: debug
+            schema:
+              required:
+              - platform_name
+              - version_information
+              - copyright
+              - user_authentication_mode
+              - debug
+              properties:
+                platform_name:
+                  type: string
+                  default: kstack-naguan
+                  description: 平台名称
+                  example: kstack-naguan
+                version_information:
+                  type: string
+                  default: 1.0.1
+                  description: 版本
+                  example: 1.0.1
+                copyright:
+                  type: string
+                  default: 2017-2019
+                  description: copyright
+                  example: 2017-2019
+                user_authentication_mode:
+                  type: string
+                  default: kstack-naguan
+                  description: 登录认证模式
+                  example: local
+                debug:
+                  type: integer
+                  default: 1
+                  description: debug 模式
+                  example: 1
         responses:
           200:
             description: 创建系统配置

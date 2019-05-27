@@ -83,15 +83,27 @@ class RolesUsersManage(Resource):
          ---
          tags:
            - user_role
+         produces:
+           - "application/json"
          parameters:
-           - in: query
-             type: string
-             name: user_id
-             description: 用户id
-           - in: query
-             name: role_id
-             type: string
-             description: 角色id
+           - in: body
+             name: body
+             required: true
+             schema:
+               required:
+               - user_id
+               - role_id
+               properties:
+                 user_id:
+                   type: integer
+                   default: 1
+                   description: 用户id
+                   example: 1
+                 role_id:
+                   type: integer
+                   default: 1
+                   description: 角色id
+                   example: 1
          responses:
            200:
             description: 用户角色分配

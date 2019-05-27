@@ -98,35 +98,56 @@ class CloudPlatformManage(Resource):
        ---
        tags:
           - cloudplatform
+       produces:
+          - "application/json"
        parameters:
-         - in: formData
-           name: platform_type_id
-           type: string
+         - in: body
+           name: body
            required: true
-         - in: formData
-           name: platform_name
-           type: string
-           required: true
-         - in: formData
-           name: admin_name
-           type: string
-           required: true
-         - in: formData
-           name: admin_password
-           type: string
-           required: true
-         - in: formData
-           name: port
-           type: string
-           required: true
-         - in: formData
-           name: ip
-           type: string
-           required: true
-         - in: formData
-           name: remarks
-           type: string
-           required: true
+           schema:
+              required:
+              - platform_type_id
+              - platform_name
+              - admin_name
+              - admin_password
+              - port
+              - ip
+              properties:
+                platform_type_id:
+                  type: integer
+                  default: 1
+                  description: 平台类型id
+                  example: 1
+                platform_name:
+                  type: string
+                  default: 1
+                  description: 平台名称
+                  example: vCenter1
+                admin_name:
+                  type: string
+                  default: 1
+                  description: 管理员账号
+                  example: admin
+                admin_password:
+                  type: string
+                  default: 1
+                  description: 管理员密码
+                  example: admin_passwd
+                port:
+                  type: string
+                  default: 1
+                  description: 端口
+                  example: 443
+                ip:
+                  type: string
+                  default: 1
+                  description: ip
+                  example: 192.168.12.205
+                remarks:
+                  type: string
+                  default: 1
+                  description: 备注
+                  example: vmware云平台
        responses:
          200:
             description: 新增平台信息

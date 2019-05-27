@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask import jsonify, current_app, request, url_for, redirect, g, make_response,session
+from flask import jsonify, current_app, request, url_for, redirect, g, make_response, session
 
 from flask_security import login_required, login_user, roles_accepted
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
@@ -16,7 +16,6 @@ import os
 
 current_config = os.getenv('FLASK_CONFIG') or 'default'
 config_dict = config[current_config]
-
 
 # config_dict.SSO
 sso_server = config_dict.SSO
@@ -85,7 +84,6 @@ ret_data = {
     'ok': True,
     'data': {}
 }
-
 
 parser = reqparse.RequestParser()
 parser.add_argument('Action')
@@ -211,8 +209,7 @@ class AuthManage(Resource):
 @basic_auth.verify_password
 def verify_password(username_or_token, password):
     # 首先验证token
-    # print('verify_password')
-    # ldap = current_app.config.get('LDAP')
+
     ldap_manager = LDAP3LoginManager()
     ldap_manager.init_config(current_app.config.get('LDAP'))
 
@@ -222,40 +219,28 @@ def verify_password(username_or_token, password):
     ldap = False
     if password == '':
 
-        if session.get(username_or_token):
-            print('token:', session.get(username_or_token))
-            # return True
-        else:
-            print('unable get session')
+        if not session.get(username_or_token):
             return False
 
         data, token_flag = Users.verify_auth_token(username_or_token)
-        # data, token_flag = parse_token(username_or_token)
-        if token_flag == 1:  # 认证成功
-            print('verify success')
 
+        if token_flag == 1:  # 认证成功
             g.username = data['username']
-            print(g.username)
 
         elif token_flag == 2:  # token 超时
-            # pass
             return False
 
         elif token_flag == 3:  # token 解析失败
             return False
     else:
         user = Users.query.filter_by(username=username_or_token).first()
-        # g.user_name = username_or_token
-        # print(user)
-        # print('g.user')
+
         if user:
             if not user.verify_password(password):
-                # print('passwrd error')
                 return False
             else:
-                # print('password v')
                 g.username = username_or_token
-                # return True
+
         elif ldap:
             ldap_manager = LDAP3LoginManager()
             ldap_manager.init_config(current_app.config.get('LDAP'))
@@ -274,5 +259,3 @@ def verify_password(username_or_token, password):
     #         return False
     # g.user = user
     return True
-
-

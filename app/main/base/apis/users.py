@@ -203,47 +203,75 @@ class UserManage(Resource):
        ---
        tags:
           - user
+       produces:
+          - "application/json"
        parameters:
-         - in: formData
-           name: username
-           type: string
+         - in: body
+           name: body
            required: true
-         - in: formData
-           name: password
-           type: string
-           required: true
-         - in: formData
-           name: email
-           type: string
-           required: true
-         - in: formData
-           name: first_name
-           type: string
-           required: true
-         - in: formData
-           name: uid
-           type: string
-           required: true
-         - in: formData
-           name: mobile
-           type: string
-           required: true
-         - in: formData
-           name: department
-           type: string
-           required: true
-         - in: formData
-           name: company
-           type: string
-           required: true
-         - in: formData
-           name: sex
-           type: integer
-           format: int64
-           required: true
-         - in: formData
-           name: remarks
-           type: string
+           schema:
+             required:
+             - username
+             - password
+             - email
+             - first_name
+             - uid
+             - mobile
+             - department
+             - company
+             - sex
+             properties:
+               username:
+                 type: string
+                 default: test
+                 description: 用户名
+                 example: test
+               password:
+                 type: string
+                 default: aaaaaa
+                 description: 密码
+                 example: aaaaaa
+               email:
+                 type: string
+                 default: test@qq.com
+                 description: email
+                 example: test@qq.com
+               first_name:
+                 type: string
+                 default: test
+                 description: first_name
+                 example: test
+               uid:
+                 type: integer
+                 default: 1
+                 description: uid
+                 example: 1
+               mobile:
+                 type: string
+                 default: 15060011111
+                 description: mobile
+                 example: 15060011111
+               department:
+                 type: string
+                 default: 研三
+                 description: 部门
+                 example: 研三
+               company:
+                 type: string
+                 default: kpy
+                 description: 公司名称
+                 example: kpy
+               sex:
+                 type: integer
+                 default: 1
+                 description: 性别
+                 example: 1
+               remarks:
+                 type: integer
+                 default: 备注
+                 description: 备注
+                 example: 备注
+
        responses:
          200:
             description: 添加用户信息
@@ -281,7 +309,7 @@ class UserManage(Resource):
             control.user.user_create(username=args['username'], password=args['password'], email=args['email'],
                                      first_name=args['first_name'], uid=1, mobile=args['mobile'],
                                      department=args['department'], job='it', location='location',
-                                     company=args['company'], sex=int(sex), uac='uac', active=active,
+                                     company=args['company'], sex=int(sex), uac=1, active=active,
                                      is_superuser=is_superuser, remarks=args['remarks'], current_login_ip=g.ip)
 
         # 已存在

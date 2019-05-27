@@ -77,7 +77,10 @@ def menu_create(icon, url, name, identifier, is_hide, is_hide_children, importan
             new_menu.parent_id = 0
 
         db.session.add(new_menu)
+        db.session.flush()
         db.session.commit()
+        return new_menu
+
     except Exception as e:
         # print(e)
         raise Exception('Database operation exception')

@@ -31,20 +31,23 @@ def sync_disk(platform_id, vm):
             else:
                 types = 'Provisioned'
 
+            # print(dev.deviceInfo.summary.rstrip('KB').rstrip())
+
             if dev.backing.uuid in device_uuids:
                 device_uuids.remove(dev.backing.uuid)
                 db.disks.disk_update(platform_id=platform_id, vm_uuid=vm.summary.config.uuid,
                                      label=dev.deviceInfo.label,
-                                     disk_size=dev.deviceInfo.summary, disk_file=dev.backing.fileName,
+                                     disk_size=dev.deviceInfo.summary.rstrip('KB').rstrip(),
+                                     disk_file=dev.backing.fileName,
                                      level=dev.shares.level, shares=dev.shares.shares,
                                      iops=dev.storageIOAllocation.limit, cache=res, disk_type=types,
                                      sharing=dev.backing.sharing, disk_mode=dev.backing.diskMode,
                                      disk_uuid=dev.backing.uuid)
             else:
-
                 db.disks.disk_create(platform_id=platform_id, vm_uuid=vm.summary.config.uuid,
                                      label=dev.deviceInfo.label,
-                                     disk_size=dev.deviceInfo.summary, disk_file=dev.backing.fileName,
+                                     disk_size=dev.deviceInfo.summary.rstrip('KB').rstrip(),
+                                     disk_file=dev.backing.fileName,
                                      level=dev.shares.level, shares=dev.shares.shares,
                                      iops=dev.storageIOAllocation.limit, cache=res, disk_type=types,
                                      sharing=dev.backing.sharing, disk_mode=dev.backing.diskMode,
@@ -56,8 +59,8 @@ def sync_disk(platform_id, vm):
             db.disks.device_delete_by_uuid(platform_id=platform_id, disk_uuid=device)
 
 
-def get_disk_by_vm_uuid(platform_id, vm_uuid):
-    disks = db.disks.get_disk_by_vm_uuid(platform_id, vm_uuid)
+def get_disk_by_vm_uuid(platform_id, vm_uuid, pgnum):
+    disks, pg = db.disks.get_disk_by_vm_uuid(platform_id, vm_uuid, pgnum)
     disk_list = []
     for disk in disks:
         print(disk.id)
@@ -78,7 +81,7 @@ def get_disk_by_vm_uuid(platform_id, vm_uuid):
             'disk_mode': disk.disk_mode,
         }
         disk_list.append(ds_tmp)
-    return disk_list
+    return disk_list, pg
 
 
 def get_disk_by_disk_id(disk_id):

@@ -6,13 +6,15 @@ from app.exts import db
 
 def platform_list(id, platform_type_id, platform_name):
     query = db.session.query(CloudPlatform)
+
+    if id:
+        query = query.filter_by(id=id)
+    if platform_name:
+        query = query.filter_by(platform_name=platform_name)
+    if platform_type_id:
+        query = query.filter_by(platform_type_id=platform_type_id)
+
     try:
-        if id:
-            query = query.filter_by(id=id)
-        if platform_name:
-            query = query.filter_by(platform_name=platform_name)
-        if platform_type_id:
-            query = query.filter_by(platform_type_id=platform_type_id)
         result = query.all()
     except Exception as e:
         raise Exception('Database operation exception')
@@ -65,8 +67,12 @@ def platform_list_by_id(id):
 def platform_delete(id):
     try:
         query = db.session.query(CloudPlatform)
-        platform_willdel = query.filter_by(id=id).first()
-        db.session.delete(platform_willdel)
+        platform_middle = query.filter_by(id=id).first()
+        db.session.delete(platform_middle)
         db.session.commit()
     except Exception as e:
         raise Exception('Database operation exception')
+
+
+def get_platform_by_name(platform_name):
+    return db.session.query(CloudPlatform).filter_by(platform_name=platform_name).first()

@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import os
-from os import getenv
 import redis
+from os import getenv
+from datetime import timedelta
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, 'app\\static\\img\\')
@@ -17,14 +19,23 @@ class BaseConfig(object):
     SECRET_KEY = 'cccxdfcccc'
     SESSION_TYPE = 'redis'
     SESSION_REDIS = redis.Redis(host='118.24.10.85', port='6379', password='123456')
+    SESSION_PERMANENT_SESSION_LIFETIME = 3600
     SESSION_KEY_PREFIX = 'flask'
     # CELERY_IMPORTS = ('tasks.add',)
-    CELERY_BROKER_URL = 'redis://:123456@118.24.10.85:6379/'
-    CELERY_RESULT_BACKEND = 'redis://:123456@118.24.10.85:6379/'
+    CELERY_BROKER_URL = 'redis://:123456@118.24.10.85:6379/1'
+    CELERY_RESULT_BACKEND = 'redis://:123456@118.24.10.85:6379/1'
 
     CELERY_ACCEPT_CONTENT = ['json', 'pickle']
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
+    CELERYBEAT_SCHEDULE = {
+        # 定义任务名称：import_data
+        # 执行规则：每300秒运行一次
+        'TimingSync': {
+            'task': 'TimingSyncTree',
+            'schedule': timedelta(seconds=300)
+        },
+    }
 
     SQLALCHEMY_RECORD_QUERIES = True
 
