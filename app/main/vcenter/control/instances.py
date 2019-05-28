@@ -61,7 +61,6 @@ class Instance(object):
     # 开机
     def start(self):
         try:
-
             task = self.vm.PowerOn()
             wait_for_tasks(self.si, [task])
             self.update_vm_local()
@@ -107,15 +106,12 @@ class Instance(object):
 
     # 新增网卡信息
     def add_network(self, networks):
-
         networks = json.loads(networks)
-
         devs = self.vm.config.hardware.device
 
         # nic_prefix_label = 'Network adapter '
 
         for network in networks:
-
             # 获取网络设备信息
             local_network_port_group = network_port_group_manage.get_network_by_id(network)
 
@@ -171,10 +167,10 @@ class Instance(object):
 
             # 获取network device label
             for device_id in networks:
-
+                print device_id
                 # 根据id 获取 network device
                 device = network_device_manage.device_list_by_id(self.platform_id, self.uuid, device_id)
-
+                print device
                 if device:
                     for dev in devs:
                         virtual_nic_device = None
@@ -470,19 +466,26 @@ class Instance(object):
     def delete_disk(self, disks, languag=None):
         language = 'English'
 
-        # disks = json.loads(disks)
+        disks = json.loads(disks)
+        disk_id_list = []
         for disk_id in disks:
-
+            disk_id_list.append(disk_id)
+        disk_id_list.sort()
+        for disk_id in disk_id_list[::-1]:
+            print disk_id
             # 获取根据云盘id 获取 disk 信息
             disk = disk_manage.get_disk_by_disk_id(disk_id)
             print (disk)
             hdd_prefix_label = disk.label
             # hdd_prefix_label = get_hdd_prefix_label(language)
+
             if not hdd_prefix_label:
                 raise RuntimeError('Hdd prefix label could not be found')
 
             # hdd_label = hdd_prefix_label + str(disk_number)
+
             # hdd_label = hdd_prefix_label + str(4)
+
             virtual_hdd_device = None
             for dev in self.vm.config.hardware.device:
                 if isinstance(dev, vim.vm.device.VirtualDisk) \
@@ -579,8 +582,10 @@ class Instance(object):
     def snapshot_revert(self, snapshot_id):
         snapshots = self.vm.snapshot.rootSnapshotList
         snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
+
         if snapshot_db:
             raise Exception('unable get snapshot info ')
+
         snapshot_name = snapshot_db.name
         # print(snapshot_name)
         for snapshot in snapshots:
