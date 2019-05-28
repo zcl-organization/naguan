@@ -152,42 +152,41 @@ class InstanceManage(Resource):
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
             if args['action'] == 'start':
-                instance.start()
                 data['event'] = unicode('开启虚拟机')
+                instance.start()
 
             elif args['action'] == 'stop':
-                instance.stop()
                 data['event'] = unicode('关闭虚拟机')
+                instance.stop()
 
             elif args['action'] == 'suspend':
-                instance.suspend()
                 data['event'] = unicode('挂起虚拟机')
+                instance.suspend()
 
             elif args['action'] == 'restart':
+                data['event'] = unicode('重置虚拟机')
                 instance.restart()
-                data['event'] = unicode('重启虚拟机')
 
             elif args['action'] == 'create':
-
+                data['event'] = unicode('创建虚拟机')
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
                               ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['networks'],
                               disks=args['disks'], image_id=args['image_id'])
-                data['event'] = unicode('创建虚拟机')
 
             elif args['action'] == 'clone':
+                data['event'] = unicode('克隆虚拟机')
                 instance.clone(new_vm_name=args['vm_name'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                resourcepool=args['resourcepool'])
-                data['event'] = unicode('克隆虚拟机')
 
             elif args['action'] == 'cold_migrate':
+                data['event'] = unicode('虚拟机转化模板')
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
-                data['event'] = unicode('虚拟机转化模板')
 
             elif args['action'] == 'ip_assignment':
+                data['event'] = unicode('虚拟机分配ip地址')
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
-                data['event'] = unicode('虚拟机分配ip地址')
 
             else:
                 data['result'] = False
@@ -514,10 +513,14 @@ class InstanceManage(Resource):
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
             if all([args['new_cpu'], args['old_cpu']]):
                 instance.update_vcpu(new_cpu=args['new_cpu'], old_cpu=args['old_cpu'])
+                data['result'] = True
 
             if all([args['new_memory'], args['old_memory']]):
                 instance.update_vmemory(new_memory=args['new_memory'], old_memory=args['old_memory'])
-            data['result'] = True
+                data['result'] = True
+            if not data['result']:
+                raise Exception('parameter error')
+
             # # 添加网络
             # if args['new_networks']:
             #     instance.add_network(networks=args['new_networks'])
@@ -537,6 +540,7 @@ class InstanceManage(Resource):
             # if args['snapshot_id']:
             #     print(args['snapshot_id'])
             #     instance.delete_snapshot(snapshot_id=args['snapshot_id'])
+
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         finally:
