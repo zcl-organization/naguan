@@ -86,7 +86,7 @@ class NetworkPortGroupManage(Resource):
             args = parser.parse_args()
             data = network_manage.get_network_port_group_all(args['platform_id'])
         except Exception as e:
-            print(e)
+            # print(e)
             return set_return_val(False, {}, 'Failed to get network group', 1239), 400
         return set_return_val(True, data, 'Get network group success', 1230)
 

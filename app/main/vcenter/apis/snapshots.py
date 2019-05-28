@@ -122,10 +122,7 @@ class SnapshotManage(Resource):
         """
         args = parser.parse_args()
         try:
-            if args['pgnum']:
-                pgnum = args['pgnum']
-            else:
-                pgnum = 1
+            pgnum = args['pgnum'] if args['pgnum'] else 1
             data, pg = control.snapshots.get_snapshot_list(platform_id=args['platform_id'],
                                                            snapshot_id=args['snapshot_id'],
                                                            vm_uuid=args['vm_uuid'], pgnum=pgnum)
@@ -218,21 +215,14 @@ class SnapshotManage(Resource):
         args = parser.parse_args()
 
         try:
-
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if args['action'] == 'create':
-
-                if not args['snapshot_name']:
-                    raise Exception('Parameter error')
+            if args['action'] == 'create' and args['snapshot_name']:
                 instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
-            elif args['action'] == 'revert':
-                if not args['snapshot_id']:
-                    raise Exception('Parameter error')
+            elif args['action'] == 'revert' and args['snapshot_id']:
                 instance.snapshot_revert(snapshot_id=args['snapshot_id'])
             else:
                 raise Exception('Parameter error')
         except Exception as e:
-            # print(e)
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'snapshot update success.', 1520)
 
@@ -299,9 +289,7 @@ class SnapshotManage(Resource):
         args = parser.parse_args()
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-
             instance.delete_snapshot(snapshot_id=args['snapshot_id'])
         except Exception as e:
-
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'snapshot delete success.', 1520)

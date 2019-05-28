@@ -89,7 +89,6 @@ class VCenterManage(Resource):
             if not args['platform_id']:
                 raise Exception('Parameter error')
             data = control.vcenter.vcenter_tree_list(int(args['platform_id']))
-
         except Exception as e:
             return set_return_val(False, {}, 'Failed to get vcneter tree', 1239), 400
         return set_return_val(True, data, 'Get vcneter tree success', 1230)
@@ -154,7 +153,6 @@ class VCenterManage(Resource):
         """
         args = parser.parse_args()
         try:
-
             if not args['platform_id']:
                 raise Exception('Parameter error')
             control.vcenter.sync_tree(args['platform_id'])

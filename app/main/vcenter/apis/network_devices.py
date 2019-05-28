@@ -181,9 +181,11 @@ class NetWorkManage(Resource):
         args = parser.parse_args()
 
         try:
+            if not args['networks']:
+                raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if args['networks']:
-                instance.add_network(networks=args['networks'])
+            # if args['networks']:
+            instance.add_network(networks=args['networks'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'network update success.', 1520)
@@ -250,9 +252,11 @@ class NetWorkManage(Resource):
         """
         args = parser.parse_args()
         try:
+            if not args['networks']:
+                raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if args['networks']:
-                instance.del_network(networks=args['networks'])
+            # if args['networks']:
+            instance.del_network(networks=args['networks'])
         except Exception as e:
             # print(e)
             return set_return_val(False, [], str(e), 1529), 400

@@ -146,26 +146,19 @@ class InstanceManage(Resource):
 
             if args['action'] == 'start':
                 instance.start()
-
             elif args['action'] == 'stop':
                 instance.stop()
-
             elif args['action'] == 'suspend':
                 instance.suspend()
-
             elif args['action'] == 'restart':
                 instance.restart()
-
             elif args['action'] == 'create':
-
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
                               ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['networks'],
                               disks=args['disks'], image_id=args['image_id'])
-
             elif args['action'] == 'clone':
                 instance.clone(new_vm_name=args['vm_name'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                resourcepool=args['resourcepool'])
-
             elif args['action'] == 'cold_migrate':
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
@@ -173,7 +166,7 @@ class InstanceManage(Resource):
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
             else:
-                raise Exception('Parameter error')
+                raise Exception('Parameter error')    
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'instance action success.', 1520)
@@ -321,15 +314,14 @@ class InstanceManage(Resource):
         try:
             instance = Instance(platform_id=args['platform_id'])
             # print(args['pgnum'])
-            pgnum = args['pgnum']
-            if not pgnum:
-                pgnum = 1  # 默认第一页
+            pgnum = args['pgnum'] if args['pgnum'] else 1
+            # if not pgnum:
+            #     pgnum = 1  # 默认第一页
             # print(args['pgsort'])
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
                                      pgsort=args['pgsort'])
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
             #                                    vm_name=args['vm_name'])
-
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, data, 'instance gets success.', 1520, pg)

@@ -133,10 +133,8 @@ class DiskManage(Resource):
         try:
             if not all([args['platform_id'], args['vm_uuid']]):
                 raise Exception('Parameter error')
-            if not args['pgnum']:
-                pgnum = 1
-            else:
-                pgnum = args['pgnum']
+
+            pgnum = args['pgnum'] if args['pgnum'] else 1
             data, pg = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'],
                                                          pgnum=pgnum)
         except Exception as e:
@@ -217,11 +215,11 @@ class DiskManage(Resource):
         args = parser.parse_args()
 
         try:
-            instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if not args['disks']:
-                raise Exception('Parameter error')
-            instance.add_disk(disks=args['disks'])
+			if not args['disks']:
+				raise Exception('Parameter error')
 
+			instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
+			instance.add_disk(disks=args['disks'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'Instance attack disk successfully.', 1520)
@@ -285,11 +283,11 @@ class DiskManage(Resource):
         """
         args = parser.parse_args()
         try:
-            instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
+			if not args['disks']:
+				raise Exception('Parameter error')
 
-            if not args['disks']:
-                raise Exception('Parameter error')
-            instance.delete_disk(disks=args['disks'])
+			instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
+			instance.delete_disk(disks=args['disks'])
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'Instance deattach disk successfully', 1520)
