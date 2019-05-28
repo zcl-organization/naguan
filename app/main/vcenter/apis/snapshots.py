@@ -219,6 +219,7 @@ class SnapshotManage(Resource):
             # print(e)
             return set_return_val(False, [], str(e), 1529), 400
         finally:
+            data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot update success.', 1520)
 
@@ -297,5 +298,6 @@ class SnapshotManage(Resource):
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         finally:
+            data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot delete success.', 1520)

@@ -61,7 +61,6 @@ class Instance(object):
     # 开机
     def start(self):
         try:
-
             task = self.vm.PowerOn()
             wait_for_tasks(self.si, [task])
             self.update_vm_local()
@@ -113,7 +112,6 @@ class Instance(object):
         # nic_prefix_label = 'Network adapter '
 
         for network in networks:
-            network = network.get('network')
             # 获取网络设备信息
             local_network_port_group = network_port_group_manage.get_network_by_id(network)
 

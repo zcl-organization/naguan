@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
@@ -150,7 +151,6 @@ class InstanceManage(Resource):
         )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
-
             if args['action'] == 'start':
                 instance.start()
                 data['event'] = unicode('开启虚拟机')
@@ -193,8 +193,10 @@ class InstanceManage(Resource):
                 data['result'] = False
                 raise Exception('Parameter error')
         except Exception as e:
+            data['result'] = False
             return set_return_val(False, [], str(e), 1529), 400
         finally:
+            data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance action success.', 1520)
 
@@ -424,6 +426,7 @@ class InstanceManage(Resource):
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         finally:
+            data['resources_id'] = uuid
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance delete success.', 1520)
 
@@ -537,5 +540,6 @@ class InstanceManage(Resource):
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
         finally:
+            data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance update success.', 1520)

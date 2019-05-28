@@ -202,14 +202,14 @@ class DiskManage(Resource):
             instance.add_disk(disks=args['disks'])
 
             for disk in json.loads(args['disks']):
-                datas.append(dict(type='vm_disk', result=True, resources_id='',
+                datas.append(dict(type='vm_disk', result=True, resources_id=args.get('uuid'),
                                   event=unicode('创建磁盘，类型：%s，大小： %s'
                                                 % (disk.get('type'), disk.get('size'))),
                                   submitter=g.username))
 
         except Exception as e:
             datas.append(dict(
-                type='vm_disk', result=False, resources_id='', event=unicode('创建磁盘'), submitter=g.username
+                type='vm_disk', result=False, resources_id=args.get('uuid'), event=unicode('创建磁盘'), submitter=g.username
             ))
             return set_return_val(False, [], str(e), 1529), 400
         finally:
@@ -286,7 +286,7 @@ class DiskManage(Resource):
                 datas.append(dict(type='vm_disk', result=True, resources_id=disk.get('disk_id'),
                                   event=unicode('删除磁盘'), submitter=g.username))
         except Exception as e:
-            datas.append(dict(type='vm_disk', result=False, resources_id='',
+            datas.append(dict(type='vm_disk', result=False, resources_id=args.get('uuid'),
                               event=unicode('删除磁盘'), submitter=g.username))
             return set_return_val(False, [], str(e), 1529), 400
         finally:
