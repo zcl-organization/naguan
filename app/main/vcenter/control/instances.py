@@ -357,7 +357,7 @@ class Instance(object):
     # 同步云主机信息
     def update_vm_local(self):
 
-        if self.vm.summary.guest != None:
+        if self.vm.summary.guest is not None:
             ip = self.vm.summary.guest.ipAddress
         else:
             ip = ''
@@ -457,6 +457,7 @@ class Instance(object):
             disk_spec.device.controllerKey = controller.key
             dev_changes.append(disk_spec)
             spec.deviceChange = dev_changes
+            print(1)
             task = self.vm.ReconfigVM_Task(spec=spec)
             wait_for_tasks(self.si, [task])
 
@@ -474,6 +475,7 @@ class Instance(object):
             print disk_id
             # 获取根据云盘id 获取 disk 信息
             disk = disk_manage.get_disk_by_disk_id(disk_id)
+            print (disk)
             hdd_prefix_label = disk.label
             # hdd_prefix_label = get_hdd_prefix_label(language)
 
@@ -481,11 +483,13 @@ class Instance(object):
                 raise RuntimeError('Hdd prefix label could not be found')
 
             # hdd_label = hdd_prefix_label + str(disk_number)
-            hdd_label = hdd_prefix_label
+
+            # hdd_label = hdd_prefix_label + str(4)
+
             virtual_hdd_device = None
             for dev in self.vm.config.hardware.device:
                 if isinstance(dev, vim.vm.device.VirtualDisk) \
-                        and dev.deviceInfo.label == hdd_label:
+                        and dev.deviceInfo.label == hdd_prefix_label:
                     virtual_hdd_device = dev
             if not virtual_hdd_device:
                 raise RuntimeError('Virtual {} could not '
@@ -562,6 +566,7 @@ class Instance(object):
 
         for snapshot in snapshots:
             if snapshot_name == snapshot.name:
+
                 snap_obj = snapshot.snapshot
 
                 task = snap_obj.RemoveSnapshot_Task(True)
@@ -577,6 +582,10 @@ class Instance(object):
     def snapshot_revert(self, snapshot_id):
         snapshots = self.vm.snapshot.rootSnapshotList
         snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
+
+        if snapshot_db:
+            raise Exception('unable get snapshot info ')
+
         snapshot_name = snapshot_db.name
         # print(snapshot_name)
         for snapshot in snapshots:

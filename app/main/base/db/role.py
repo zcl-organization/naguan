@@ -40,8 +40,8 @@ def role_create(name, description):
     try:
 
         role = Roles()
-        role.name = name
-        role.description = description
+        role.name = unicode(name)
+        role.description = unicode(description)
         db.session.add(role)
         db.session.flush()
         db.session.commit()

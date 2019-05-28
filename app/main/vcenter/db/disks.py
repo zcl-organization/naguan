@@ -62,8 +62,22 @@ def device_delete_by_vm_uuid(platform_id, vm_uuid):
     db.session.commit()
 
 
-def get_disk_by_vm_uuid(platform_id, vm_uuid):
-    return db.session.query(VCenterDisk).filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).all()
+def get_disk_by_vm_uuid(platform_id, vm_uuid, pgnum):
+    query = db.session.query(VCenterDisk).filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid)
+
+    if pgnum:
+        query = query.paginate(page=int(pgnum), per_page=10, error_out=False)
+
+    results = query.items
+    pg = {
+        'has_next': query.has_next,
+        'has_prev': query.has_prev,
+        'page': query.page,
+        'pages': query.pages,
+        'total': query.total,
+    }
+    return results, pg
+    # return db.session.query(VCenterDisk).filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).all()
 
 
 def get_disk_by_disk_id(disk_id):

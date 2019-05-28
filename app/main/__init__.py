@@ -37,7 +37,37 @@ def restful_init(app):
 
 
 def swagger_init(app):
-    Swagger(app)
+    template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "KStack NaGuan API",
+            "description": "KStack NaGuan API",
+            "contact": {
+                "responsibleOrganization": "KStack NaGuan API",
+                "responsibleDeveloper": "KStack NaGuan API",
+                "email": "kpy@gmail.com",
+                "url": "#",
+            },
+            "version": "1.0.0"
+        },
+        "securityDefinitions": {
+            "basicAuth": {
+                "type": "basic"
+            },
+            # "apiKey": {
+            #     "type": "apiKey",
+            #     "in": "header",
+            #     "name": "x-access-token"
+            # }
+        },
+        "tags": [{
+            "name": "Auth",
+            "description": "Operations about authorization service."
+        }
+        ],
+    }
+
+    Swagger(app, template=template)
 
 
 # 登录管理

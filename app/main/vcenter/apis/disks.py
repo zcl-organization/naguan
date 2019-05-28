@@ -12,7 +12,8 @@ parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
-parser.add_argument('disks')  # disk磁盘
+parser.add_argument('disks')  # 虚拟机disk
+parser.add_argument('pgnum')
 
 
 class DiskManage(Resource):
@@ -32,6 +33,9 @@ class DiskManage(Resource):
             name: vm_uuid
             type: string
             required: true
+          - in: query
+            name: pgnum
+            type: integer
         responses:
           200:
             description: vCenter disk 信息
@@ -131,10 +135,15 @@ class DiskManage(Resource):
         try:
             if not all([args['platform_id'], args['vm_uuid']]):
                 raise Exception('Parameter error')
-            data = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'])
+            if not args['pgnum']:
+                pgnum = 1
+            else:
+                pgnum = args['pgnum']
+            data, pg = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'],
+                                                         pgnum=pgnum)
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'Datastore gets success.', 1520)
+        return set_return_val(True, data, 'vm disk gets success.', 1520, pg)
 
     def post(self):
         """
@@ -142,22 +151,36 @@ class DiskManage(Resource):
         ---
         tags:
           - vCenter disk
+        produces:
+          - "application/json"
         parameters:
-          - in: query
-            name: platform_id
-            type: string
-            description: platform_id
-          - in: query
-            name: uuid
-            type: string
-            description: uuid
-          - in: query
-            name: disks
-            type: string
-            description: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - uuid
+              - disks
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                vm_uuid:
+                  type: string
+                  default: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                  description: 云主机id
+                  example: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                disks:
+                  type: integer
+                  default: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
+                  description: disk 信息
+                  example: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
         responses:
           200:
-            description: vCenter tree 信息
+            description: vCenter disk  信息
             schema:
               properties:
                 ok:

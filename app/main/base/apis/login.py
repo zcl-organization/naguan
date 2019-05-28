@@ -8,6 +8,7 @@ from flask_security import login_user
 from flask import session, request, g
 
 from app.main.base import control
+from app.code import Code
 
 # import redis
 
@@ -16,6 +17,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('username')
 parser.add_argument('password')
 parser.add_argument('id')
+parser.add_argument('body')
 
 
 class LoginManage(Resource):
@@ -26,15 +28,26 @@ class LoginManage(Resource):
         ---
         tags:
           - login
+        produces:
+          - "application/json"
         parameters:
-          - in: formData
-            name: username
-            type: string
+          - in: body
+            name: body
             required: true
-          - in: formData
-            name: password
-            type: string
-            required: true
+            schema:
+              required:
+              - username
+              - password
+              properties:
+                username:
+                  type: string
+                  default: zcl
+                  description: 用户名
+                  required: True
+                password:
+                  type: string
+                  default: zcl
+                  description: 密码
         responses:
           200:
             description: 用户登录
@@ -81,17 +94,19 @@ class LoginManage(Resource):
                         default: eyJhbGciOiJIUzU3rKdzH6FW4HohJ32LQqnQ1sLzVqXiuArh8Nco3KJpA_CsLlxwM9-EZe5P_XF8I4US9WN6Q
                       username:
                         type: string
-                        default: zcl
+                        default: kpy
         """
         args = parser.parse_args()
         try:
+            print(args['username'])
             if not all([args['username'], args['password']]):
                 raise Exception('Incorrect username or password.')
 
             user = control.user.list_by_name(username=args['username'])
 
             if not user:
-                raise Exception('Incorrect username or password.')
+                # raise Exception('Incorrect username or password.')
+                raise Exception('LoginParameterErr')
             else:
                 if not user.verify_password(args['password']):
                     raise Exception('Incorrect username or password.')
@@ -114,10 +129,14 @@ class LoginManage(Resource):
                     # session['username'] = user.username
                     g.username = user.username
                     session[token] = True
+                    # session['100'] = 1
+                    # print(session.get(token))
                     control.user.update_login_time(user)
         except Exception as e:
+
             control.event_logs.eventlog_create(type='login', result=False, resources_id='', event=unicode('登陆'),
                                                submitter=args['username'])
+
             return set_return_val(False, {}, str(e), 1301), 400
         control.event_logs.eventlog_create(type='login', result=True, resources_id=user.id, event=unicode('登陆'),
                                            submitter=g.username)

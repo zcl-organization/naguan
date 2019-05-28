@@ -57,7 +57,7 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
         vm_info.cpu = cpu
         vm_info.num_ethernet_cards = num_ethernet_cards
         vm_info.num_virtual_disks = num_virtual_disks
-        vm_info.num_virtual_disks = instance_uuid
+        vm_info.instance_uuid = instance_uuid
         vm_info.guest_id = guest_id
         vm_info.guest_full_name = guest_full_name
         vm_info.host = host
@@ -75,7 +75,6 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
         raise Exception(e)
 
 
-
 def vcenter_get_vm_by_platform_id(platform_id, host):
     if platform_id and host:
         result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
@@ -89,13 +88,9 @@ def vm_delete_by_uuid(platform_id, host, uuid):
     query = db.session.query(VCenterVm)
     query.filter_by(platform_id=platform_id).filter_by(host=host).filter_by(uuid=uuid).delete(
         synchronize_session=False)
-    # db.session.delete(vm_willdel)
-    # db.session.commit()
-    # return True
 
 
 def vm_list(platform_id, host, vm_name, pgnum, pgsort):
-    print(pgsort)
     query = db.session.query(VCenterVm)
     if platform_id:
         query = query.filter_by(platform_id=platform_id)

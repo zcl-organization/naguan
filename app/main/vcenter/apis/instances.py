@@ -345,7 +345,7 @@ class InstanceManage(Resource):
             pgnum = args['pgnum']
             if not pgnum:
                 pgnum = 1  # 默认第一页
-            print(args['pgsort'])
+            # print(args['pgsort'])
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
                                      pgsort=args['pgsort'])
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],

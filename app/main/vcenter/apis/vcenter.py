@@ -100,11 +100,21 @@ class VCenterManage(Resource):
         ---
         tags:
           - vCenter tree
+        produces:
+          - "application/json"
         parameters:
-          - in: query
-            name: platform_id
-            type: string
+          - in: body
+            name: body
             required: true
+            schema:
+              required:
+              - platform_id
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
         responses:
           200:
             description: vCenter tree 信息

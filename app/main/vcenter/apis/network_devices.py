@@ -13,7 +13,7 @@ parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
-parser.add_argument('networks')  # 虚拟机uuid
+parser.add_argument('networks')
 
 
 
@@ -115,22 +115,34 @@ class NetWorkManage(Resource):
         ---
         tags:
           - vCenter network device
+        produces:
+          - "application/json"
         parameters:
-          - in: query
-            name: platform_id
-            type: string
-            description: platform_id
+          - in: body
+            name: body
             required: true
-          - in: query
-            name: uuid
-            type: string
-            description: uuid
-            required: true
-          - in: query
-            name: networks
-            type: string
-            description: '[1,2]--network_port_group_id'
-            required: true
+            schema:
+              required:
+              - platform_id
+              - vm_uuid
+              - networks
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                vm_uuid:
+                  type: integer
+                  default: 2018ddf-f886-12b5-a652-dd60b04ca2df
+                  description: 云主机uuid
+                  example: 2018ddf-f886-12b5-a652-dd60b04ca2df
+                networks:
+                  type: integer
+                  default: '[1,2]'
+                  description: '[1,2]--network_port_group_id'
+                  example: '[1,2]'
+
         responses:
           200:
             description:  vm 添加 network device  信息
@@ -202,9 +214,9 @@ class NetWorkManage(Resource):
             description: platform_id
             required: true
           - in: query
-            name: uuid
+            name: vm_uuid
             type: string
-            description: uuid
+            description: vm_uuid
             required: true
           - in: query
             name: networks
