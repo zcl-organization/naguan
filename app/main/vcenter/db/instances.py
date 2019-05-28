@@ -33,9 +33,7 @@ def vcenter_vm_create(uuid, platform_id, vm_name, vm_mor_name, template, vm_path
 
 def vcenter_get_vm_by_uuid(uuid, platform_id):
     if uuid and platform_id:
-
-        query = db.session.query(VCenterVm)
-        return query.filter_by(uuid=uuid).filter_by(platform_id=platform_id).first()
+        return db.session.query(VCenterVm).filter_by(uuid=uuid).filter_by(platform_id=platform_id).first()
     else:
         return False
 
@@ -67,19 +65,12 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
         # print(created_at)
         if created_at:
             vm_info.created_at = created_at
-    try:
-
+        
         db.session.commit()
-    except Exception as e:
-        print(str(e))
-        raise Exception(e)
-
 
 def vcenter_get_vm_by_platform_id(platform_id, host):
     if platform_id and host:
-        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
-        # db.session.remove()
-        return result
+        return db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
     else:
         return False
 
