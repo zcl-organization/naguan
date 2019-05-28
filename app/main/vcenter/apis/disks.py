@@ -275,21 +275,23 @@ class DiskManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        datas = []
+        data = dict(
+            type='vm_network',
+            result=False,
+            resources_id='',
+            event=unicode('删除磁盘,id：%s' % args.get('disks')),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
 
             if not args['disks']:
                 raise Exception('Parameter error')
             instance.delete_disk(disks=args['disks'])
-
-            for disk in json.loads(args['disks']):
-                datas.append(dict(type='vm_disk', result=True, resources_id=args.get('vm_uuid'),
-                                  event=unicode('删除磁盘'), submitter=g.username))
+            data['result'] = True
         except Exception as e:
-            datas.append(dict(type='vm_disk', result=False, resources_id=args.get('vm_uuid'),
-                              event=unicode('删除磁盘'), submitter=g.username))
             return set_return_val(False, [], str(e), 1529), 400
         finally:
-            [base_control.event_logs.eventlog_create(**item) for item in datas]
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Instance deattach disk successfully', 1520)
