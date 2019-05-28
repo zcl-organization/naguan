@@ -197,7 +197,7 @@ class UserManage(Resource):
         except Exception as e:
             return set_return_val(True, [], 'Failed to get user information', 1101), 400
 
-        return set_return_val(True, data, 'Successfully obtained user information', 1100, pg)
+        return set_return_val(True, data, 'Successfully obtained user information', 1130, pg)
 
     # @basic_auth.login_required
     def post(self):
@@ -272,7 +272,7 @@ class UserManage(Resource):
             parser.add_argument('email')
 
             if not all([args['username'], args['password'], args['email'], args['department'], args['company']]):
-                return set_return_val(False, [], str('Parameter error.'), 1002), 400
+                return set_return_val(False, [], str('Parameter error.'), 1101), 400
 
             active = 1
             is_superuser = 1
@@ -292,15 +292,15 @@ class UserManage(Resource):
         except ExistsException as e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id='',
                                                event=unicode('创建新用户：已存在'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1002), 400
+            return set_return_val(False, [], str(e), 1102), 400
 
         except Exception as e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id='',
                                                event=unicode('创建新用户'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1001), 400
+            return set_return_val(False, [], str(e), 1103), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('创建新用户:%s' % args['username']), submitter=g.username)
-        return set_return_val(True, [], 'User created successfully', 1000)
+        return set_return_val(True, [], 'User created successfully', 1100)
 
     @basic_auth.login_required
     def put(self, id):
@@ -361,12 +361,12 @@ class UserManage(Resource):
         if args['active']:
             if int(args['active']) not in [1, 2]:
                 return set_return_val(False, [], str('Please pass in the correct parameters. 1 is True and 2 is False'),
-                                      1001), 400
+                                      1121), 400
         if args['active'] or args['password']:
             pass
         else:
             return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
-                                  1001), 400
+                                  1122), 400
         try:
 
             username = control.user.user_update(id=id, active=int(args['active']), username=args['username'],
@@ -376,10 +376,10 @@ class UserManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id=id,
                                                event=unicode('更新用户'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1001), 400
+            return set_return_val(False, [], str(e), 1123), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('更新用户:%s' % username), submitter=g.username)
-        return set_return_val(True, [], 'User update successfully', 3000)
+        return set_return_val(True, [], 'User update successfully', 1120)
 
     @basic_auth.login_required
     def delete(self, id):
@@ -418,7 +418,7 @@ class UserManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                                event=unicode('删除用户'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1001), 400
+            return set_return_val(False, [], str(e), 1101), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('删除用户:%s' % username), submitter=g.username)
-        return set_return_val(True, [], 'User delete successfully', 3000)
+        return set_return_val(True, [], 'User delete successfully', 1110)
