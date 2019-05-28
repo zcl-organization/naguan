@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import json
+
 from flask import g
 from flask_restful import Resource, reqparse
 
@@ -169,23 +171,22 @@ class NetWorkManage(Resource):
         """
 
         args = parser.parse_args()
-        data = dict(
-            type='vm_network',
-            result=False,
-            resources_id='',
-            event=unicode('创建网络'),
-            submitter=g.username,
-        )
+        datas = []
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['networks']:
                 instance.add_network(networks=args['networks'])
-            data['result'] = True
+            for network in json.loads(args['networks']):
+                datas.append(dict(type='vm_network', result=True, resources_id=args.get('vm_uuid'),
+                                  event=unicode('添加网络，类型：%s' % network), submitter=g.username))
         except Exception as e:
+            datas.append(dict(
+                type='vm_network', result=False, resources_id=args.get('vm_uuid'),
+                event=unicode('添加网络,类型：%s' % args.get('networks')), submitter=g.username
+            ))
             return set_return_val(False, [], str(e), 1529), 400
         finally:
-            data['resources_id'] = args.get('vm_uuid')
-            base_control.event_logs.eventlog_create(**data)
+            [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'network update success.', 1520)
 
     def delete(self):
@@ -252,7 +253,7 @@ class NetWorkManage(Resource):
         data = dict(
             type='vm_network',
             result=False,
-            resources_id='',
+            resources_id=args.get('networks'),
             event=unicode('删除网络'),
             submitter=g.username,
         )
