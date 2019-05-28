@@ -167,7 +167,6 @@ class Instance(object):
 
             # 获取network device label
             for device_id in networks:
-                device_id = device_id.get('network')
                 print device_id
                 # 根据id 获取 network device
                 device = network_device_manage.device_list_by_id(self.platform_id, self.uuid, device_id)
@@ -469,9 +468,10 @@ class Instance(object):
         disks = json.loads(disks)
         disk_id_list = []
         for disk_id in disks:
-            disk_id_list.append(disk_id.get('disk_id'))
+            disk_id_list.append(disk_id)
         disk_id_list.sort()
         for disk_id in disk_id_list[::-1]:
+            print disk_id
             # 获取根据云盘id 获取 disk 信息
             disk = disk_manage.get_disk_by_disk_id(disk_id)
             hdd_prefix_label = disk.label
