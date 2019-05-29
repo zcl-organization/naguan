@@ -100,15 +100,17 @@ class LoginManage(Resource):
         try:
             print(args['username'])
             if not all([args['username'], args['password']]):
+                g.error_code = 1001
                 raise Exception('Incorrect username or password.')
 
             user = control.user.list_by_name(username=args['username'])
 
             if not user:
-                # raise Exception('Incorrect username or password.')
-                raise Exception('LoginParameterErr')
+                g.error_code = 1002
+                raise Exception('Incorrect username or password.')
             else:
                 if not user.verify_password(args['password']):
+                    g.error_code = 1003
                     raise Exception('Incorrect username or password.')
                 else:
                     login_user(user, True)
@@ -137,7 +139,8 @@ class LoginManage(Resource):
             control.event_logs.eventlog_create(type='login', result=False, resources_id='', event=unicode('登陆'),
                                                submitter=args['username'])
 
-            return set_return_val(False, {}, str(e), 1301), 400
+            return set_return_val(False, {}, str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='login', result=True, resources_id=user.id, event=unicode('登陆'),
                                            submitter=g.username)
-        return set_return_val(True, data, 'login successful', 1300)
+        return set_return_val(True, data, 'login successful', 1000)

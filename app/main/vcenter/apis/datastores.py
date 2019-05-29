@@ -123,8 +123,8 @@ class DataStoreManage(Resource):
                 raise Exception('Parameter error')
             data = control.datastores.get_datastore_by_platform_id(args['platform_id'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'Datastore gets success.', 1520)
+            return set_return_val(False, [], str(e), 2441), 400
+        return set_return_val(True, data, 'Datastore gets success.', 2440)
 
     def post(self):
         pass

@@ -106,8 +106,8 @@ class NetWorkManage(Resource):
             data = control.network_devices.get_network_by_vm_uuid(platform_id=args['platform_id'],
                                                                   vm_uuid=args['vm_uuid'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'network device gets success.', 1520)
+            return set_return_val(False, [], str(e), 2231), 400
+        return set_return_val(True, data, 'network device gets success.', 2230)
 
     def post(self):
         """
@@ -192,14 +192,15 @@ class NetWorkManage(Resource):
                 datas.append(dict(type='vm_network', result=True, resources_id=args.get('vm_uuid'),
                                   event=unicode('添加网络，类型：%s' % network), submitter=g.username))
         except Exception as e:
+
             datas.append(dict(
                 type='vm_network', result=False, resources_id=args.get('vm_uuid'),
                 event=unicode('添加网络,类型：%s' % args.get('networks')), submitter=g.username
             ))
-            return set_return_val(False, [], str(e), 1529), 400
+            return set_return_val(False, [], str(e), 2201), 400
         finally:
             [base_control.event_logs.eventlog_create(**item) for item in datas]
-        return set_return_val(True, [], 'network update success.', 1520)
+        return set_return_val(True, [], 'network update success.', 2200)
 
     def delete(self):
         """
@@ -276,8 +277,9 @@ class NetWorkManage(Resource):
             data['result'] = True
         except Exception as e:
             # print(e)
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), 2211), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'network delete success.', 1520)
+        return set_return_val(True, [], 'network delete success.', 2210)

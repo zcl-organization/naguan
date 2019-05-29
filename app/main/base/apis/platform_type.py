@@ -66,9 +66,9 @@ class PlatformTypeMg(Resource):
 
             data = control.platform_type.type_list(id=args['id'], name=args['name'])
         except Exception, e:
-            return set_return_val(False, [], str(e), 1319), 400
+            return set_return_val(False, [], str(e), 1531), 400
 
-        return set_return_val(True, data, 'Platform type query succeeded.', 1430)
+        return set_return_val(True, data, 'Platform type query succeeded.', 1530)
 
     @basic_auth.login_required
     def post(self):
@@ -121,10 +121,10 @@ class PlatformTypeMg(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
                                                event=unicode('增加平台类型'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1319), 400
+            return set_return_val(False, [], str(e), 1501), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'Platform type create succeeded.', 1430)
+        return set_return_val(True, [], 'Platform type create succeeded.', 1500)
 
     @basic_auth.login_required
     def put(self, id):
@@ -171,7 +171,7 @@ class PlatformTypeMg(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('更新平台类型信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1529), 400
+            return set_return_val(False, [], str(e), 1521), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('更新平台类型信息'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type update succeeded.', 1520)
@@ -212,7 +212,7 @@ class PlatformTypeMg(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('删除平台类型信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1529), 400
+            return set_return_val(False, [], str(e), 1511), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('删除平台类型信息'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'Platform type delete succeeded.', 1520)
+        return set_return_val(True, [], 'Platform type delete succeeded.', 1510)

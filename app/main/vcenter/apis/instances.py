@@ -192,12 +192,14 @@ class InstanceManage(Resource):
                 data['result'] = False
                 raise Exception('Parameter error')
         except Exception as e:
+
             data['result'] = False
-            return set_return_val(False, [], str(e), 1529), 400
+            return set_return_val(False, [], str(e), 2001), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'instance action success.', 1520)
+        return set_return_val(True, [], 'instance action success.', 2000)
+
 
     # 获取 instance 列表
     def get(self):
@@ -352,8 +354,8 @@ class InstanceManage(Resource):
             #                                    vm_name=args['vm_name'])
 
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'instance gets success.', 1520, pg)
+            return set_return_val(False, [], str(e), 2031), 400
+        return set_return_val(True, data, 'instance gets success.', 2030, pg)
 
     def delete(self, platform_id, uuid):
         """
@@ -423,11 +425,12 @@ class InstanceManage(Resource):
             instance.delete()
             data['result'] = True
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), 2011), 400
         finally:
             data['resources_id'] = uuid
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'instance delete success.', 1520)
+        return set_return_val(True, [], 'instance delete success.', 2010)
 
     def put(self):
         """
@@ -542,8 +545,9 @@ class InstanceManage(Resource):
             #     instance.delete_snapshot(snapshot_id=args['snapshot_id'])
 
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), 2021), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'instance update success.', 1520)
+        return set_return_val(True, [], 'instance update success.', 2020)

@@ -142,8 +142,10 @@ class DiskManage(Resource):
             data, pg = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'],
                                                          pgnum=pgnum)
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'vm disk gets success.', 1520, pg)
+
+            return set_return_val(False, [], str(e), 2131), 400
+        return set_return_val(True, data, 'Datastore gets success.', 2130)
+
 
     def post(self):
         """
@@ -231,14 +233,15 @@ class DiskManage(Resource):
                                   submitter=g.username))
 
         except Exception as e:
+
             datas.append(dict(
                 type='vm_disk', result=False, resources_id=args.get('vm_uuid'), event=unicode('创建磁盘'),
                 submitter=g.username
             ))
-            return set_return_val(False, [], str(e), 1529), 400
+            return set_return_val(False, [], str(e), 2101), 400
         finally:
             [base_control.event_logs.eventlog_create(**item) for item in datas]
-        return set_return_val(True, [], 'Instance attack disk successfully.', 1520)
+        return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
 
     def delete(self):
         """
@@ -313,8 +316,10 @@ class DiskManage(Resource):
             instance.delete_disk(disks=args['disks'])
             data['result'] = True
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), 2111), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'Instance deattach disk successfully', 1520)
+        return set_return_val(True, [], 'Instance deattach disk successfully', 2110)
+

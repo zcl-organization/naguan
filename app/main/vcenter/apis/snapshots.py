@@ -130,8 +130,9 @@ class SnapshotManage(Resource):
                                                            snapshot_id=args['snapshot_id'],
                                                            vm_uuid=args['vm_uuid'], pgnum=pgnum)
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'Snapshot gets success.', 1520, pg)
+
+            return set_return_val(False, [], str(e), 2331), 400
+        return set_return_val(True, data, 'Snapshot gets success.', 2330, pg)
 
     def post(self):
         """
@@ -228,8 +229,10 @@ class SnapshotManage(Resource):
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['action'] == 'create':
                 if not args['snapshot_name']:
+                    g.error_code = 2302
                     raise Exception('Parameter error')
                 instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
+                g.error_code = 2300
                 data['event'] = unicode('生成快照')
                 data['result'] = True
             elif args['action'] == 'revert':
@@ -237,17 +240,20 @@ class SnapshotManage(Resource):
                     raise Exception('Parameter error')
 
                 instance.snapshot_revert(snapshot_id=args['snapshot_id'])
+                g.error_code = 2301
                 data['event'] = unicode('恢复快照')
                 data['result'] = True
             else:
+                g.error_code = 2303
                 raise Exception('Parameter error')
         except Exception as e:
             # print(e)
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'snapshot update success.', 1520)
+        return set_return_val(True, [], 'snapshot update success.', g.error_code)
 
     def delete(self):
         """
@@ -323,8 +329,9 @@ class SnapshotManage(Resource):
             data['result'] = True
 
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), 2311), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'snapshot delete success.', 1520)
+        return set_return_val(True, [], 'snapshot delete success.', 2310)

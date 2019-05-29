@@ -91,8 +91,8 @@ class VCenterManage(Resource):
             data = control.vcenter.vcenter_tree_list(int(args['platform_id']))
 
         except Exception as e:
-            return set_return_val(False, {}, 'Failed to get vcneter tree', 1239), 400
-        return set_return_val(True, data, 'Get vcneter tree success', 1230)
+            return set_return_val(False, {}, 'Failed to get vcneter tree', 2431), 400
+        return set_return_val(True, data, 'Get vcneter tree success', 2430)
 
     def post(self):
         """
@@ -174,8 +174,9 @@ class VCenterManage(Resource):
             # request_id = g.request_id
             # base_control.task_logs.create_log(request_id, task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:
-            return set_return_val(False, {}, 'Failed to sync vcneter tree', 1239), 400
+
+            return set_return_val(False, {}, 'Failed to sync vcneter tree', 2401), 400
         finally:
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, {}, 'Sync vcneter tree success', 1239)
+        return set_return_val(True, {}, 'Sync vcneter tree success', 2400)
         # return set_return_val(True, data, 'Sync vcneter tree success', 1239)
