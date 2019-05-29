@@ -766,7 +766,6 @@ class Instance(object):
             adaptermap.adapter.subnetMask = subnet
             adaptermap.adapter.gateway = gateway
             globalip.dnsServerList = dns
-
             if not domain:
                 domain = 'kaopuyun.com'
             adaptermap.adapter.dnsDomain = domain
