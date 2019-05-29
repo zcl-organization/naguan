@@ -101,8 +101,8 @@ class NetWorkManage(Resource):
             data = control.network_devices.get_network_by_vm_uuid(platform_id=args['platform_id'],
                                                                   vm_uuid=args['vm_uuid'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'network device gets success.', 1520)
+            return set_return_val(False, [], str(e), 2231), 400
+        return set_return_val(True, data, 'network device gets success.', 2230)
 
     def post(self):
         """
@@ -172,8 +172,8 @@ class NetWorkManage(Resource):
             if args['networks']:
                 instance.add_network(networks=args['networks'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'network update success.', 1520)
+            return set_return_val(False, [], str(e), 2201), 400
+        return set_return_val(True, [], 'network update success.', 2200)
 
     def delete(self):
         """
@@ -242,5 +242,5 @@ class NetWorkManage(Resource):
                 instance.del_network(networks=args['networks'])
         except Exception as e:
             # print(e)
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'network update success.', 1520)
+            return set_return_val(False, [], str(e), 2211), 400
+        return set_return_val(True, [], 'network update success.', 2210)

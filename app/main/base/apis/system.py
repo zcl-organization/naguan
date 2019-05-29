@@ -133,10 +133,10 @@ class System(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('创建系统配置'),
                                                submitter=g.username)
-            return set_return_val(False, [], str(e), 1319), 400
+            return set_return_val(False, [], str(e), 1601), 400
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('创建系统配置'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'System config created successfully', 1300)
+        return set_return_val(True, [], 'System config created successfully', 1600)
 
     @basic_auth.login_required
     def get(self):
@@ -191,8 +191,8 @@ class System(Resource):
         try:
             data = control.system.system_config_list()
         except Exception as e:
-            return set_return_val(False, [], str(e), 1319), 400
-        return set_return_val(True, data, 'System configuration succeeded', 1300)
+            return set_return_val(False, [], str(e), 1631), 400
+        return set_return_val(True, data, 'System configuration succeeded', 1630)
 
     @basic_auth.login_required
     @marshal_with(result_fields2)
@@ -253,8 +253,8 @@ class System(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('更新系统配置'),
                                                submitter=g.username)
-            return set_return_val(False, [], str(e), 1319), 400
+            return set_return_val(False, [], str(e), 1611), 400
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统配置'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'System configuration updated succeeded', 1300)
+        return set_return_val(True, [], 'System configuration updated succeeded', 1610)
 

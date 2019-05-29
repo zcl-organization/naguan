@@ -130,8 +130,8 @@ class DiskManage(Resource):
                 raise Exception('Parameter error')
             data = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'Datastore gets success.', 1520)
+            return set_return_val(False, [], str(e), 2131), 400
+        return set_return_val(True, data, 'Datastore gets success.', 2130)
 
     def post(self):
         """
@@ -199,8 +199,8 @@ class DiskManage(Resource):
             instance.add_disk(disks=args['disks'])
 
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'Instance attack disk successfully.', 1520)
+            return set_return_val(False, [], str(e), 2101), 400
+        return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
 
     def delete(self):
         """
@@ -267,5 +267,5 @@ class DiskManage(Resource):
                 raise Exception('Parameter error')
             instance.delete_disk(disks=args['disks'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'Instance deattach disk successfully', 1520)
+            return set_return_val(False, [], str(e), 2111), 400
+        return set_return_val(True, [], 'Instance deattach disk successfully', 2110)

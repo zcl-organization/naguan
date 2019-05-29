@@ -171,5 +171,5 @@ class ResourcePoolManage(Resource):
                                                                 dc_mor_name=args['dc_mor_name'],
                                                                 cluster_mor_name=args['cluster_mor_name'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'Datastore gets success.', 1520)
+            return set_return_val(False, [], str(e), 2471), 400
+        return set_return_val(True, data, 'Datastore gets success.', 2470)
