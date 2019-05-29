@@ -12,6 +12,7 @@ from flask_restful.representations import json
 from pyVim import connect
 from pyVmomi import vmodl
 from pyVmomi import vim
+from pyVim.task import WaitForTask, WaitForTasks
 import atexit
 
 import json
@@ -35,6 +36,7 @@ class Instance(object):
                 self.content = content
                 self.platform = platform
             except Exception as e:
+                print e
                 raise Exception('connect vcenter failed')
         else:
             self.platform = None
@@ -62,7 +64,7 @@ class Instance(object):
     def start(self):
         try:
             task = self.vm.PowerOn()
-            wait_for_tasks(self.si, [task])
+            WaitForTask(task)
             self.update_vm_local()
         except Exception as e:
             raise Exception('vm start failed')
@@ -72,37 +74,43 @@ class Instance(object):
         try:
             if not force:
                 task = self.vm.ShutdownGuest()
-                wait_for_tasks(self.si, [task])
             else:
                 task = self.vm.PowerOff()
-                wait_for_tasks(self.si, [task])
+            WaitForTask(task)
             self.update_vm_local()
         except Exception as e:
+            print e
             raise Exception('vm stop failed')
 
     # 暂停
     def suspend(self, force=True):
         try:
-
             if not force:
                 task = self.vm.StandbyGuest()
-                wait_for_tasks(self.si, [task])
             else:
                 task = self.vm.Suspend()
-                wait_for_tasks(self.si, [task])
+            WaitForTask(task)
             self.update_vm_local()
         except Exception as e:
             raise Exception('vm suspend failed')
 
     # 重启
     def restart(self):
-        task = self.vm.ResetVM_Task()
-        wait_for_tasks(self.si, [task])
-        self.update_vm_local()
+        try:
+            task = self.vm.ResetVM_Task()
+            # wait_for_tasks(self.si, [task])
+            WaitForTask(task)
+            self.update_vm_local()
+        except Exception as e:
+            raise Exception('vm restart failed')
 
     def delete(self):
-        task = self.vm.Destroy()
-        wait_for_tasks(self.si, [task])
+        try:
+            task = self.vm.Destroy()
+            # wait_for_tasks(self.si, [task])
+            WaitForTask(task)
+        except Exception as e:
+            raise Exception('vm delete failed')
 
     # 新增网卡信息
     def add_network(self, networks):
@@ -232,18 +240,16 @@ class Instance(object):
             if disks:
                 new_disks = json.loads(disks)
                 for disk in new_disks:
-                    if not disk.get('type'):
-                        raise Exception('The disk information format is incorrect.')
-                    if not disk.get('size'):
+                    if not disk.get('type') or not disk.get('size'):
                         raise Exception('The disk information format is incorrect.')
         except Exception as e:
             raise Exception('The disk information format is incorrect.')
 
         try:
-
             dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
             dc = get_obj(self.content, [vim.Datacenter], dc_info.name)
         except Exception as e:
+            print '>>>',e
             raise Exception('dc get failed')
 
         vm_folder = dc.vmFolder
@@ -252,11 +258,11 @@ class Instance(object):
 
         # ds = content.viewManager.CreateContainerView(dc, [vim.Datastore], True)
 
-        ds = get_obj(self.content, [vim.Datastore], 'datastore1')
+        ds = get_obj(self.content, [vim.Datastore], 'datastore1')  # TODO clean
 
         # datastore_path = '[' + ds + '] ' + vm_name
         datastore_path = '[datastore1] ' + vm_name
-        print datastore_path
+        # print datastore_path
         vmx_file = vim.vm.FileInfo(logDirectory=None,
                                    snapshotDirectory=None,
                                    suspendDirectory=None,
@@ -277,10 +283,10 @@ class Instance(object):
             self.vm = vm
             self.update_vm_local()
         except Exception as e:
+            print e
             raise Exception('task to create failed')
         try:
             # 获取vm 并为vm 添加network
-
             if networks:
                 self.add_network(networks)
         except Exception as e:
@@ -403,7 +409,7 @@ class Instance(object):
                                            resource_pool_name=resource_pool_name, created_at=self.vm.config.createDate)
 
     def add_disk(self, disks):
-        print('disks:', disks)
+        # print('disks:', disks)
         disks = json.loads(disks)
 
         controller = vim.vm.device.ParaVirtualSCSIController()
@@ -583,7 +589,7 @@ class Instance(object):
         snapshots = self.vm.snapshot.rootSnapshotList
         snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
 
-        if snapshot_db:
+        if not snapshot_db:
             raise Exception('unable get snapshot info ')
 
         snapshot_name = snapshot_db.name

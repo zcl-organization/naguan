@@ -63,7 +63,7 @@ def get_disk_by_vm_uuid(platform_id, vm_uuid, pgnum):
     disks, pg = db.disks.get_disk_by_vm_uuid(platform_id, vm_uuid, pgnum)
     disk_list = []
     for disk in disks:
-        print(disk.id)
+        # print(disk.id)
         ds_tmp = {
             'id': disk.id,
             'platform_id': platform_id,
