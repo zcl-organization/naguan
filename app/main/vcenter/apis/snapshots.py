@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
-
+from flask import g
 from flask_restful import Resource, reqparse
-
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 
@@ -213,17 +213,30 @@ class SnapshotManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-
+        data = dict(
+            type='vm_snapshot',
+            result=False,
+            resources_id='',
+            event=unicode('生成/恢复快照'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['action'] == 'create' and args['snapshot_name']:
                 instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
+                data['event'] = unicode('生成快照')
+                data['result'] = True
             elif args['action'] == 'revert' and args['snapshot_id']:
                 instance.snapshot_revert(snapshot_id=args['snapshot_id'])
+                data['event'] = unicode('恢复快照')
+                data['result'] = True
             else:
                 raise Exception('Parameter error')
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot update success.', 1520)
 
     def delete(self):
@@ -287,9 +300,21 @@ class SnapshotManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vm_snapshot',
+            result=False,
+            resources_id='',
+            event=unicode('删除快照'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             instance.delete_snapshot(snapshot_id=args['snapshot_id'])
+            data['result'] = True
+
         except Exception as e:
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot delete success.', 1520)

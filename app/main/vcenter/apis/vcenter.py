@@ -152,10 +152,18 @@ class VCenterManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vcenter',
+            result=False,
+            resources_id='',
+            event=unicode('同步vcenter信息'),
+            submitter=g.username,
+        )
         try:
             if not args['platform_id']:
                 raise Exception('Parameter error')
             control.vcenter.sync_tree(args['platform_id'])
+            data['result'] = True
             # task = control.vcenter.sync_tree.apply_async(args=[args['platform_id']], queue='vsphere')
             # print(dir(task))
             # data = {
@@ -165,6 +173,7 @@ class VCenterManage(Resource):
             # base_control.task_logs.create_log(request_id, task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:
             return set_return_val(False, {}, 'Failed to sync vcneter tree', 1239), 400
-
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, {}, 'Sync vcneter tree success', 1239)
         # return set_return_val(True, data, 'Sync vcneter tree success', 1239)

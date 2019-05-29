@@ -1,16 +1,20 @@
 # -*- coding:utf-8 -*-
+import json
 
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
 parser.add_argument('networks')
+
 
 
 class NetWorkManage(Resource):
@@ -179,15 +183,23 @@ class NetWorkManage(Resource):
         """
 
         args = parser.parse_args()
-
+        datas = []
         try:
             if not args['networks']:
                 raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            # if args['networks']:
             instance.add_network(networks=args['networks'])
+            for network in json.loads(args['networks']):
+                datas.append(dict(type='vm_network', result=True, resources_id=args.get('vm_uuid'),
+                                  event=unicode('添加网络，类型：%s' % network), submitter=g.username))
         except Exception as e:
+            datas.append(dict(
+                type='vm_network', result=False, resources_id=args.get('vm_uuid'),
+                event=unicode('添加网络,类型：%s' % args.get('networks')), submitter=g.username
+            ))
             return set_return_val(False, [], str(e), 1529), 400
+        finally:
+            [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'network update success.', 1520)
 
     def delete(self):
@@ -251,13 +263,23 @@ class NetWorkManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vm_network',
+            result=False,
+            resources_id='',
+            event=unicode('删除网络,id：%s' % args.get('networks')),
+            submitter=g.username,
+        )
         try:
             if not args['networks']:
                 raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            # if args['networks']:
             instance.del_network(networks=args['networks'])
+            data['result'] = True
         except Exception as e:
             # print(e)
             return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, [], 'network update success.', 1520)
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
+        return set_return_val(True, [], 'network delete success.', 1520)
