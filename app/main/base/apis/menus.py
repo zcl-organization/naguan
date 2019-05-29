@@ -3,13 +3,12 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-from app.main.base.control import menu as menu_manage
 from app.main.base.control import event_logs
 
 from app.main.base import control
 from auth import basic_auth
 from flask import g
-from flask_security import roles_accepted, current_user
+
 
 parser = reqparse.RequestParser()
 parser.add_argument('id')
@@ -25,13 +24,6 @@ parser.add_argument('pgnum')
 parser.add_argument('pgsize')
 parser.add_argument('all')
 
-ret_status = {
-    'ok': True,
-    'code': 200,
-    'msg': '创建成功',
-    'data': ''
-}
-
 
 class MenuManage(Resource):
     # @roles_accepted('admin', 'user')
@@ -42,6 +34,10 @@ class MenuManage(Resource):
         ---
         tags:
           - menu
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
         parameters:
           - in: query
             name: id
@@ -134,6 +130,7 @@ class MenuManage(Resource):
         #                                    submitter=g.username)
         return set_return_val(True, data, 'Get menu success', 1230)
 
+
     @basic_auth.login_required
     def post(self):
         """
@@ -141,33 +138,67 @@ class MenuManage(Resource):
         ---
         tags:
           - menu
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
+        produces:
+          - "application/json"
         parameters:
-          - in: formData
-            name: icon
-            type: string
-          - in: formData
-            name: url
-            type: string
-          - in: formData
-            name: name
-            type: string
-          - in: formData
-            name: identifier
-            type: string
-          - in: formData
-            name: is_hide
-            type: integer
-            format: int64
-          - in: formData
-            name: is_hide_children
-            type: integer
-            format: int64
-          - in: formData
-            name: important
-            type: string
-          - in: formData
-            name: parent_id
-            type: string
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - icon
+              - url
+              - name
+              - identifier
+              - is_hide
+              - is_hide_children
+              - important
+              - identifier
+              properties:
+                icon:
+                  type: string
+                  default: icon
+                  description: 图标
+                  example: icon
+                url:
+                  type: string
+                  default: /main
+                  description: url
+                  example: /main
+                name:
+                  type: string
+                  default: index
+                  description: 主页
+                  example: 主页
+                identifier:
+                  type: string
+                  default: 1
+                  description: 标识
+                  example: index_test
+                is_hide:
+                  type: integer
+                  default: 1
+                  description: is_hide
+                  example: 1
+                is_hide_children:
+                  type: integer
+                  default: 1
+                  description: is_hide_children
+                  example: 1
+                important:
+                  type: string
+                  default: 1
+                  description: important
+                  example: 1
+                parent_id:
+                  type: string
+                  default: 1
+                  description: parent_id
+                  example: 0
         responses:
           200:
             description: 删除菜单信息
@@ -216,15 +247,19 @@ class MenuManage(Resource):
         """
         根据ID删除菜单信息
        ---
-       tags:
+        tags:
           - menu
-       parameters:
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
+        parameters:
          - in: path
            name: id
            type: integer
            format: int64
            required: true
-       responses:
+        responses:
          200:
             description: 删除菜单信息
             schema:
@@ -259,6 +294,10 @@ class MenuManage(Resource):
         ---
         tags:
           - menu
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
         parameters:
          - in: path
            name: id

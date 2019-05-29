@@ -1,15 +1,20 @@
 # -*- coding:utf-8 -*-
+import json
 
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
+parser.add_argument('networks')
+
 
 
 class NetWorkManage(Resource):
@@ -110,22 +115,34 @@ class NetWorkManage(Resource):
         ---
         tags:
           - vCenter network device
+        produces:
+          - "application/json"
         parameters:
-          - in: query
-            name: platform_id
-            type: string
-            description: platform_id
+          - in: body
+            name: body
             required: true
-          - in: query
-            name: uuid
-            type: string
-            description: uuid
-            required: true
-          - in: query
-            name: networks
-            type: string
-            description: '[1,2]--network_port_group_id'
-            required: true
+            schema:
+              required:
+              - platform_id
+              - vm_uuid
+              - networks
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                vm_uuid:
+                  type: integer
+                  default: 2018ddf-f886-12b5-a652-dd60b04ca2df
+                  description: 云主机uuid
+                  example: 2018ddf-f886-12b5-a652-dd60b04ca2df
+                networks:
+                  type: integer
+                  default: '[1,2]'
+                  description: '[1,2]--network_port_group_id'
+                  example: '[1,2]'
+
         responses:
           200:
             description:  vm 添加 network device  信息
@@ -166,13 +183,23 @@ class NetWorkManage(Resource):
         """
 
         args = parser.parse_args()
-
+        datas = []
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['networks']:
                 instance.add_network(networks=args['networks'])
+            for network in json.loads(args['networks']):
+                datas.append(dict(type='vm_network', result=True, resources_id=args.get('vm_uuid'),
+                                  event=unicode('添加网络，类型：%s' % network), submitter=g.username))
         except Exception as e:
+
+            datas.append(dict(
+                type='vm_network', result=False, resources_id=args.get('vm_uuid'),
+                event=unicode('添加网络,类型：%s' % args.get('networks')), submitter=g.username
+            ))
             return set_return_val(False, [], str(e), 2201), 400
+        finally:
+            [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'network update success.', 2200)
 
     def delete(self):
@@ -188,9 +215,9 @@ class NetWorkManage(Resource):
             description: platform_id
             required: true
           - in: query
-            name: uuid
+            name: vm_uuid
             type: string
-            description: uuid
+            description: vm_uuid
             required: true
           - in: query
             name: networks
@@ -236,11 +263,23 @@ class NetWorkManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vm_network',
+            result=False,
+            resources_id='',
+            event=unicode('删除网络,id：%s' % args.get('networks')),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['networks']:
                 instance.del_network(networks=args['networks'])
+            data['result'] = True
         except Exception as e:
             # print(e)
+
             return set_return_val(False, [], str(e), 2211), 400
-        return set_return_val(True, [], 'network update success.', 2210)
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
+        return set_return_val(True, [], 'network delete success.', 2210)

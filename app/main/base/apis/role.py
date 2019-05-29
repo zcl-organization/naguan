@@ -82,16 +82,27 @@ class RoleManage(Resource):
          ---
          tags:
            - role
-         summary: Add a new pet to the store
+         summary: 创建角色信息
+         produces:
+           - "application/json"
          parameters:
-           - in: query
-             name: name
-             type: string
-             description: 角色名
-           - in: query
-             name: description
-             type: string
-             description: 描述
+           - in: body
+             name: body
+             required: true
+             schema:
+               required:
+               - name
+               properties:
+                  name:
+                    type: string
+                    default: admin
+                    description: 角色名称
+                    example: admin
+                  description:
+                    type: string
+                    default: admin
+                    description: 角色信息描述
+                    example: admin角色
          responses:
            200:
             description: 创建角色信息

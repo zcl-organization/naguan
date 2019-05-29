@@ -37,7 +37,37 @@ def restful_init(app):
 
 
 def swagger_init(app):
-    Swagger(app)
+    template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "KStack NaGuan API",
+            "description": "KStack NaGuan API",
+            "contact": {
+                "responsibleOrganization": "KStack NaGuan API",
+                "responsibleDeveloper": "KStack NaGuan API",
+                "email": "kpy@gmail.com",
+                "url": "#",
+            },
+            "version": "1.0.0"
+        },
+        "securityDefinitions": {
+            "basicAuth": {
+                "type": "basic"
+            },
+            # "apiKey": {
+            #     "type": "apiKey",
+            #     "in": "header",
+            #     "name": "x-access-token"
+            # }
+        },
+        "tags": [{
+            "name": "Auth",
+            "description": "Operations about authorization service."
+        }
+        ],
+    }
+
+    Swagger(app, template=template)
 
 
 # 登录管理
@@ -106,8 +136,10 @@ api.add_resource(NetWorkManage, '/api/v1.0/vCenter/network', methods=['GET', 'PO
                  endpoint='NetworkDeviceMg')
 
 # vCenter snapshot
-api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot', methods=['GET', 'POST', 'DELETE'],
+api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot', methods=['GET', 'POST'],
                  endpoint='SnapshotMg')
+api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot/<int:snapshot_id>', methods=['DELETE'],
+                 endpoint='SnapshotMgDel')
 
 # vCenter resource_pool
 api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=['GET'],

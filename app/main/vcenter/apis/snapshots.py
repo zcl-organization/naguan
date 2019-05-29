@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 from flask import g
 from flask_restful import Resource, reqparse
-
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 
@@ -13,8 +13,8 @@ parser.add_argument('snapshot_id')  # 快照ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
 parser.add_argument('snapshot_name')  # 快照名称
 parser.add_argument('description')  # 快照说明
-parser.add_argument('description')  # 快照说明
 parser.add_argument('action')  # 操作
+parser.add_argument('pgnum')  # 页码
 
 
 class SnapshotManage(Resource):
@@ -38,6 +38,10 @@ class SnapshotManage(Resource):
             name: snapshot_id
             type: string
             description: snapshot_id
+          - in: query
+            name: pgnum
+            type: integer
+            description: 页码
         responses:
           200:
             description: 获取vm snapshot 信息
@@ -118,11 +122,17 @@ class SnapshotManage(Resource):
         """
         args = parser.parse_args()
         try:
-            data = control.snapshots.get_snapshot_list(platform_id=args['platform_id'], snapshot_id=args['snapshot_id'],
-                                                       vm_uuid=args['vm_uuid'])
+            if args['pgnum']:
+                pgnum = args['pgnum']
+            else:
+                pgnum = 1
+            data, pg = control.snapshots.get_snapshot_list(platform_id=args['platform_id'],
+                                                           snapshot_id=args['snapshot_id'],
+                                                           vm_uuid=args['vm_uuid'], pgnum=pgnum)
         except Exception as e:
+
             return set_return_val(False, [], str(e), 2331), 400
-        return set_return_val(True, data, 'Snapshot gets success.', 2330)
+        return set_return_val(True, data, 'Snapshot gets success.', 2330, pg)
 
     def post(self):
         """
@@ -130,30 +140,44 @@ class SnapshotManage(Resource):
         ---
         tags:
           - vCenter snapshot
+        produces:
+          - "application/json"
         parameters:
-          - in: query
-            name: platform_id
-            type: string
-            description: platform_id
+          - in: body
+            name: body
             required: true
-          - in: query
-            name: vm_uuid
-            type: string
-            description: vm_uuid
-            required: true
-          - in: query
-            name: snapshot_name
-            type: string
-            description: snapshot_name
-            required: true
-          - in: query
-            name: description
-            type: string
-            description: description
-          - in: query
-            name: action
-            type: string
-            description: create  revert
+            schema:
+              required:
+              - platform_id
+              - vm_uuid
+              - snapshot_name
+              - action
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                vm_uuid:
+                  type: string
+                  default: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                  description: 云主机uuid
+                  example: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                snapshot_name:
+                  type: string
+                  default: 1
+                  description: 快照名称
+                  example: 快照_vm1
+                description:
+                  type: string
+                  default: 1
+                  description: 描述
+                  example: 快照_20190501
+                action:
+                  type: string
+                  default: 1
+                  description: 操作 create revert
+                  example: create
         responses:
           200:
             description: vCenter tree 信息
@@ -193,30 +217,45 @@ class SnapshotManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-
+        data = dict(
+            type='vm_snapshot',
+            result=False,
+            resources_id='',
+            event=unicode('生成/恢复快照'),
+            submitter=g.username,
+        )
         try:
 
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['action'] == 'create':
-
                 if not args['snapshot_name']:
                     g.error_code = 2302
                     raise Exception('Parameter error')
                 instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
                 g.error_code = 2300
+                data['event'] = unicode('生成快照')
+                data['result'] = True
             elif args['action'] == 'revert':
+                if not args['snapshot_id']:
+                    raise Exception('Parameter error')
 
                 instance.snapshot_revert(snapshot_id=args['snapshot_id'])
                 g.error_code = 2301
+                data['event'] = unicode('恢复快照')
+                data['result'] = True
             else:
                 g.error_code = 2303
                 raise Exception('Parameter error')
         except Exception as e:
             # print(e)
+
             return set_return_val(False, [], str(e), g.error_code), 400
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot update success.', g.error_code)
 
-    def delete(self, snapshot_id):
+    def delete(self):
         """
          根据 vm  删除快照信息
         ---
@@ -229,9 +268,9 @@ class SnapshotManage(Resource):
             description: platform_id
             required: true
           - in: query
-            name: uuid
+            name: vm_uuid
             type: string
-            description: uuid
+            description: vm_uuid
             required: true
           - in: query
             name: snapshot_id
@@ -277,11 +316,22 @@ class SnapshotManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vm_snapshot',
+            result=False,
+            resources_id='',
+            event=unicode('删除快照'),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
+            instance.delete_snapshot(snapshot_id=args['snapshot_id'])
+            data['result'] = True
 
-            instance.delete_snapshot(snapshot_id=snapshot_id)
         except Exception as e:
 
             return set_return_val(False, [], str(e), 2311), 400
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot delete success.', 2310)

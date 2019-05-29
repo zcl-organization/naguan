@@ -77,11 +77,21 @@ class PlatformTypeMg(Resource):
        ---
        tags:
           - cloudplatformtype
+       produces:
+          - "application/json"
        parameters:
-         - in: query
-           name: name
-           type: string
-           description: 平台类型名称
+         - in: body
+           name: body
+           required: true
+           schema:
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  default: vcenter
+                  description: 平台类型名称
+                  example: vCenter
        responses:
          200:
             description: 创建平台类型

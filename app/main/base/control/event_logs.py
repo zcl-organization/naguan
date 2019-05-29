@@ -61,3 +61,5 @@ def eventlog_create(type, result, resources_id, event, submitter, role_id=None, 
         if user_id:
             resources_id = user_id
     db.event_logs.log_create(type, result, resources_id, event, submitter)
+
+

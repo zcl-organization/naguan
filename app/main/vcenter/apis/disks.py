@@ -1,15 +1,19 @@
 # -*- coding:utf-8 -*-
+import json
 
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
-
+from app.main.base import control as base_control
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
+parser.add_argument('disks')  # 虚拟机disk
+parser.add_argument('pgnum')
 
 
 class DiskManage(Resource):
@@ -29,6 +33,9 @@ class DiskManage(Resource):
             name: vm_uuid
             type: string
             required: true
+          - in: query
+            name: pgnum
+            type: integer
         responses:
           200:
             description: vCenter disk 信息
@@ -128,10 +135,17 @@ class DiskManage(Resource):
         try:
             if not all([args['platform_id'], args['vm_uuid']]):
                 raise Exception('Parameter error')
-            data = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'])
+            if not args['pgnum']:
+                pgnum = 1
+            else:
+                pgnum = args['pgnum']
+            data, pg = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'],
+                                                         pgnum=pgnum)
         except Exception as e:
+
             return set_return_val(False, [], str(e), 2131), 400
         return set_return_val(True, data, 'Datastore gets success.', 2130)
+
 
     def post(self):
         """
@@ -139,22 +153,36 @@ class DiskManage(Resource):
         ---
         tags:
           - vCenter disk
+        produces:
+          - "application/json"
         parameters:
-          - in: query
-            name: platform_id
-            type: string
-            description: platform_id
-          - in: query
-            name: uuid
-            type: string
-            description: uuid
-          - in: query
-            name: disks
-            type: string
-            description: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - uuid
+              - disks
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                vm_uuid:
+                  type: string
+                  default: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                  description: 云主机id
+                  example: 42018ddf-f886-12b5-a652-dd60b04ca2df
+                disks:
+                  type: integer
+                  default: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
+                  description: disk 信息
+                  example: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
         responses:
           200:
-            description: vCenter tree 信息
+            description: vCenter disk  信息
             schema:
               properties:
                 ok:
@@ -191,15 +219,28 @@ class DiskManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-
+        datas = []
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if not args['disks']:
                 raise Exception('Parameter error')
             instance.add_disk(disks=args['disks'])
 
+            for disk in json.loads(args['disks']):
+                datas.append(dict(type='vm_disk', result=True, resources_id=args.get('vm_uuid'),
+                                  event=unicode('创建磁盘，类型：%s，大小： %s'
+                                                % (disk.get('type'), disk.get('size'))),
+                                  submitter=g.username))
+
         except Exception as e:
+
+            datas.append(dict(
+                type='vm_disk', result=False, resources_id=args.get('vm_uuid'), event=unicode('创建磁盘'),
+                submitter=g.username
+            ))
             return set_return_val(False, [], str(e), 2101), 400
+        finally:
+            [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
 
     def delete(self):
@@ -260,12 +301,25 @@ class DiskManage(Resource):
                     properties:
         """
         args = parser.parse_args()
+        data = dict(
+            type='vm_network',
+            result=False,
+            resources_id='',
+            event=unicode('删除磁盘,id：%s' % args.get('disks')),
+            submitter=g.username,
+        )
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
 
             if not args['disks']:
                 raise Exception('Parameter error')
             instance.delete_disk(disks=args['disks'])
+            data['result'] = True
         except Exception as e:
+
             return set_return_val(False, [], str(e), 2111), 400
+        finally:
+            data['resources_id'] = args.get('vm_uuid')
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Instance deattach disk successfully', 2110)
+
