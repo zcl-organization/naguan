@@ -7,7 +7,11 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+
 from app.main.base import control as base_control
+
+from app.main.base.apis.auth import basic_auth
+
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
@@ -18,13 +22,18 @@ parser.add_argument('pgnum')
 
 class DiskManage(Resource):
 
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter vm_disk 信息
         ---
-        tags:
+       tags:
           - vCenter disk
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: integer
@@ -36,7 +45,7 @@ class DiskManage(Resource):
           - in: query
             name: pgnum
             type: integer
-        responses:
+       responses:
           200:
             description: vCenter disk 信息
             schema:
@@ -147,15 +156,18 @@ class DiskManage(Resource):
         return set_return_val(True, data, 'Datastore gets success.', 2130)
 
 
+    @basic_auth.login_required
     def post(self):
         """
          更新 vm  disk信息
         ---
-        tags:
+       tags:
           - vCenter disk
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -180,7 +192,7 @@ class DiskManage(Resource):
                   default: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
                   description: disk 信息
                   example: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
-        responses:
+       responses:
           200:
             description: vCenter disk  信息
             schema:
@@ -243,13 +255,18 @@ class DiskManage(Resource):
             [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
 
+    @basic_auth.login_required
     def delete(self):
         """
          更新 vm  disk信息
         ---
-        tags:
+       tags:
           - vCenter disk
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -262,7 +279,7 @@ class DiskManage(Resource):
             name: disks
             type: string
             description: '[1,2]'
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:

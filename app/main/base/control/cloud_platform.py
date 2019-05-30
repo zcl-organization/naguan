@@ -8,12 +8,22 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
 
     if platform:
         raise Exception('platform name already exist.')
-    return db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
+    data = db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
                                              remarks)
+    platform_dict = {
+        'id': data.id,
+        'platform_type_id': data.platform_type_id,
+        'platform_name': data.platform_name,
+        'ip': data.ip,
+        'port': data.port,
+        'name': data.admin_name,
+        'remarks': data.remarks
+    }
+    return [platform_dict]
 
 
-def platform_list(id=None, platform_type_id=None, platform_name=None):
-    platforms = db.cloud_platform.platform_list(id, platform_type_id, platform_name)
+def platform_list(id=None, platform_type_id=None, platform_name=None, platform_type_name=None):
+    platforms = db.cloud_platform.platform_list(id, platform_type_id, platform_name, platform_type_name)
     platforms_list = []
 
     if platforms:

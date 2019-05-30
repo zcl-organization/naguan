@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+from flask_restful import Api
+from flasgger import Swagger
 from app.main.base.apis.system import System
 from app.main.base.apis.system_logo import SystemLogo
 
@@ -26,8 +27,8 @@ from app.main.vcenter.apis.disks import DiskManage
 from app.main.vcenter.apis.network_devices import NetWorkManage
 from app.main.vcenter.apis.snapshots import SnapshotManage
 from app.main.vcenter.apis.resource_pool import ResourcePoolManage
-from flask_restful import Api
-from flasgger import Swagger
+from app.main.vcenter.apis.ovf import OvfManage
+
 
 api = Api()
 
@@ -144,3 +145,6 @@ api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot/<int:snapshot_id>',
 # vCenter resource_pool
 api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=['GET'],
                  endpoint='ResourcePoolMg')
+
+api.add_resource(OvfManage, '/api/v1.0/vCenter/ovf', methods=['GET'],
+                 endpoint='OvfManage')

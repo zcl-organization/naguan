@@ -35,6 +35,10 @@ class BaseConfig(object):
             'task': 'TimingSyncTree',
             'schedule': timedelta(seconds=300)
         },
+        'TimingSync1': {
+            'task': 'TimingSyncTree1',
+            'schedule': timedelta(seconds=300)
+        },
     }
 
     SQLALCHEMY_RECORD_QUERIES = True

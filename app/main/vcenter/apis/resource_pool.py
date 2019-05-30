@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
+from app.main.base.apis.auth import basic_auth
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -11,13 +12,18 @@ parser.add_argument('cluster_mor_name')
 
 
 class ResourcePoolManage(Resource):
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter resource pool 信息
         ---
-        tags:
+       tags:
           - vCenter ResourcePool
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: integer
@@ -28,7 +34,7 @@ class ResourcePoolManage(Resource):
           - in: query
             name: cluster_mor_name
             type: string
-        responses:
+       responses:
           200:
             description: vCenter resource pool 信息
             schema:

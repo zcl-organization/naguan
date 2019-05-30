@@ -30,6 +30,7 @@ parser.add_argument('last_login_ip')
 parser.add_argument('current_login_ip')
 parser.add_argument('pgnum')
 parser.add_argument('pgsize')
+parser.add_argument('name')
 
 
 class UserManage(Resource):
@@ -38,10 +39,13 @@ class UserManage(Resource):
         """
         获取用户信息
         ---
-        tags:
+       tags:
           - user
-        summary: Add a new pet to the store
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: id
             type: string
@@ -54,6 +58,10 @@ class UserManage(Resource):
             type: string
             in: query
             description: 手机号码
+          - name: name
+            type: string
+            in: query
+            description: 用户名称
           - name: remarks
             type: string
             in: query
@@ -66,7 +74,7 @@ class UserManage(Resource):
             name: pgsize
             type: string
             description: 单页显示个数
-        responses:
+       responses:
           200:
             description: 获取用户信息
             schema:
@@ -193,7 +201,7 @@ class UserManage(Resource):
             limit = int(args['pgsize'])
         try:
             data, pg = control.user.user_list(user_id=args['id'], email=args['email'], mobile=args['mobile'],
-                                              remarks=args['remarks'], next_page=pgnum, limit=limit)
+                                              name=args['name'], remarks=args['remarks'], next_page=pgnum, limit=limit)
         except Exception as e:
             return set_return_val(True, [], 'Failed to get user information', 1101), 400
 
@@ -206,8 +214,10 @@ class UserManage(Resource):
        ---
        tags:
           - user
-       produces:
-          - "application/json"
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: body
            name: body
@@ -314,7 +324,7 @@ class UserManage(Resource):
                                             department=args['department'], job='it', location='location',
                                             company=args['company'], sex=int(sex), uac='uac', active=active,
                                             is_superuser=is_superuser, remarks=args['remarks'], current_login_ip=g.ip)
-            id = user.id
+
 
         # 已存在
         except ExistsException as e:
@@ -325,19 +335,25 @@ class UserManage(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id='',
                                                event=unicode('创建新用户'), submitter=g.username)
+
             return set_return_val(False, [], str(e), 1103), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('创建新用户:%s' % args['username']), submitter=g.username)
         return set_return_val(True, [], 'User created successfully', 1100)
+
 
     @basic_auth.login_required
     def put(self, id):
         """
         更新用户信息
         ---
-        tags:
+       tags:
           - user
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
          - in: path
            type: integer
            format: int64
@@ -364,7 +380,7 @@ class UserManage(Resource):
          - name: remarks
            type: string
            in: query
-        responses:
+       responses:
          200:
             description: 更新用户信息
             schema:
@@ -389,15 +405,24 @@ class UserManage(Resource):
         if args['active']:
             if int(args['active']) not in [1, 2]:
                 return set_return_val(False, [], str('Please pass in the correct parameters. 1 is True and 2 is False'),
+<<<<<<< HEAD
                                       1121), 400
         if args['active'] or args['password']:
             pass
         else:
             return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
                                   1122), 400
+=======
+                                      1001), 400
+        # if args['active'] or args['password']:
+        #     pass
+        # else:
+        #     return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
+        #                           1001), 400
+>>>>>>> develop_zcl
         try:
 
-            username = control.user.user_update(id=id, active=int(args['active']), username=args['username'],
+            username = control.user.user_update(id=id, active=args['active'], username=args['username'],
                                                 password=args['password'], mobile=args['mobile'],
                                                 company=args['company'],
                                                 department=args['department'], remarks=args['remarks'])
@@ -417,6 +442,10 @@ class UserManage(Resource):
        ---
        tags:
           - user
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: path
            name: id

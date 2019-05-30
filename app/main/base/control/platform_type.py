@@ -23,7 +23,12 @@ def type_create(name):
 
     if platform_type:
         raise Exception('Existing platform type', name)
-    return db.platform_type.platform_type_create(name)
+    menu = db.platform_type.platform_type_create(name)
+    data_dict = {
+        'id': menu.id,
+        'name': menu.name,
+    }
+    return [data_dict]
 
 
 def type_update(id, name=None):

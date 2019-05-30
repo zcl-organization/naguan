@@ -5,7 +5,7 @@ from app.models import RequestLog
 
 # 获取日志列表
 def log_list(pgnum, request_id, status_num):
-    query = db.session.query(RequestLog)
+    query = db.session.query(RequestLog).order_by(RequestLog.time.desc())
     if request_id:
         query = query.filter_by(request_id=request_id)
     if status_num:

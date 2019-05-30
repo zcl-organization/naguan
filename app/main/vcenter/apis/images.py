@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter import control
+from app.main.base.apis.auth import basic_auth
 
 parser = reqparse.RequestParser()
 parser.add_argument('image_id')
@@ -11,13 +12,19 @@ parser.add_argument('ds_name')
 
 
 class ImageManage(Resource):
+
+    @basic_auth.login_required
     def get(self):
         """
          获取 images 信息
         ---
-        tags:
+       tags:
           - vCenter images
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: image_id
             type: string
@@ -27,7 +34,7 @@ class ImageManage(Resource):
           - in: query
             name: ds_name
             type: string
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:

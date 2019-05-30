@@ -6,9 +6,9 @@ from app.main.base import task
 
 
 # 获取用户列表
-def user_list(user_id, email, mobile, remarks, next_page, limit):
+def user_list(user_id, email, mobile, name, remarks, next_page, limit):
     try:
-        result, pg = db_user.user_list(user_id, email, mobile, remarks, next_page, limit)
+        result, pg = db_user.user_list(user_id, email, mobile, name, remarks, next_page, limit)
         userinfo = []
         for user in result:
             user = {
@@ -28,7 +28,8 @@ def user_list(user_id, email, mobile, remarks, next_page, limit):
                 'last_login_at': user.last_login_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'last_login_ip': user.last_login_ip,
                 'current_login_ip': user.current_login_ip,
-                'login_count': user.login_count
+                'login_count': user.login_count,
+                'remarks': user.remarks,
             }
             userinfo.append(user)
     except Exception as e:
@@ -47,8 +48,24 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
         # 判断是否已存在用户名相同的用户
         user_email = db.user.user_list_by_email(email)
         if not user_email:
-            return db.user.user_create(username, password, email, first_name, uid, mobile, department, job, location,
+            user = db.user.user_create(username, password, email, first_name, uid, mobile, department, job, location,
                                        company, sex, uac, active, is_superuser, remarks, current_login_ip)
+            user_dict = {
+                'name': user.username,
+                'first_name': user.first_name,
+                'email': user.email,
+                'uid': user.uid,
+                'id': user.id,
+                'mobile': user.mobile,
+                'department': user.department,
+                'job': user.job,
+                'location': user.location,
+                'company': user.company,
+                'sex': user.sex,
+                'uac': user.uac,
+                'remarks': user.remarks,
+            }
+            return [user_dict]
         else:
             raise ExistsException('user', email)
     else:

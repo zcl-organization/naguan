@@ -7,7 +7,10 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+
 from app.main.base import control as base_control
+from app.main.base.apis.auth import basic_auth
+
 
 parser = reqparse.RequestParser()
 
@@ -19,13 +22,18 @@ parser.add_argument('networks')
 
 class NetWorkManage(Resource):
 
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter vm_network_device 信息
         ---
-        tags:
+       tags:
           - vCenter network device
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: integer
@@ -34,7 +42,7 @@ class NetWorkManage(Resource):
             name: vm_uuid
             type: string
             required: true
-        responses:
+       responses:
           200:
             description: vCenter network device  信息
             schema:
@@ -109,15 +117,18 @@ class NetWorkManage(Resource):
             return set_return_val(False, [], str(e), 2231), 400
         return set_return_val(True, data, 'network device gets success.', 2230)
 
+    @basic_auth.login_required
     def post(self):
         """
          更新 vm  disk信息
         ---
-        tags:
+       tags:
           - vCenter network device
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -143,7 +154,7 @@ class NetWorkManage(Resource):
                   description: '[1,2]--network_port_group_id'
                   example: '[1,2]'
 
-        responses:
+       responses:
           200:
             description:  vm 添加 network device  信息
             schema:
@@ -202,13 +213,18 @@ class NetWorkManage(Resource):
             [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'network update success.', 2200)
 
+    @basic_auth.login_required
     def delete(self):
         """
          更新 vm  disk信息
         ---
-        tags:
+       tags:
           - vCenter network device
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -224,7 +240,7 @@ class NetWorkManage(Resource):
             type: string
             description: '[1,2]--network_device_id'
             required: true
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:

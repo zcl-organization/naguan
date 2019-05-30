@@ -3,12 +3,9 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-from app.main.base.control import event_logs
-
 from app.main.base import control
 from auth import basic_auth
 from flask import g
-
 
 parser = reqparse.RequestParser()
 parser.add_argument('id')
@@ -32,13 +29,13 @@ class MenuManage(Resource):
         """
         获取菜单信息
         ---
-        tags:
-          - menu
-        security:
-        - basicAuth:
+       tags:
+           - menu
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
           - in: query
             name: id
             type: string
@@ -54,7 +51,7 @@ class MenuManage(Resource):
           - in: query
             name: all
             type: string
-        responses:
+       responses:
           200:
             description: 用户登录
             schema:
@@ -136,15 +133,13 @@ class MenuManage(Resource):
         """
         提交新的菜单
         ---
-        tags:
-          - menu
-        security:
-        - basicAuth:
+       tags:
+           - menu
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        produces:
-          - "application/json"
-        parameters:
+       parameters:
           - in: body
             name: body
             required: true
@@ -199,7 +194,7 @@ class MenuManage(Resource):
                   default: 1
                   description: parent_id
                   example: 0
-        responses:
+       responses:
           200:
             description: 删除菜单信息
             schema:
@@ -229,10 +224,10 @@ class MenuManage(Resource):
                 g.error_code = 1002
                 raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-            id = control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
-                                          identifier=args['identifier'], is_hide=int(args['is_hide']),
-                                          is_hide_children=int(args['is_hide_children']), important=args['important'],
-                                          parent_id=args['parent_id'])
+            menu = control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
+                                            identifier=args['identifier'], is_hide=int(args['is_hide']),
+                                            is_hide_children=int(args['is_hide_children']), important=args['important'],
+                                            parent_id=args['parent_id'])
 
         except Exception, e:
             control.event_logs.eventlog_create(type='menu', result=False, resources_id='',
@@ -242,24 +237,25 @@ class MenuManage(Resource):
                                            event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'Create menu successfully', 1200)
 
+
     @basic_auth.login_required
     def delete(self, id):
         """
         根据ID删除菜单信息
        ---
-        tags:
-          - menu
-        security:
-        - basicAuth:
+       tags:
+           - menu
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
          - in: path
            name: id
            type: integer
            format: int64
            required: true
-        responses:
+       responses:
          200:
             description: 删除菜单信息
             schema:
@@ -287,18 +283,19 @@ class MenuManage(Resource):
                                            submitter=g.username)
         return set_return_val(False, [], 'Menu deletion successfully', 1210)
 
+
     @basic_auth.login_required
     def put(self, id):
         """
         更新菜单信息
         ---
-        tags:
-          - menu
-        security:
-        - basicAuth:
+       tags:
+           - menu
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
          - in: path
            name: id
            type: integer
@@ -330,7 +327,7 @@ class MenuManage(Resource):
          - name: important
            type: string
            in: formData
-        responses:
+       responses:
          200:
             description: 删除菜单信息
             schema:

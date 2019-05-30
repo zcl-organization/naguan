@@ -4,7 +4,10 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+
 from app.main.base import control as base_control
+from app.main.base.apis.auth import basic_auth
+
 
 parser = reqparse.RequestParser()
 
@@ -18,13 +21,18 @@ parser.add_argument('pgnum')  # 页码
 
 
 class SnapshotManage(Resource):
+    @basic_auth.login_required
     def get(self):
         """
          获取vm 快照
         ---
-        tags:
+       tags:
           - vCenter snapshot
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -42,7 +50,7 @@ class SnapshotManage(Resource):
             name: pgnum
             type: integer
             description: 页码
-        responses:
+       responses:
           200:
             description: 获取vm snapshot 信息
             schema:
@@ -134,15 +142,18 @@ class SnapshotManage(Resource):
             return set_return_val(False, [], str(e), 2331), 400
         return set_return_val(True, data, 'Snapshot gets success.', 2330, pg)
 
+    @basic_auth.login_required
     def post(self):
         """
          根据vm  创建快照信息
         ---
-        tags:
+       tags:
           - vCenter snapshot
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -178,7 +189,7 @@ class SnapshotManage(Resource):
                   default: 1
                   description: 操作 create revert
                   example: create
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
@@ -255,13 +266,18 @@ class SnapshotManage(Resource):
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'snapshot update success.', g.error_code)
 
+    @basic_auth.login_required
     def delete(self):
         """
          根据 vm  删除快照信息
         ---
-        tags:
+       tags:
           - vCenter snapshot
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -277,7 +293,7 @@ class SnapshotManage(Resource):
             type: string
             description: snapshot_id
             required: true
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
