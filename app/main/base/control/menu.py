@@ -61,7 +61,16 @@ def childer_menu_list(parent_id=0):
 # 创建菜单信息
 # def menu_create(options=None):
 def menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id):
-    return db.menu.menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id)
+    data = db.menu.menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id)
+
+    menu_dict = {
+        'id': data.id,
+        'name': data.name,
+        'icon': data.icon,
+        'url': data.url,
+        'identifier': data.identifier,
+    }
+    return [menu_dict]
 
 
 # 判断是否有子菜单

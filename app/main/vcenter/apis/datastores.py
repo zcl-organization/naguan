@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
 
+from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
+
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -10,18 +12,23 @@ parser.add_argument('platform_id')
 
 class DataStoreManage(Resource):
 
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter datastore 信息
         ---
-        tags:
+       tags:
           - vCenter DataStore
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: integer
             required: true
-        responses:
+       responses:
           200:
             description: 获取datastore 成功
             schema:

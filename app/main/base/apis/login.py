@@ -3,15 +3,10 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-from app.models import Users
 from flask_security import login_user
-from flask import session, request, g
+from flask import session, g
 
 from app.main.base import control
-from app.code import Code
-
-# import redis
-
 
 parser = reqparse.RequestParser()
 parser.add_argument('username')
@@ -98,15 +93,14 @@ class LoginManage(Resource):
         """
         args = parser.parse_args()
         try:
-            print(args['username'])
             if not all([args['username'], args['password']]):
                 raise Exception('Incorrect username or password.')
 
             user = control.user.list_by_name(username=args['username'])
 
             if not user:
-                # raise Exception('Incorrect username or password.')
-                raise Exception('LoginParameterErr')
+                raise Exception('Incorrect username or password.')
+                # raise Exception('LoginParameterErr')
             else:
                 if not user.verify_password(args['password']):
                     raise Exception('Incorrect username or password.')
@@ -129,8 +123,6 @@ class LoginManage(Resource):
                     # session['username'] = user.username
                     g.username = user.username
                     session[token] = True
-                    # session['100'] = 1
-                    # print(session.get(token))
                     control.user.update_login_time(user)
         except Exception as e:
 

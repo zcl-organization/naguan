@@ -6,7 +6,7 @@ from app.exts import db
 
 
 # 根据条件获取用户信息
-def user_list(user_id, email, mobile, remarks, next_page, limit):
+def user_list(user_id, email, mobile, name, remarks, next_page, limit):
     try:
         query = db.session.query(Users).filter_by(is_deleted=0)
         if user_id:
@@ -15,6 +15,8 @@ def user_list(user_id, email, mobile, remarks, next_page, limit):
             query = query.filter_by(email=email)
         if mobile:
             query = query.filter_by(mobile=mobile)
+        if name:
+            query = query.filter_by(username=name)
         if remarks:
             query = query.filter_by(remarks=remarks)
         if next_page and limit:
@@ -149,7 +151,6 @@ def update_login_time(user):
     user.current_login_at = datetime.datetime.now()
     db.session.add(user)
     db.session.commit()
-
 
 # # 获取资源id
 # def get_user_id():

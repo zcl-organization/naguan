@@ -15,6 +15,7 @@ parser.add_argument('port')
 parser.add_argument('admin_name')
 parser.add_argument('admin_password')
 parser.add_argument('remarks')
+parser.add_argument('platform_type_name')
 
 
 class CloudPlatformManage(Resource):
@@ -22,9 +23,13 @@ class CloudPlatformManage(Resource):
         """
         获取云平台信息
         ---
-        tags:
+       tags:
           - cloudplatform
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: id
             type: string
@@ -32,9 +37,12 @@ class CloudPlatformManage(Resource):
             name: platform_type_id
             type: string
           - in: query
+            name: platform_type_name
+            type: string
+          - in: query
             name: platform_name
             type: string
-        responses:
+       responses:
           200:
             description: 获取平台信息
             schema:
@@ -81,14 +89,15 @@ class CloudPlatformManage(Resource):
                         description: port
                       remarks:
                         type: string
-                        default: ddddcv
+                        default: remarks
                         description: remarks
         """
         args = parser.parse_args()
         try:
             data = control.cloud_platform.platform_list(id=args['id'],
                                                         platform_type_id=args['platform_type_id'],
-                                                        platform_name=args['platform_name'])
+                                                        platform_name=args['platform_name'],
+                                                        platform_type_name=args['platform_type_name'])
 
         except Exception, e:
             return set_return_val(False, [], str(e), 1529), 400
@@ -101,8 +110,10 @@ class CloudPlatformManage(Resource):
        ---
        tags:
           - cloudplatform
-       produces:
-          - "application/json"
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: body
            name: body
@@ -174,28 +185,32 @@ class CloudPlatformManage(Resource):
                     args['ip']]):
             raise Exception('Parameter error')
         try:
-            id = control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
-                                                        platform_name=args['platform_name'],
-                                                        admin_name=args['admin_name'],
-                                                        admin_password=args['admin_password'], port=args['port'],
-                                                        ip=args['ip'], remarks=args['remarks'])
+            platform = control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
+                                                              platform_name=args['platform_name'],
+                                                              admin_name=args['admin_name'],
+                                                              admin_password=args['admin_password'], port=args['port'],
+                                                              ip=args['ip'], remarks=args['remarks'])
 
         except Exception, e:
             control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id='',
                                                event=unicode('新增云平台信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1501), 400
-        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('新增云平台信息')
-                                           , submitter=g.username)
-        return set_return_val(True, [], str('The platform information was created successfully.'), 1500)
+        control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=platform[0]['id'],
+                                           event=unicode('新增云平台信息'), submitter=g.username)
+        return set_return_val(True, platform, str('The platform information was created successfully.'), 1500)
 
     @basic_auth.login_required
     def put(self, id):
         """
         更新云平台信息
         ---
-        tags:
+       tags:
           - cloudplatform
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
          - in: path
            type: integer
            format: int64
@@ -216,7 +231,7 @@ class CloudPlatformManage(Resource):
          - name: remarks
            type: string
            in: formData
-        responses:
+       responses:
          200:
             description: 更新平台信息
             schema:
@@ -254,6 +269,10 @@ class CloudPlatformManage(Resource):
        ---
        tags:
           - cloudplatform
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: path
            name: id

@@ -15,14 +15,18 @@ parser.add_argument('description', type=str)
 
 class RoleManage(Resource):
 
+    @basic_auth.login_required
     def get(self):
         """
          获取角色信息
          ---
-         tags:
-           - role
-         summary: Add a new pet to the store
-         parameters:
+       tags:
+          - role
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
            - in: query
              name: name
              type: string
@@ -31,7 +35,7 @@ class RoleManage(Resource):
              name: pgnum
              type: string
              description: 页码
-         responses:
+       responses:
            200:
             description: 获取角色信息
             schema:
@@ -80,12 +84,13 @@ class RoleManage(Resource):
         """
          创建角色信息
          ---
-         tags:
-           - role
-         summary: 创建角色信息
-         produces:
-           - "application/json"
-         parameters:
+       tags:
+          - role
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
            - in: body
              name: body
              required: true
@@ -103,7 +108,7 @@ class RoleManage(Resource):
                     default: admin
                     description: 角色信息描述
                     example: admin角色
-         responses:
+       responses:
            200:
             description: 创建角色信息
             schema:
@@ -127,23 +132,27 @@ class RoleManage(Resource):
             raise Exception('Parameter error')
         try:
             role = control.role.role_create(name=args['name'], description=args['description'])
-            id = role.id
+            # id = role[0]['id']
         except Exception as e:
             control.event_logs.eventlog_create(type='role', result=False, resources_id='',
                                                event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
-        control.event_logs.eventlog_create(type='role', result=True, resources_id=id,
+        control.event_logs.eventlog_create(type='role', result=True, resources_id=role[0]['id'],
                                            event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
-        return set_return_val(True, [], 'The role information is created successfully.', 1200)
+        return set_return_val(True, role, 'The role information is created successfully.', 1200)
 
     @basic_auth.login_required
     def put(self, id):
         """
          更新角色信息
          ---
-         tags:
-           - role
-         parameters:
+       tags:
+          - role
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
            - in: path
              type: integer
              format: int64
@@ -157,7 +166,7 @@ class RoleManage(Resource):
              name: description
              type: string
              description: 描述
-         responses:
+       responses:
            200:
             description: 更新角色信息
             schema:
@@ -191,15 +200,19 @@ class RoleManage(Resource):
         """
         删除角色信息
         ---
-        tags:
+       tags:
           - role
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: path
             type: integer
             format: int64
             name: id
             required: true
-        responses:
+       responses:
           200:
             description: 删除角色信息
             schema:

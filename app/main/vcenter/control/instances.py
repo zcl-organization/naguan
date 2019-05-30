@@ -461,7 +461,6 @@ class Instance(object):
             disk_spec.device.controllerKey = controller.key
             dev_changes.append(disk_spec)
             spec.deviceChange = dev_changes
-            print(1)
             task = self.vm.ReconfigVM_Task(spec=spec)
             wait_for_tasks(self.si, [task])
 

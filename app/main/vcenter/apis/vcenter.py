@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask import g
 from flask_restful import Resource, reqparse
-
+from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.base import control as base_control
@@ -12,18 +12,23 @@ parser.add_argument('platform_id')
 
 
 class VCenterManage(Resource):
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter tree 信息
         ---
-        tags:
+       tags:
           - vCenter tree
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
             required: true
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
@@ -94,15 +99,18 @@ class VCenterManage(Resource):
             return set_return_val(False, {}, 'Failed to get vcneter tree', 1239), 400
         return set_return_val(True, data, 'Get vcneter tree success', 1230)
 
+    @basic_auth.login_required
     def post(self):
         """
         同步vCenter tree 信息
         ---
-        tags:
+       tags:
           - vCenter tree
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -115,7 +123,7 @@ class VCenterManage(Resource):
                   default: 1
                   description: 平台id
                   example: 1
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:

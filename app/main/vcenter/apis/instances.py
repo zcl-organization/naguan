@@ -2,7 +2,7 @@
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
-
+from app.main.base.apis.auth import basic_auth
 from app.main.vcenter.control.instances import Instance
 
 parser = reqparse.RequestParser()
@@ -37,13 +37,18 @@ parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
+    @basic_auth.login_required
     def post(self):
         """
          操作 vm 信息
         ---
-        tags:
+       tags:
           - vCenter instances
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -102,7 +107,7 @@ class InstanceManage(Resource):
             name: networks
             type: string
             description: '[1,2]--network_port_group_id'
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
@@ -179,13 +184,18 @@ class InstanceManage(Resource):
         return set_return_val(True, [], 'instance action success.', 1520)
 
     # 获取 instance 列表
+    @basic_auth.login_required
     def get(self):
         """
          获取 instance 信息
         ---
-        tags:
+       tags:
           - vCenter instances
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -207,7 +217,7 @@ class InstanceManage(Resource):
             name: pgnum
             type: int
             description: 页码
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
@@ -334,13 +344,18 @@ class InstanceManage(Resource):
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, data, 'instance gets success.', 1520, pg)
 
+    @basic_auth.login_required
     def delete(self, platform_id, uuid):
         """
         删除 vm 信息
         ---
-        tags:
+       tags:
           - vCenter instances
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: path
             name: platform_id
             type: string
@@ -351,7 +366,7 @@ class InstanceManage(Resource):
             type: string
             description: uuid
             required: true
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
@@ -397,13 +412,18 @@ class InstanceManage(Resource):
             return set_return_val(False, [], str(e), 1529), 400
         return set_return_val(True, [], 'instance delete success.', 1520)
 
+    @basic_auth.login_required
     def put(self):
         """
          更新 vm 信息
         ---
-        tags:
+       tags:
           - vCenter instances
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: path
             name: platform_id
             type: string
@@ -430,7 +450,7 @@ class InstanceManage(Resource):
             name: old_memory
             type: string
             description: old_memory
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:

@@ -29,7 +29,7 @@ def platform_type_create(name):
         db.session.add(new_platform_type)
         db.session.flush()
         db.session.commit()
-        return new_platform_type.id
+        return new_platform_type
     except Exception as e:
         raise Exception('create platform_type error', name)
 

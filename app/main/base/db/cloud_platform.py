@@ -1,19 +1,21 @@
 # -*- coding:utf-8 -*-
 
 from app.models import CloudPlatform
+from app.models import CloudPlatformType
 from app.exts import db
 
 
-def platform_list(id, platform_type_id, platform_name):
+def platform_list(id, platform_type_id, platform_name, platform_type_name):
     query = db.session.query(CloudPlatform)
-
     if id:
         query = query.filter_by(id=id)
     if platform_name:
         query = query.filter_by(platform_name=platform_name)
     if platform_type_id:
         query = query.filter_by(platform_type_id=platform_type_id)
-
+    if platform_type_name:
+        query = query.filter(CloudPlatform.platform_type_id == CloudPlatformType.id).filter(
+            CloudPlatformType.name == platform_type_name)
     try:
         result = query.all()
     except Exception as e:
@@ -37,7 +39,7 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
         db.session.add(new_platform)
         db.session.flush()
         db.session.commit()
-        return new_platform.id
+        return new_platform
         # return db.session.query(CloudPlatform).filter_by(platform_name=options['platform_name']).first()
 
     except Exception as e:

@@ -16,7 +16,7 @@ def sync_resourcepool(platform, dc, cluster, si, content):
 
     for rp in resourcepools:
 
-        rp_db = db.resource_pool.get_rp_by_mor_name(get_mor_name(rp))
+        rp_db = db.resource_pool.get_rp_by_mor_name(platform['id'], get_mor_name(rp))
 
         if rp_db:
             # print('update 1')

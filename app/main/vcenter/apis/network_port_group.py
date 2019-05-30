@@ -4,24 +4,30 @@ from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
 from app.main.vcenter.control import network_port_group as network_manage
+from app.main.base.apis.auth import basic_auth
+
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
 
 
 class NetworkPortGroupManage(Resource):
-
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter network port group 信息
         ---
-        tags:
+       tags:
           - vCenter network port group
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: integer
             required: true
-        responses:
+       responses:
           200:
             description: vCenter port group 信息
             schema:
@@ -90,6 +96,7 @@ class NetworkPortGroupManage(Resource):
             return set_return_val(False, {}, 'Failed to get network group', 1239), 400
         return set_return_val(True, data, 'Get network group success', 1230)
 
+    @basic_auth.login_required
     def post(self):
         args = parser.parse_args()
         # platform_id
@@ -97,9 +104,10 @@ class NetworkPortGroupManage(Resource):
         # network_id
         # network_manage.
 
+    @basic_auth.login_required
     def put(self):
         pass
-
+    @basic_auth.login_required
     def delete(self):
         pass
 

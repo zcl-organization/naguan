@@ -45,42 +45,41 @@ def menu_list(menu_id, url, name, identifier, all):
 
 # 创建菜单
 def menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id):
-    try:
-        new_menu = Menu()
-        new_menu.icon = icon
-        new_menu.url = url
-        new_menu.name = name
-        new_menu.identifier = identifier
+    new_menu = Menu()
+    new_menu.icon = icon
+    new_menu.url = url
+    new_menu.name = name
+    new_menu.identifier = identifier
 
-        if is_hide == 1:
-            new_menu.is_hide = True
-        elif is_hide == 2:
-            new_menu.is_hide = False
-        else:
-            raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
+    if is_hide == 1:
+        new_menu.is_hide = True
+    elif is_hide == 2:
+        new_menu.is_hide = False
+    else:
+        raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-        if is_hide_children == 1:
-            new_menu.is_hide_children = True
-        elif is_hide_children == 2:
-            new_menu.is_hide_children = False
-        else:
-            raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
+    if is_hide_children == 1:
+        new_menu.is_hide_children = True
+    elif is_hide_children == 2:
+        new_menu.is_hide_children = False
+    else:
+        raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
-        new_menu.important = important
-        if parent_id:
-            parent_menu = db.session.query(Menu).filter_by(id=parent_id).first()
-            if parent_menu:
-                new_menu.parent_id = parent_id
-            else:
-                new_menu.parent_id = 0
+    new_menu.important = important
+    if parent_id:
+        parent_menu = db.session.query(Menu).filter_by(id=parent_id).first()
+        if parent_menu:
+            new_menu.parent_id = parent_id
         else:
             new_menu.parent_id = 0
-
+    else:
+        new_menu.parent_id = 0
+    try:
         db.session.add(new_menu)
         db.session.flush()
         db.session.commit()
 
-        return new_menu.id
+        return new_menu
 
     except Exception as e:
         # print(e)

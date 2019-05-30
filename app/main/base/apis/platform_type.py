@@ -10,21 +10,20 @@ parser = reqparse.RequestParser()
 parser.add_argument('id')
 parser.add_argument('name')
 
-ret_status = {
-    'ok': True,
-    'code': 200,
-    'msg': '创建成功',
-    'data': ''
-}
-
 
 class PlatformTypeMg(Resource):
+
+    @basic_auth.login_required
     def get(self):
         """
         查询云平台类型信息
-       ---
+        ---
        tags:
           - cloudplatformtype
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: query
            name: id
@@ -77,6 +76,10 @@ class PlatformTypeMg(Resource):
        ---
        tags:
           - cloudplatformtype
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        produces:
           - "application/json"
        parameters:
@@ -116,15 +119,15 @@ class PlatformTypeMg(Resource):
             raise Exception('Please pass in the platform type name.')
 
         try:
-            id = control.platform_type.type_create(name=args['name'])
+            menu = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
                                                event=unicode('增加平台类型'), submitter=g.username)
             return set_return_val(False, [], str(e), 1319), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
-                                           submitter=g.username)
-        return set_return_val(True, [], 'Platform type create succeeded.', 1430)
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=menu[0]['id'],
+                                           event=unicode('增加平台类型'), submitter=g.username)
+        return set_return_val(True, menu, 'Platform type create succeeded.', 1430)
 
     @basic_auth.login_required
     def put(self, id):
@@ -133,6 +136,10 @@ class PlatformTypeMg(Resource):
        ---
        tags:
           - cloudplatformtype
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: path
            name: id
@@ -172,7 +179,8 @@ class PlatformTypeMg(Resource):
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('更新平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('更新平台类型信息'),
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id,
+                                           event=unicode('更新平台类型信息'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type update succeeded.', 1520)
 
@@ -183,6 +191,10 @@ class PlatformTypeMg(Resource):
        ---
        tags:
           - cloudplatformtype
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
        parameters:
          - in: path
            name: id
@@ -213,6 +225,7 @@ class PlatformTypeMg(Resource):
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('删除平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), 1529), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('删除平台类型信息'),
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id,
+                                           event=unicode('删除平台类型信息'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type delete succeeded.', 1520)

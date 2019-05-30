@@ -4,7 +4,6 @@ from flask_restful import Resource, reqparse
 
 from auth import basic_auth
 from app.common.tool import set_return_val
-from app.main.base.control import roles_users as role_user_manage
 from app.main.base import control
 
 parser = reqparse.RequestParser()
@@ -18,22 +17,28 @@ parser.add_argument('user_name', type=str)
 
 
 class RolesUsersManage(Resource):
+
+    @basic_auth.login_required
     def get(self):
         """
          获取用户角色列表
          ---
-         tags:
+       tags:
            - user_role
-         parameters:
-           - in: query
-             type: string
-             name: user_name
-             description: 用户名
-           - in: query
-             name: role_name
-             type: string
-             description: 角色名
-         responses:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+         - in: query
+           type: string
+           name: user_name
+           description: 用户名
+         - in: query
+           name: role_name
+           type: string
+           description: 角色名
+       responses:
            200:
             description: 获取用户角色信息
             schema:
@@ -84,11 +89,13 @@ class RolesUsersManage(Resource):
         """
          用户角色分配
          ---
-         tags:
+       tags:
            - user_role
-         produces:
-           - "application/json"
-         parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
            - in: body
              name: body
              required: true
@@ -107,7 +114,7 @@ class RolesUsersManage(Resource):
                    default: 1
                    description: 角色id
                    example: 1
-         responses:
+       responses:
            200:
             description: 用户角色分配
             schema:
@@ -148,9 +155,13 @@ class RolesUsersManage(Resource):
         """
          用户角色更新
          ---
-         tags:
+       tags:
            - user_role
-         parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
            - in: query
              type: string
              name: user_id
@@ -163,7 +174,7 @@ class RolesUsersManage(Resource):
              name: old_role_id
              type: string
              description: 旧角色id
-         responses:
+       responses:
            200:
             description: 用户角色重新分配
             schema:
@@ -207,14 +218,18 @@ class RolesUsersManage(Resource):
         """
          用户角色删除
          ---
-         tags:
+       tags:
            - user_role
-         parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
            - in: query
              type: string
              name: user_id
              description: 用户id
-         responses:
+       responses:
            200:
             description: 删除用户角色
             schema:
