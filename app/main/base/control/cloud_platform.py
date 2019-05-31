@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from flask import g
+
 from app.main.base import db
 
 
@@ -7,13 +9,24 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
     platform = db.cloud_platform.get_platform_by_name(platform_name)
 
     if platform:
+        g.error_code = 1502
         raise Exception('platform name already exist.')
-    return db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
+    data = db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
                                              remarks)
+    platform_dict = {
+        'id': data.id,
+        'platform_type_id': data.platform_type_id,
+        'platform_name': data.platform_name,
+        'ip': data.ip,
+        'port': data.port,
+        'name': data.admin_name,
+        'remarks': data.remarks
+    }
+    return [platform_dict]
 
 
-def platform_list(id=None, platform_type_id=None, platform_name=None):
-    platforms = db.cloud_platform.platform_list(id, platform_type_id, platform_name)
+def platform_list(id=None, platform_type_id=None, platform_name=None, platform_type_name=None):
+    platforms = db.cloud_platform.platform_list(id, platform_type_id, platform_name, platform_type_name)
     platforms_list = []
 
     if platforms:
@@ -41,6 +54,7 @@ def platform_update(id, ip, admin_name, admin_password, port, remarks):
     if platform:
         return db.cloud_platform.platform_update(id, ip, admin_name, admin_password, port, remarks)
     else:
+        g.error_code = 1521
         raise Exception('No current platform information exists')
 
 
@@ -49,4 +63,5 @@ def platform_delete(id):
     if platform:
         return db.cloud_platform.platform_delete(id)
     else:
+        g.error_code = 1511
         raise Exception('No current platform information exists')

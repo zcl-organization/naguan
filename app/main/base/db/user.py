@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 import datetime
 
+from flask import g
+
 from app.models import Users
 from app.exts import db
 
 
 # 根据条件获取用户信息
-def user_list(user_id, email, mobile, remarks, next_page, limit):
+def user_list(user_id, email, mobile, name, remarks, next_page, limit):
     try:
         query = db.session.query(Users).filter_by(is_deleted=0)
         if user_id:
@@ -15,6 +17,8 @@ def user_list(user_id, email, mobile, remarks, next_page, limit):
             query = query.filter_by(email=email)
         if mobile:
             query = query.filter_by(mobile=mobile)
+        if name:
+            query = query.filter_by(username=name)
         if remarks:
             query = query.filter_by(remarks=remarks)
         if next_page and limit:
@@ -22,6 +26,7 @@ def user_list(user_id, email, mobile, remarks, next_page, limit):
 
         result = query.items
     except Exception as e:
+        g.error_code = 1132
         raise Exception('Database query is abnormal')
 
     pg = {
@@ -90,6 +95,7 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
         db.session.commit()
         return newuser
     except Exception, e:
+        g.error_code = 1104
         raise Exception('User information creation failed')
 
 
@@ -105,6 +111,7 @@ def user_delete(id=None):
         db.session.commit()
         return username
     except Exception as e:
+        g.error_code = 1112
         raise Exception('User information delete failed')
 
 
@@ -140,6 +147,7 @@ def user_update(id, active, username, password, mobile, company, department, rem
         db.session.commit()
         return user.username
     except Exception as e:
+        g.error_code = 1124
         raise Exception('Database update exception')
 
 
@@ -149,7 +157,6 @@ def update_login_time(user):
     user.current_login_at = datetime.datetime.now()
     db.session.add(user)
     db.session.commit()
-
 
 # # 获取资源id
 # def get_user_id():

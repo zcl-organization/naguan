@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import g
 
 from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj, get_connect, validate_input
 from app.main.vcenter.control.disks import sync_disk
@@ -73,6 +74,7 @@ class Instance(object):
         if self._vm_base_manager.start():
             self.update_vm_local()
         else:
+            g.error_code = 2041
             raise Exception('vm start failed')
 
     def stop(self, force=True):
@@ -83,6 +85,7 @@ class Instance(object):
         if self._vm_base_manager.stop(force):
             self.update_vm_local()
         else:
+            g.error_code = 2043
             raise Exception('vm stop failed')
 
     def suspend(self, force=True):
@@ -93,6 +96,7 @@ class Instance(object):
         if self._vm_base_manager.suspend(force):
             self.update_vm_local()
         else:
+            g.error_code = 2045
             raise Exception('vm suspend failed')
 
     def restart(self):
@@ -150,11 +154,13 @@ class Instance(object):
         snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
 
         if not snapshot_db:
+            g.error_code = 2304
             raise Exception('unable get snapshot info ')
 
         if self._vm_snapshot_manager.revert_snapshot(snapshot_db.name):
             snapshot_nanage.sync_snapshot(self.platform_id, self.vm)  # TODO 是否需要 原来部分没有
         else:
+            g.error_code = 2304
             raise Exception('unable to find snapshot, revert failed')
 
 
@@ -174,6 +180,7 @@ class Instance(object):
             disk_data = json.loads(disks) if isinstance(disks, str) else disks
             for disk in disks:
                 if not disk.get('type') or not disk.get('size'):
+                    g.error_code = 2003
                     raise Exception('The disk information format is incorrect.')
 
         dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
@@ -183,16 +190,23 @@ class Instance(object):
             self._set_vm(self._vm_device_info_manager.vm)
             self.update_vm_local()
         else:
+            g.error_code = 2005
             raise Exception('Task To Create Failed')
         
         if networks:
-            self.add_network(networks)
+            if not self.add_network(networks):
+                g.error_code = 2006
+                raise Exception('vm network attach failed')
 
         if disks:
-            self.add_disk(disks)
+            if not self.add_disk(disks):
+                g.error_code = 2007
+                raise Exception('vm disk attach failed')
         
         if image_id:
-            self.add_image(image_id)
+            if not self.add_image(image_id):
+                g.error_code = 2008
+                raise Exception('vm image attach failed')
 
     def add_network(self, networks):
         """
@@ -220,10 +234,12 @@ class Instance(object):
         for network_d_id in networks:
             device = network_device_manage.device_list_by_id(self.platform_id, self.uuid, network_d_id)
             if not device:
+                g.error_code = 2211
                 raise RuntimeError('Network Could Not Be Found')
 
             # TODO
             if not self._vm_device_info_manager.remove_network(device.label):
+                g.error_code = 221
                 raise Exception('vm network delete failed')
         
         sync_network_device(self.platform_id, self.vm)
@@ -237,6 +253,7 @@ class Instance(object):
         if self._vm_device_info_manager.update_vcpu(new_cpu):
             self.update_vm_local()
         else:
+            g.error_code = 2021
             raise Exception('VM CPU Update Failed')
 
     def update_vmemory(self, new_memory, old_memory):
@@ -248,6 +265,7 @@ class Instance(object):
         if self._vm_device_info_manager.update_mem(new_memory):
             self.update_vm_local()
         else:
+            g.error_code = 2022
             raise Exception('VM Memory Update Failed')
 
     def add_disk(self, disks):
@@ -258,10 +276,15 @@ class Instance(object):
         disks = json.loads(disks) if isinstance(disks, str) else disks
 
         for disk in disks:
-            if not all([disk.get('size'), disk.get('type')]):
-                raise Exception('Parameter Error')
-            
-            self._vm_device_info_manager.add_disk(disk.get('size'), disk.get('type'))
+            if not disk.get('type'):
+                g.error_code = 2001
+                raise Exception('The disk information format is incorrect.')
+            if not disk.get('size'):
+                g.error_code = 2002
+                raise Exception('The disk information format is incorrect.')
+
+            if not self._vm_device_info_manager.add_disk(disk.get('size'), disk.get('type')):
+                raise Exception('The disk information format is incorrect.')                    
 
         sync_disk(self.platform_id, self.vm)
 
@@ -276,10 +299,12 @@ class Instance(object):
         for disk_id in sorted(disks, reverse=True):
             disk = disk_manage.get_disk_by_disk_id(disk_id)
             if not disk:
+                g.error_code = 2112
                 raise RuntimeError('Hdd prefix label could not be found')
 
             # TODO
             if not self._vm_device_info_manager.remove_disk(disk.label):
+                g.error_code = 2113
                 raise Exception('Delete Disk Failed')
 
         sync_disk(self.platform_id, self.vm)
@@ -409,10 +434,14 @@ class Instance(object):
         :params dc_id:
         :params resourcepool:
         """
-        ds_info = db.datastores.get_ds_by_id(ds_id)
-        dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
-        if not ds_info:
-            raise Exception('Unable to get DataStore')
+        try:
+            ds_info = db.datastores.get_ds_by_id(ds_id)
+            dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
+            if not ds_info:
+                raise Exception('Unable to get DataStore')
+        except Exception as e:
+            g.error_code = 2051
+            raise Exception('Unable to get DataStore or DataCenter')
         
         clone_status = self._vm_device_info_manager.clone(
             new_vm_name=new_vm_name, 
@@ -421,6 +450,7 @@ class Instance(object):
             rp_name=validate_input(resourcepool)
         )
         if not clone_status:
+            g.error_code = 2054
             raise Exception("Perform a clone operation error")
 
     def cold_migrate(self, host_name=None, ds_id=None, dc_id=None, resourcepool=None):
@@ -439,6 +469,7 @@ class Instance(object):
             ds_info = db.datastores.get_ds_by_id(ds_id)
             dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
         except Exception as e:
+            g.error_code = 2061
             raise Exception('Unable to get DataStore or DataCenter')
         
         if not ds_info:
@@ -455,6 +486,7 @@ class Instance(object):
         if clone_status:
             # TODO 相关操作还要归类
             if not self._vm_base_manager.delete():
+                g.error_code = 2063
                 raise Exception("cold migrate failed")
             
             try:
@@ -465,6 +497,7 @@ class Instance(object):
                 cold_migrated_vm = self._vm_device_info_manager._get_device([vim.VirtualMachine], vm_name_tmp) 
                 WaitForTask(cold_migrated_vm.ReconfigVM_Task(vm_conf))
             except Exception as e:
+                g.error_code = 2063
                 raise Exception('cold migrate failed')
 
             self._set_vm(cold_migrated_vm)
@@ -478,6 +511,7 @@ class Instance(object):
             vm_name = vm.summary.config.name
             vm_name = vm_name.replace('_', '-')
             if vm.runtime.powerState != 'poweredOff':
+                g.error_code = 2071
                 raise Exception('Power off your VM before reconfigure')
 
             adaptermap = vim.vm.customization.AdapterMapping()
@@ -489,12 +523,11 @@ class Instance(object):
             adaptermap.adapter.subnetMask = subnet
             adaptermap.adapter.gateway = gateway
             globalip.dnsServerList = dns
-
             if not domain:
                 domain = 'kaopuyun.com'
             adaptermap.adapter.dnsDomain = domain
 
-            globalip = vim.vm.customization.GlobalIPSettings()
+            # globalip = vim.vm.customization.GlobalIPSettings()
             # For Linux . For windows follow sysprep
             ident = vim.vm.customization.LinuxPrep(domain=domain,
                                                    hostName=vim.vm.customization.FixedName(name=vm_name))
@@ -516,9 +549,11 @@ class Instance(object):
 
         except vmodl.MethodFault, e:
             # print "Caught vmodl fault: %s" % e.msg
+            g.error_code = 2071
             raise Exception('Caught vmodl fault: %s' % e.msg)
         except Exception, e:
             print "Caught exception: %s" % str(e)
+            g.error_code = 2072
             raise Exception('Caught exception fault: %s' % str(e))
 
 

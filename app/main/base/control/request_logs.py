@@ -1,14 +1,12 @@
 # -*- coding=utf-8 -*-
+from flask import g
 
 from app.main.base import db
 
 
 # 获取日志列表
 def log_list(pgnum, request_id, status_num):
-    # print('ccc')
-    # print(pgnum)
-    # print(request_id)
-    # print(status_num)
+
     results, pg = db.request_logs.log_list(pgnum, request_id, status_num)
     # print(pg)
     data = []
@@ -29,5 +27,6 @@ def log_list(pgnum, request_id, status_num):
 def log_delete(id):
     log = db.request_logs.log_list_by_id(id)
     if not log:
+        g.error_code = 1711
         raise Exception('No current log information exists')
     return db.request_logs.log_delete(id)

@@ -1,3 +1,5 @@
+from flask import g
+
 from app import SystemConfig
 from app.exts import db
 
@@ -25,6 +27,7 @@ def system_config_update(platform_name, version_information, copyright, user_aut
             system_config.debug = False
         db.session.commit()
     except Exception as e:
+        g.error_code = 1612
         raise Exception('Database operation exception')
 
 
@@ -43,6 +46,7 @@ def system_config_create(platform_name, version_information, copyright, user_aut
         db.session.add(system_config)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1602
         raise Exception('Database operation exception')
 
 
@@ -52,4 +56,5 @@ def system_config_update_logo(log_path):
         system_config.logo = log_path
         db.session.commit()
     except Exception as e:
+        g.error_code = 1622
         raise Exception('Database operation exception')

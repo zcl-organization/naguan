@@ -7,7 +7,11 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.vcenter.control.instances import Instance
+
 from app.main.base import control as base_control
+
+from app.main.base.apis.auth import basic_auth
+
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
@@ -18,13 +22,18 @@ parser.add_argument('pgnum')
 
 class DiskManage(Resource):
 
+    @basic_auth.login_required
     def get(self):
         """
          获取vCenter vm_disk 信息
         ---
-        tags:
+       tags:
           - vCenter disk
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: integer
@@ -36,7 +45,7 @@ class DiskManage(Resource):
           - in: query
             name: pgnum
             type: integer
-        responses:
+       responses:
           200:
             description: vCenter disk 信息
             schema:
@@ -140,18 +149,23 @@ class DiskManage(Resource):
             data, pg = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'],
                                                          pgnum=pgnum)
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
-        return set_return_val(True, data, 'vm disk gets success.', 1520, pg)
 
+            return set_return_val(False, [], str(e), 2131), 400
+        return set_return_val(True, data, 'Datastore gets success.', 2130)
+
+
+    @basic_auth.login_required
     def post(self):
         """
          更新 vm  disk信息
         ---
-        tags:
+       tags:
           - vCenter disk
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -176,7 +190,7 @@ class DiskManage(Resource):
                   default: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
                   description: disk 信息
                   example: '[{"type":"thin","size":1},{"type":"thin","size":1}]'
-        responses:
+       responses:
           200:
             description: vCenter disk  信息
             schema:
@@ -218,6 +232,7 @@ class DiskManage(Resource):
         datas = []
         try:
             if not args['disks']:
+                g.error_code = 2101
                 raise Exception('Parameter error')
 
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
@@ -232,18 +247,23 @@ class DiskManage(Resource):
                 type='vm_disk', result=False, resources_id=args.get('vm_uuid'), event=unicode('创建磁盘'),
                 submitter=g.username
             ))
-            return set_return_val(False, [], str(e), 1529), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             [base_control.event_logs.eventlog_create(**item) for item in datas]
-        return set_return_val(True, [], 'Instance attack disk successfully.', 1520)
+        return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
 
+    @basic_auth.login_required
     def delete(self):
         """
          更新 vm  disk信息
         ---
-        tags:
+       tags:
           - vCenter disk
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: query
             name: platform_id
             type: string
@@ -256,7 +276,7 @@ class DiskManage(Resource):
             name: disks
             type: string
             description: '[1,2]'
-        responses:
+       responses:
           200:
             description: vCenter tree 信息
             schema:
@@ -304,14 +324,17 @@ class DiskManage(Resource):
         )
         try:
             if not args['disks']:
+                g.error_code = 2111
                 raise Exception('Parameter error')
 
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             instance.delete_disk(disks=args['disks'])
             data['result'] = True
         except Exception as e:
-            return set_return_val(False, [], str(e), 1529), 400
+
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'Instance deattach disk successfully', 1520)
+        return set_return_val(True, [], 'Instance deattach disk successfully', 2110)
+

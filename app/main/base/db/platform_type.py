@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import g
 
 from app.models import CloudPlatformType
 from app.exts import db
@@ -29,8 +30,9 @@ def platform_type_create(name):
         db.session.add(new_platform_type)
         db.session.flush()
         db.session.commit()
-        return new_platform_type.id
+        return new_platform_type
     except Exception as e:
+        g.error_code = 1503
         raise Exception('create platform_type error', name)
 
     # return platform_type
@@ -49,8 +51,10 @@ def platform_type_update(id, name):
         db.session.commit()
 
     except IntegrityError:
+        g.error_code = 1524
         raise Exception('db update, parameter error', name)
     except Exception as e:
+        g.error_code = 1522
         raise Exception('Database operation exception')
 
 
@@ -61,6 +65,7 @@ def platform_type_delete(type_id):
         db.session.delete(platform_middle)
         db.session.commit()
     except Exception:
+        g.error_code = 1512
         raise Exception('Deleting platform type failed', type_id)
 
 

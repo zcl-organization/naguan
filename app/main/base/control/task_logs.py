@@ -1,4 +1,6 @@
 # -*- coding=utf-8 -*-
+from flask import g
+
 from app.main.base import db
 
 
@@ -32,6 +34,7 @@ def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
 def log_delete(log_id):
     log = db.task_logs.log_list_by_id(log_id)
     if not log:
+        g.error_code = 1911
         raise Exception('No current log information exists')
     return db.task_logs.log_delete(log_id)
 

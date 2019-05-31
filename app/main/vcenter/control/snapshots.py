@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from pyVmomi import vim
-from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
+# from pyVmomi import vim
+from app.main.vcenter.control.utils import get_mor_name
 from app.main.vcenter import db
 from app.exts import celery
-import time
 
 
 def sync_snap_info(platform_id, snapshotlist, vm, parent_id=None, depth=1):

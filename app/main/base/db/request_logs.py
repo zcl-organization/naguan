@@ -1,11 +1,13 @@
 # -*- coding=utf-8 -*-
+from flask import g
+
 from app.exts import db
 from app.models import RequestLog
 
 
 # 获取日志列表
 def log_list(pgnum, request_id, status_num):
-    query = db.session.query(RequestLog)
+    query = db.session.query(RequestLog).order_by(RequestLog.time.desc())
     if request_id:
         query = query.filter_by(request_id=request_id)
     if status_num:
@@ -32,6 +34,7 @@ def log_delete(id):
         db.session.delete(log_willdel)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1712
         raise Exception('Database delete exception')
 
 

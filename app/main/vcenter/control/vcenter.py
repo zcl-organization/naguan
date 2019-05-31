@@ -27,6 +27,7 @@ from app.main.base.control import task_logs
 @celery.task(base=task.tasks_log.SyncTreeCall)
 def sync_tree(platform_id):
     # task_logs.task_end(task_id, 'ok')
+    print('platform_id:', platform_id)
     g.start_time = datetime.datetime.now()
     si, content, platform = get_connect(platform_id)
     sync_vcenter_tree(si, content, platform)

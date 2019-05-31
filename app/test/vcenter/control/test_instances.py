@@ -22,7 +22,7 @@ create_info = {
     'image_id': ''
 }
 network_str = json.dumps([2,])
-disk_str = json.dumps([{'type': 'thin', 'size': 1}, ])
+disk_str = json.dumps([{'type': 'thin', 'size': 16}, ])
 
 snapshot_info = {
     'snapshot_name': 'unittest_snapshot_1',
@@ -300,11 +300,12 @@ class TestIntance(unittest.TestCase):
     #     #     print self._uti.vm.summary
     #     #     print "---- {} ----".format(item)
     #     #     time.sleep(10)
-
-    #     self._uti.ip_assignment(**ip_info)
+    #     with app.test_request_context():
+    #         self._uti.ip_assignment(**ip_info)
     #     # self._uti.ip_assignment(**ip_info)
     #     # self._uti._vm_base_manager.start()
     #     print self._uti.vm.config
+    #     print self._uti.vm.summary
 
     def test_100_delete(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])

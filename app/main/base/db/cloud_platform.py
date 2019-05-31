@@ -1,19 +1,22 @@
 # -*- coding:utf-8 -*-
+from flask import g
 
 from app.models import CloudPlatform
+from app.models import CloudPlatformType
 from app.exts import db
 
 
-def platform_list(id, platform_type_id, platform_name):
+def platform_list(id, platform_type_id, platform_name, platform_type_name):
     query = db.session.query(CloudPlatform)
-
     if id:
         query = query.filter_by(id=id)
     if platform_name:
         query = query.filter_by(platform_name=platform_name)
     if platform_type_id:
         query = query.filter_by(platform_type_id=platform_type_id)
-
+    if platform_type_name:
+        query = query.filter(CloudPlatform.platform_type_id == CloudPlatformType.id).filter(
+            CloudPlatformType.name == platform_type_name)
     try:
         result = query.all()
     except Exception as e:
@@ -37,10 +40,11 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
         db.session.add(new_platform)
         db.session.flush()
         db.session.commit()
-        return new_platform.id
+        return new_platform
         # return db.session.query(CloudPlatform).filter_by(platform_name=options['platform_name']).first()
 
     except Exception as e:
+        g.error_code = 1503
         raise Exception('Database operation exception')
 
 
@@ -59,6 +63,7 @@ def platform_update(id, ip, admin_name, admin_password, port, remarks):
             platform.remarks = remarks
         db.session.commit()
     except Exception as e:
+        g.error_code = 1522
         raise Exception('Database operation exception')
 
 
@@ -73,6 +78,7 @@ def platform_delete(id):
         db.session.delete(platform_middle)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1512
         raise Exception('Database operation exception')
 
 

@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from flask import g
+
 from app.main.base import db
 
 
@@ -22,8 +24,14 @@ def type_create(name):
     platform_type = db.platform_type.platform_type_list(name=name)
 
     if platform_type:
+        g.error_code = 1502
         raise Exception('Existing platform type', name)
-    return db.platform_type.platform_type_create(name)
+    menu = db.platform_type.platform_type_create(name)
+    data_dict = {
+        'id': menu.id,
+        'name': menu.name,
+    }
+    return [data_dict]
 
 
 def type_update(id, name=None):
@@ -34,6 +42,7 @@ def type_update(id, name=None):
     if platform:
         return db.platform_type.platform_type_update(id, name)
     else:
+        g.error_code = 1521
         raise Exception('platform type not found', id)
 
 
@@ -42,4 +51,5 @@ def type_delete(type_id):
     if platform:
         return db.platform_type.platform_type_delete(type_id)
     else:
+        g.error_code = 1511
         raise Exception('platform type not found', type_id)

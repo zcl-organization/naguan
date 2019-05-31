@@ -7,7 +7,7 @@ from flask import g
 # 获取日志列表
 def log_list(pgnum, event_request_id, task_request_id, submitter, operation_resources_id):
 
-    query = db.session.query(EventLog)
+    query = db.session.query(EventLog).order_by(EventLog.time.desc())
     if event_request_id:
         query = query.filter_by(event_request_id=event_request_id)
     if task_request_id:
@@ -44,6 +44,7 @@ def log_delete(log_id):
         db.session.delete(log_middle)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1812
         raise Exception('Database delete exception')
 
 

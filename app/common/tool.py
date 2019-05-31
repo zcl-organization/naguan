@@ -25,6 +25,7 @@ def set_return_msg(ok, data, msg, code):
 
 
 def set_return_val(ok, data, msg, code, pg=None):
+    # type: (object, object, object, object, object) -> object
     if pg:
         data = {
             'ok': ok,

@@ -8,7 +8,7 @@ from app.models import TaskLog
 
 # 获取日志列表
 def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
-    query = db.session.query(TaskLog)
+    query = db.session.query(TaskLog).order_by(TaskLog.enqueue_time.desc())
     if task_id:
         query = query.filter_by(task_id=task_id)
     if rely_task_id:
@@ -45,6 +45,7 @@ def log_delete(log_id):
         db.session.delete(log_middle)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1912
         raise Exception('Database delete exception')
 
 

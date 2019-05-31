@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from flask import g
+
 from app.main.base import db
 
 
@@ -61,7 +63,16 @@ def childer_menu_list(parent_id=0):
 # 创建菜单信息
 # def menu_create(options=None):
 def menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id):
-    return db.menu.menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id)
+    data = db.menu.menu_create(icon, url, name, identifier, is_hide, is_hide_children, important, parent_id)
+
+    menu_dict = {
+        'id': data.id,
+        'name': data.name,
+        'icon': data.icon,
+        'url': data.url,
+        'identifier': data.identifier,
+    }
+    return [menu_dict]
 
 
 # 判断是否有子菜单
@@ -79,12 +90,15 @@ def menu_delete(id=None):
             sub_menu = db.menu.children_menu_list(id)
             # print(children_menu)
             if sub_menu:
+                g.error_code = 1211
                 raise Exception('Menu deletion failed, submenu exists')
             else:
                 return db.menu.menu_delete(id)
         else:
+            g.error_code = 1212
             raise Exception('No current menu exists')
     except Exception as e:
+        g.error_code = 1213
         raise Exception(e)
 
 
@@ -97,4 +111,5 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
         # 更新用户信息
         return db.menu.menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, parent_id, important)
     else:
+        g.error_code = 1223
         raise Exception('No current menu exists')
