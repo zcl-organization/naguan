@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from flask import g
+
 from app.models import Menu
 from app.exts import db
 
@@ -143,6 +145,7 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
         db.session.commit()
         return menu.name
     except Exception as e:
+        g.error_code = 1224
         raise Exception('Database operation exception')
 
 

@@ -1,4 +1,6 @@
 # -*- coding=utf-8 -*-
+from flask import g
+
 from app.exts import db
 from app.models import RequestLog
 
@@ -32,6 +34,7 @@ def log_delete(id):
         db.session.delete(log_willdel)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1712
         raise Exception('Database delete exception')
 
 

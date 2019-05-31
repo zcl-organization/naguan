@@ -47,6 +47,7 @@ def role_create(name, description):
         db.session.commit()
         return role
     except Exception as e:
+        g.error_code = 1303
         raise Exception('Database operation exception')
 
 
@@ -62,6 +63,7 @@ def role_update(role_id, name, description):
         db.session.commit()
         return role.name
     except Exception as e:
+        g.error_code = 1323
         raise Exception('Database operation exception')
 
 

@@ -116,6 +116,7 @@ class PlatformTypeMg(Resource):
         args = parser.parse_args()
 
         if not args['name']:
+            g.error_code = 1501
             raise Exception('Please pass in the platform type name.')
 
         try:
@@ -125,7 +126,7 @@ class PlatformTypeMg(Resource):
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
                                                event=unicode('增加平台类型'), submitter=g.username)
 
-            return set_return_val(False, [], str(e), 1501), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type create succeeded.', 1500)
@@ -173,6 +174,7 @@ class PlatformTypeMg(Resource):
 
         args = parser.parse_args()
         if not args['name']:
+            g.error_code = 1523
             raise Exception('Please pass in the platform type name.')
         try:
             control.platform_type.type_update(id, args['name'])
@@ -180,7 +182,7 @@ class PlatformTypeMg(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('更新平台类型信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1521), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('更新平台类型信息'),
 
                                            submitter=g.username)
@@ -227,7 +229,7 @@ class PlatformTypeMg(Resource):
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('删除平台类型信息'), submitter=g.username)
 
-            return set_return_val(False, [], str(e), 1511), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('删除平台类型信息'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type delete succeeded.', 1510)

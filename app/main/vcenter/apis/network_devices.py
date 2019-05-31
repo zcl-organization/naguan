@@ -294,7 +294,7 @@ class NetWorkManage(Resource):
         except Exception as e:
             # print(e)
 
-            return set_return_val(False, [], str(e), 2211), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)

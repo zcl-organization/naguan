@@ -129,6 +129,7 @@ class RoleManage(Resource):
         args = parser.parse_args()
 
         if not all([args['name'], args['description']]):
+            g.error_code = 1301
             raise Exception('Parameter error')
         try:
             role = control.role.role_create(name=args['name'], description=args['description'])
@@ -137,7 +138,7 @@ class RoleManage(Resource):
             control.event_logs.eventlog_create(type='role', result=False, resources_id='',
                                                event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
 
-            return set_return_val(False, [], str(e), 1301), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='role', result=True, resources_id=id,
                                            event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'The role information is created successfully.', 1300)
@@ -192,7 +193,7 @@ class RoleManage(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='role', result=False, resources_id=id,
                                                event=unicode('更新角色信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1321), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='role', result=True, resources_id=id, event=unicode('更新角色:%s' % name),
                                            submitter=g.username)
         return set_return_val(True, [], 'Role information updated successfully', 1320)
@@ -237,7 +238,7 @@ class RoleManage(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='role', result=False, resources_id=id,
                                                event=unicode('删除角色信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1311), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='role', result=True, resources_id=id, event=unicode('删除角色:%s' % name),
                                            submitter=g.username)
         return set_return_val(True, [], 'The role information was deleted successfully.', 1310)

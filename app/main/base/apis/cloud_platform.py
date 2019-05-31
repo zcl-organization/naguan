@@ -183,6 +183,7 @@ class CloudPlatformManage(Resource):
         args = parser.parse_args()
         if not all([args['platform_type_id'], args['platform_name'], args['admin_name'], args['admin_password'],
                     args['ip']]):
+            g.error_code = 1501
             raise Exception('Parameter error')
         try:
             platform = control.cloud_platform.platform_create(platform_type_id=args['platform_type_id'],
@@ -194,7 +195,7 @@ class CloudPlatformManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id='',
                                                event=unicode('新增云平台信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1501), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=platform[0]['id'],
                                            event=unicode('新增云平台信息'), submitter=g.username)
         return set_return_val(True, platform, str('The platform information was created successfully.'), 1500)
@@ -257,7 +258,7 @@ class CloudPlatformManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id=id,
                                                event=unicode('更新云平台信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1521), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('更新云平台信息')
                                            , submitter=g.username)
         return set_return_val(True, [], str('The platform information was updated successfully.'), 1520)
@@ -303,7 +304,7 @@ class CloudPlatformManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id=id,
                                                event=unicode('删除云平台信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1511), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=id, event=unicode('删除云平台信息')
                                            , submitter=g.username)
         return set_return_val(True, [], str('The platform information was deleted successfully.'), 1510)

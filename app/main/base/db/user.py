@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import datetime
 
+from flask import g
+
 from app.models import Users
 from app.exts import db
 
@@ -24,6 +26,7 @@ def user_list(user_id, email, mobile, name, remarks, next_page, limit):
 
         result = query.items
     except Exception as e:
+        g.error_code = 1132
         raise Exception('Database query is abnormal')
 
     pg = {
@@ -92,6 +95,7 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
         db.session.commit()
         return newuser
     except Exception, e:
+        g.error_code = 1104
         raise Exception('User information creation failed')
 
 
@@ -107,6 +111,7 @@ def user_delete(id=None):
         db.session.commit()
         return username
     except Exception as e:
+        g.error_code = 1112
         raise Exception('User information delete failed')
 
 
@@ -142,6 +147,7 @@ def user_update(id, active, username, password, mobile, company, department, rem
         db.session.commit()
         return user.username
     except Exception as e:
+        g.error_code = 1124
         raise Exception('Database update exception')
 
 

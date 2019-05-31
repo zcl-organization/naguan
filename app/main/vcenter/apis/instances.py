@@ -40,7 +40,7 @@ parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def post(self):
         """
          操作 vm 信息
@@ -161,51 +161,60 @@ class InstanceManage(Resource):
             if args['action'] == 'start':
                 data['event'] = unicode('开启虚拟机')
                 instance.start()
+                g.error_code = 2040
 
             elif args['action'] == 'stop':
                 data['event'] = unicode('关闭虚拟机')
                 instance.stop()
+                g.error_code = 2042
 
             elif args['action'] == 'suspend':
                 data['event'] = unicode('挂起虚拟机')
                 instance.suspend()
+                g.error_code = 2044
 
             elif args['action'] == 'restart':
-                data['event'] = unicode('重置虚拟机')
+                data['event'] = unicode('重启虚拟机')
                 instance.restart()
+                g.error_code = 2046
 
             elif args['action'] == 'create':
                 data['event'] = unicode('创建虚拟机')
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
                               ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['networks'],
                               disks=args['disks'], image_id=args['image_id'])
+                g.error_code = 2000
 
             elif args['action'] == 'clone':
                 data['event'] = unicode('克隆虚拟机')
                 instance.clone(new_vm_name=args['vm_name'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                resourcepool=args['resourcepool'])
+                g.error_code = 2050
 
             elif args['action'] == 'cold_migrate':
-                data['event'] = unicode('虚拟机转化模板')
+                data['event'] = unicode('虚拟机冷迁移')
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
+                g.error_code = 2060
 
             elif args['action'] == 'ip_assignment':
                 data['event'] = unicode('虚拟机分配ip地址')
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
+                g.error_code = 2070
 
             else:
                 data['result'] = False
+                g.error_code = 2009
                 raise Exception('Parameter error')
         except Exception as e:
 
             data['result'] = False
-            return set_return_val(False, [], str(e), 2001), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'instance action success.', 2000)
+        return set_return_val(True, [], 'instance action success.', g.error_code)
 
 
     # 获取 instance 列表
@@ -568,7 +577,7 @@ class InstanceManage(Resource):
 
         except Exception as e:
 
-            return set_return_val(False, [], str(e), 2021), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)

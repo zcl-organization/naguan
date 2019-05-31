@@ -156,5 +156,5 @@ class LogTask(Resource):
         try:
             control.task_logs.log_delete(id)
         except Exception as e:
-            return set_return_val(False, [], str(e), 1911), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         return set_return_val(True, [], 'request log deleted succeeded.', 1910)

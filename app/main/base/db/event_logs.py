@@ -44,6 +44,7 @@ def log_delete(log_id):
         db.session.delete(log_middle)
         db.session.commit()
     except Exception as e:
+        g.error_code = 1812
         raise Exception('Database delete exception')
 
 
