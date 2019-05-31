@@ -203,7 +203,7 @@ class UserManage(Resource):
             data, pg = control.user.user_list(user_id=args['id'], email=args['email'], mobile=args['mobile'],
                                               name=args['name'], remarks=args['remarks'], next_page=pgnum, limit=limit)
         except Exception as e:
-            return set_return_val(True, [], 'Failed to get user information', 1101), 400
+            return set_return_val(True, [], 'Failed to get user information', g.error_code), 400
 
         return set_return_val(True, data, 'Successfully obtained user information', 1130, pg)
 
@@ -330,13 +330,13 @@ class UserManage(Resource):
         except ExistsException as e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id='',
                                                event=unicode('创建新用户：已存在'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1102), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
 
         except Exception as e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id='',
                                                event=unicode('创建新用户'), submitter=g.username)
 
-            return set_return_val(False, [], str(e), 1103), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('创建新用户:%s' % args['username']), submitter=g.username)
         return set_return_val(True, [], 'User created successfully', 1100)
@@ -405,21 +405,18 @@ class UserManage(Resource):
         if args['active']:
             if int(args['active']) not in [1, 2]:
                 return set_return_val(False, [], str('Please pass in the correct parameters. 1 is True and 2 is False'),
-<<<<<<< HEAD
                                       1121), 400
         if args['active'] or args['password']:
             pass
         else:
             return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
                                   1122), 400
-=======
-                                      1001), 400
+
         # if args['active'] or args['password']:
         #     pass
         # else:
         #     return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
         #                           1001), 400
->>>>>>> develop_zcl
         try:
 
             username = control.user.user_update(id=id, active=args['active'], username=args['username'],
@@ -430,7 +427,7 @@ class UserManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='user', result=False, resources_id=id,
                                                event=unicode('更新用户'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1123), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('更新用户:%s' % username), submitter=g.username)
         return set_return_val(True, [], 'User update successfully', 1120)
@@ -476,7 +473,7 @@ class UserManage(Resource):
         except Exception, e:
             control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                                event=unicode('删除用户'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1101), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('删除用户:%s' % username), submitter=g.username)
         return set_return_val(True, [], 'User delete successfully', 1110)

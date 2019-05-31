@@ -235,6 +235,7 @@ class DiskManage(Resource):
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if not args['disks']:
+                g.error_code = 2101
                 raise Exception('Parameter error')
             instance.add_disk(disks=args['disks'])
 
@@ -243,14 +244,12 @@ class DiskManage(Resource):
                                   event=unicode('创建磁盘，类型：%s，大小： %s'
                                                 % (disk.get('type'), disk.get('size'))),
                                   submitter=g.username))
-
         except Exception as e:
-
             datas.append(dict(
                 type='vm_disk', result=False, resources_id=args.get('vm_uuid'), event=unicode('创建磁盘'),
                 submitter=g.username
             ))
-            return set_return_val(False, [], str(e), 2101), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             [base_control.event_logs.eventlog_create(**item) for item in datas]
         return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
@@ -329,12 +328,13 @@ class DiskManage(Resource):
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
 
             if not args['disks']:
+                g.error_code = 2111
                 raise Exception('Parameter error')
             instance.delete_disk(disks=args['disks'])
             data['result'] = True
         except Exception as e:
 
-            return set_return_val(False, [], str(e), 2111), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)

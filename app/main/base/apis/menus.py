@@ -216,12 +216,12 @@ class MenuManage(Resource):
         try:
             # 验证is_hide合法性
             if int(args['is_hide']) not in [1, 2]:
-                g.error_code = 1001
+                g.error_code = 1201
                 raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
             # 验证 is_hide_children 合法性
             if int(args['is_hide_children']) not in [1, 2]:
-                g.error_code = 1002
+                g.error_code = 1202
                 raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
             menu = control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
@@ -278,7 +278,7 @@ class MenuManage(Resource):
         except Exception as e:
             control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
                                                event=unicode('删除菜单信息'), submitter=g.username)
-            return set_return_val(False, [], str(e), 1211), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('删除菜单:%s' % name),
                                            submitter=g.username)
         return set_return_val(False, [], 'Menu deletion successfully', 1210)

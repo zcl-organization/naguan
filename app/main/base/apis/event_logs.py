@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
@@ -141,5 +142,5 @@ class LogEvent(Resource):
         try:
             result = control.event_logs.log_delete(log_id=id)
         except Exception as e:
-            return set_return_val(False, [], str(e), 1811), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         return set_return_val(True, [], 'request log deleted succeeded.', 1810)

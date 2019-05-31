@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from flask import g
 
 from app.main.vcenter.control.utils import get_mor_name, wait_for_tasks, get_obj, get_connect, validate_input
 from app.main.vcenter.control.disks import sync_disk
@@ -65,6 +66,7 @@ class Instance(object):
             wait_for_tasks(self.si, [task])
             self.update_vm_local()
         except Exception as e:
+            g.error_code = 2041
             raise Exception('vm start failed')
 
     # 关机
@@ -78,6 +80,7 @@ class Instance(object):
                 wait_for_tasks(self.si, [task])
             self.update_vm_local()
         except Exception as e:
+            g.error_code = 2043
             raise Exception('vm stop failed')
 
     # 暂停
@@ -92,6 +95,7 @@ class Instance(object):
                 wait_for_tasks(self.si, [task])
             self.update_vm_local()
         except Exception as e:
+            g.error_code = 2045
             raise Exception('vm suspend failed')
 
     # 重启
@@ -189,10 +193,12 @@ class Instance(object):
                             task = self.vm.ReconfigVM_Task(spec=spec)
                             wait_for_tasks(self.si, [task])
                 else:
+                    g.error_code = 2211
                     raise Exception('unable find vm network device')
             # 同步云主机网卡信息
             sync_network_device(self.platform_id, self.vm)
         except Exception as e:
+            g.error_code = 221
             Exception('vm network delete failed')
 
     # 更新cpu信息
@@ -208,6 +214,7 @@ class Instance(object):
             # else:
             #     raise Exception('参数错误')
         except Exception as e:
+            g.error_code = 2021
             raise Exception('vm cpu update failed')
 
     # 更新内存信息
@@ -223,6 +230,7 @@ class Instance(object):
             # else:
             #     raise Exception('参数错误')
         except Exception as e:
+            g.error_code = 2022
             raise Exception('vm memory update failed')
 
     # 创建云主机
@@ -233,10 +241,13 @@ class Instance(object):
                 new_disks = json.loads(disks)
                 for disk in new_disks:
                     if not disk.get('type'):
+                        g.error_code = 2001
                         raise Exception('The disk information format is incorrect.')
                     if not disk.get('size'):
+                        g.error_code = 2002
                         raise Exception('The disk information format is incorrect.')
         except Exception as e:
+            g.error_code = 2003
             raise Exception('The disk information format is incorrect.')
 
         try:
@@ -244,6 +255,7 @@ class Instance(object):
             dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
             dc = get_obj(self.content, [vim.Datacenter], dc_info.name)
         except Exception as e:
+            g.error_code = 2004
             raise Exception('dc get failed')
 
         vm_folder = dc.vmFolder
@@ -277,6 +289,7 @@ class Instance(object):
             self.vm = vm
             self.update_vm_local()
         except Exception as e:
+            g.error_code = 2005
             raise Exception('task to create failed')
         try:
             # 获取vm 并为vm 添加network
@@ -284,17 +297,20 @@ class Instance(object):
             if networks:
                 self.add_network(networks)
         except Exception as e:
+            g.error_code = 2006
             raise Exception('vm network attach failed')
         try:
             if disks:
                 self.add_disk(disks)
         except Exception as e:
+            g.error_code = 2007
             raise Exception('vm disk attach failed')
         try:
             if image_id:
                 self.add_image(image_id)
             # vm_add_network(self.platform_id, vm.summary.config.uuid, networks, vm)
         except Exception as e:
+            g.error_code = 2008
             raise Exception('vm image attach failed')
 
     # 获取云主机列表
@@ -421,6 +437,7 @@ class Instance(object):
             disk_size = disk.get('size')
             disk_type = disk.get('type')
             if not all([disk_size, disk_type]):
+                g.error_code = 2102
                 raise Exception('parameter error')
 
             spec = vim.vm.ConfigSpec()
@@ -434,6 +451,7 @@ class Instance(object):
                         unit_number += 1
                     if unit_number >= 16:
                         print "we don't support this many disks"
+                        g.error_code = 2103
                         raise Exception("we don't support this many disks")
                 if isinstance(dev, vim.vm.device.VirtualSCSIController):
                     controller = dev
@@ -479,6 +497,7 @@ class Instance(object):
             # hdd_prefix_label = get_hdd_prefix_label(language)
 
             if not hdd_prefix_label:
+                g.error_code = 2112
                 raise RuntimeError('Hdd prefix label could not be found')
 
             # hdd_label = hdd_prefix_label + str(disk_number)
@@ -491,6 +510,7 @@ class Instance(object):
                         and dev.deviceInfo.label == hdd_prefix_label:
                     virtual_hdd_device = dev
             if not virtual_hdd_device:
+                g.error_code = 2113
                 raise RuntimeError('Virtual {} could not '
                                    'be found.'.format(virtual_hdd_device))
 
@@ -582,7 +602,8 @@ class Instance(object):
         snapshots = self.vm.snapshot.rootSnapshotList
         snapshot_db = snapshot_nanage.get_snapshot_by_snapshot_id(self.vm, snapshot_id)
 
-        if snapshot_db:
+        if not snapshot_db:
+            g.error_code = 2304
             raise Exception('unable get snapshot info ')
 
         snapshot_name = snapshot_db.name
@@ -603,8 +624,10 @@ class Instance(object):
                         task = snap_obj.snapshot.RevertToSnapshot_Task()
                         wait_for_tasks(self.si, [task])
                     else:
+                        g.error_code = 2304
                         raise Exception('unable to find snapshot,revert failed')
                 else:
+                    g.error_code = 2304
                     raise Exception('unable to find snapshot,revert failed')
 
     def clone(self, new_vm_name, ds_id, dc_id=None, resourcepool=None):
@@ -613,6 +636,7 @@ class Instance(object):
             ds = db.datastores.get_ds_by_id(ds_id)
             dc = db.vcenter.vcenter_tree_by_id(dc_id)
         except Exception as e:
+            g.error_code = 2051
             raise Exception('Unable to get DataStore or DataCenter')
         if dc:
             datacenter = get_obj(self.content, [vim.Datacenter], validate_input(dc.name))
@@ -629,8 +653,10 @@ class Instance(object):
                 # print "Using datastore " + validate_input(ds)
                 relospec.datastore = datastore
             else:
+                g.error_code = 2052
                 raise Exception('Unable to get DataStore')
         else:
+            g.error_code = 2052
             raise Exception('Unable to get DataStore')
         if resourcepool:
             resource_pool = get_obj(self.content, [vim.ResourcePool], validate_input(resourcepool))
@@ -650,6 +676,7 @@ class Instance(object):
         template = get_obj(self.content, [vim.VirtualMachine], validate_input(template))
         if not template:
             # print "VM or template not found"
+            g.error_code = 2053
             raise Exception('VM or template not found')
         try:
             task = template.Clone(folder=vmfolder, name=validate_input(new_vm_name),
@@ -658,6 +685,7 @@ class Instance(object):
             wait_for_tasks(self.si, [task])
 
         except Exception as e:
+            g.error_code = 2054
             raise Exception('Perform a clone operation error')
 
     def cold_migrate(self, host_name=None, ds_id=None, dc_id=None, resourcepool=None):
@@ -668,6 +696,7 @@ class Instance(object):
             ds = db.datastores.get_ds_by_id(ds_id)
             dc = db.vcenter.vcenter_tree_by_id(dc_id)
         except Exception as e:
+            g.error_code = 2061
             raise Exception('Unable to get DataStore or DataCenter')
         if dc:
             datacenter = get_obj(self.content, [vim.Datacenter], validate_input(dc.name))
@@ -691,8 +720,10 @@ class Instance(object):
                 # print "Using datastore " + validate_input(ds)
                 relospec.datastore = datastore
             else:
+                g.error_code = 2062
                 raise Exception('Unable to get DataStore')
         else:
+            g.error_code = 2062
             raise Exception('Unable to get DataStore')
         if resourcepool:
             resource_pool = get_obj(self.content, [vim.ResourcePool], validate_input(resourcepool))
@@ -755,6 +786,7 @@ class Instance(object):
             print "Successfully cold migrated"
 
         except Exception as e:
+            g.error_code = 2063
             raise Exception('cold migrate failed')
 
     def ip_assignment(self, ip, subnet, gateway, dns, domain=None):
@@ -763,6 +795,7 @@ class Instance(object):
             vm = self.vm
             vm_name = vm.summary.config.name
             if vm.runtime.powerState != 'poweredOff':
+                g.error_code = 2071
                 raise Exception('Power off your VM before reconfigure')
 
             adaptermap = vim.vm.customization.AdapterMapping()
@@ -778,7 +811,7 @@ class Instance(object):
                 domain = 'kaopuyun.com'
             adaptermap.adapter.dnsDomain = domain
 
-            globalip = vim.vm.customization.GlobalIPSettings()
+            # globalip = vim.vm.customization.GlobalIPSettings()
             # For Linux . For windows follow sysprep
             ident = vim.vm.customization.LinuxPrep(domain=domain,
                                                    hostName=vim.vm.customization.FixedName(name=vm_name))
@@ -800,9 +833,11 @@ class Instance(object):
 
         except vmodl.MethodFault, e:
             # print "Caught vmodl fault: %s" % e.msg
+            g.error_code = 2071
             raise Exception('Caught vmodl fault: %s' % e.msg)
         except Exception, e:
             print "Caught exception: %s" % str(e)
+            g.error_code = 2072
             raise Exception('Caught exception fault: %s' % str(e))
 
 

@@ -1,6 +1,8 @@
 # -*- coding=utf-8 -*-
 import os
 
+from flask import g
+
 from app.main.base import db
 from config import UPLOAD_DIR
 
@@ -8,6 +10,7 @@ from config import UPLOAD_DIR
 def system_config_list():
     system = db.system.system_config_list()
     if not system:
+        g.error_code = 1631
         raise Exception('System information is not configured')
     data = [{
         'id': system.id,
@@ -23,10 +26,9 @@ def system_config_list():
 def system_config_update(platform_name, version_information, copyright, user_authentication_mode, debug):
     system = db.system.system_config_list()
     if system:
-
         db.system.system_config_update(platform_name, version_information, copyright, user_authentication_mode, debug)
-
     else:
+        g.error_code = 1611
         raise Exception('System information is not configured')
 
 
@@ -45,6 +47,7 @@ def system_config_update_logo(logo):
 
     system = db.system.system_config_list()
     if not system:
+        g.error_code = 1621
         raise Exception('System information is not configured')
 
     logo.save(logo_path)

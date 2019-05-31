@@ -240,7 +240,7 @@ class SnapshotManage(Resource):
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['action'] == 'create':
                 if not args['snapshot_name']:
-                    g.error_code = 2302
+                    g.error_code = 2301
                     raise Exception('Parameter error')
                 instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
                 g.error_code = 2300
@@ -248,14 +248,15 @@ class SnapshotManage(Resource):
                 data['result'] = True
             elif args['action'] == 'revert':
                 if not args['snapshot_id']:
+                    g.error_code = 2303
                     raise Exception('Parameter error')
 
                 instance.snapshot_revert(snapshot_id=args['snapshot_id'])
-                g.error_code = 2301
+                g.error_code = 2302
                 data['event'] = unicode('恢复快照')
                 data['result'] = True
             else:
-                g.error_code = 2303
+                g.error_code = 2305
                 raise Exception('Parameter error')
         except Exception as e:
             # print(e)
