@@ -40,7 +40,7 @@ parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def post(self):
         """
          操作 vm 信息

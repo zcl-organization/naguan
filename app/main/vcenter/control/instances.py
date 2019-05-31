@@ -194,17 +194,23 @@ class Instance(object):
             raise Exception('Task To Create Failed')
         
         if networks:
-            if not self.add_network(networks):
+            try:
+                self.add_network(networks)
+            except Exception as e:
                 g.error_code = 2006
                 raise Exception('vm network attach failed')
 
         if disks:
-            if not self.add_disk(disks):
+            try:
+                self.add_disk(disks)
+            except Exception as e:
                 g.error_code = 2007
                 raise Exception('vm disk attach failed')
         
         if image_id:
-            if not self.add_image(image_id):
+            try:
+                self.add_image(image_id)
+            except Exception as e:
                 g.error_code = 2008
                 raise Exception('vm image attach failed')
 
@@ -219,7 +225,8 @@ class Instance(object):
             local_network_port_group = network_port_group_manage.get_network_by_id(network)
 
             # TODO 创建单个网卡失败后要做什么
-            self._vm_device_info_manager.add_network(local_network_port_group.name)
+            if not self._vm_device_info_manager.add_network(local_network_port_group.name):
+                raise Exception('Add Network Failed')
 
         # 同步云主机网卡信息
         sync_network_device(self.platform_id, self.vm)
