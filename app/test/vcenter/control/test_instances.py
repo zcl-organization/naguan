@@ -9,6 +9,7 @@ from app.main.vcenter.control.instances import Instance
 from manage import app
 from app.main.base.control import cloud_platform
 from app.main.vcenter.control import disks as disk_manage
+from app.main.vcenter.control import network_devices as network_device_manage
 
 create_info = {
     'new_cpu': '1',
@@ -29,14 +30,18 @@ snapshot_info = {
 }
 
 ip_info  = {
-    'ip': '192,168.12.110',
-    'subnet': '192.168.12.255',
+    'ip': '192.168.12.123',
+    'subnet': '255.255.255.0',
     'gateway': '192.168.12.1',
     'dns': '8.8.8.8'
 }
+clone_name = "unit_test2"
 
 class disk_info:
     label = 'Hard disk 1'
+
+class network_info:
+    label = 'Network adapter 1'
 
 
 def get_obj(content, vimtype, name):
@@ -80,13 +85,15 @@ class TestIntance(unittest.TestCase):
 
     def test_011_start(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
         self._uti.start()
         self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOn')
         WaitForTask(self._uti.vm.PowerOff())
 
-    def test_012_stop(self):
+    def test_014_stop(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
         if self._uti.vm.runtime.powerState == 'poweredOff':
             WaitForTask(self._uti.vm.PowerOn())
@@ -94,8 +101,9 @@ class TestIntance(unittest.TestCase):
         self._uti.stop()
         self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOff')
 
-    def test_013_suspend(self):
+    def test_012_suspend(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
         if self._uti.vm.runtime.powerState == 'poweredOff':
             WaitForTask(self._uti.vm.PowerOn())
@@ -104,8 +112,9 @@ class TestIntance(unittest.TestCase):
         self.assertEqual(self._uti.vm.runtime.powerState, 'suspended')
         WaitForTask(self._uti.vm.PowerOff())
  
-    def test_014_restart(self):
+    def test_013_restart(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
         
         if self._uti.vm.runtime.powerState not in ['poweredOn',]:
             WaitForTask(self._uti.vm.PowerOn())
@@ -116,19 +125,23 @@ class TestIntance(unittest.TestCase):
     
     def test_015_update_vcpu(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        print self._uti.vm.config.hardware.numCPU
+        self._uti._set_vm(self._uti.vm)
+
         new_cpu = int(self._uti.vm.config.hardware.numCPU) + 1
         self._uti.update_vcpu(new_cpu, self._uti.vm.config.hardware.numCPU)
         self.assertEqual(int(self._uti.vm.config.hardware.numCPU), new_cpu)
     
     def test_016_update_vmemory(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
+
         new_mem = int(self._uti.vm.config.hardware.memoryMB) + 512
         self._uti.update_vmemory(new_mem, self._uti.vm.config.hardware.memoryMB)
         self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem)
 
     def test_017_add_network(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
         
         old_network_info, new_network_info = None, None
         for item in self._uti.vm.config.hardware.device:
@@ -146,6 +159,8 @@ class TestIntance(unittest.TestCase):
 
     def test_018_del_network(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
+        network_device_manage.device_list_by_id = Mock(return_value=network_info())
 
         old_network_info, new_network_info = None, None
         for item in self._uti.vm.config.hardware.device:
@@ -163,6 +178,7 @@ class TestIntance(unittest.TestCase):
 
     def test_019_add_disk(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
         old_disk_info, new_disk_info = None, None
         for item in self._uti.vm.config.hardware.device:
@@ -180,6 +196,7 @@ class TestIntance(unittest.TestCase):
     
     def test_020_delete_disk(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
         disk_manage.get_disk_by_disk_id = Mock(return_value=disk_info())
 
         old_disk_info, new_disk_info = None, None
@@ -198,6 +215,7 @@ class TestIntance(unittest.TestCase):
 
     def test_021_add_image(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
         old_image_info, new_image_info = None, None
         for item in self._uti.vm.config.hardware.device:
@@ -214,7 +232,8 @@ class TestIntance(unittest.TestCase):
         self.assertNotEqual(new_image_info, old_image_info)
 
     def test_022_add_snapshot(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        # self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name']))
 
         with app.test_request_context():
             self._uti.add_snapshot(**snapshot_info)
@@ -223,7 +242,8 @@ class TestIntance(unittest.TestCase):
         self.assertEqual(self._uti.vm.snapshot.rootSnapshotList[0].description, snapshot_info["description"])
 
     def test_023_revert_snapshot(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        # self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name']))
 
         new_mem = int(self._uti.vm.config.hardware.memoryMB) + 512
         self._uti.update_vmemory(new_mem, self._uti.vm.config.hardware.memoryMB)
@@ -235,9 +255,9 @@ class TestIntance(unittest.TestCase):
         
         self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem-512)
 
-
     def test_024_delete_snapshot(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
         delete_id = 1
         with app.test_request_context():
@@ -246,20 +266,49 @@ class TestIntance(unittest.TestCase):
         self.assertIsNone(self._uti.vm.snapshot)
 
     def test_025_clone(self):
-        pass
+        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
+
+        with app.test_request_context():
+            self._uti.clone(clone_name, 1)
+        
+        dd = get_obj(self._uti.content, [vim.VirtualMachine], clone_name)
+        self.assertEqual(dd.summary.config.name, clone_name)
+        WaitForTask(dd.Destroy())
 
     def test_026_cold_migrate(self):
-        pass
+        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
 
-    def test_027_ip_assignment(self):
-        pass
-        # self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        old_vm_name = self._uti.vm.summary.config.name
+        old_instance_uuid = self._uti.vm.summary.config.instanceUuid
 
-        # self._uti.ip_assignment(**ip_info)
-        # print self._uti.vm.config
+        with app.test_request_context():
+            self._uti.cold_migrate('192.168.12.203', 1)
+        
+        dd = get_obj(self._uti.content, [vim.VirtualMachine], old_vm_name)
+        self.assertEqual(dd.summary.config.name, old_vm_name)
+        self.assertNotEqual(dd.summary.config.instanceUuid, old_instance_uuid)
+
+    # def test_027_ip_assignment(self):
+    #     self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+    #     self._uti._set_vm(self._uti.vm)
+    #     # import time
+        
+    #     # self._uti.start()
+    #     # for item in range(5):
+    #     #     print self._uti.vm.summary
+    #     #     print "---- {} ----".format(item)
+    #     #     time.sleep(10)
+
+    #     self._uti.ip_assignment(**ip_info)
+    #     # self._uti.ip_assignment(**ip_info)
+    #     # self._uti._vm_base_manager.start()
+    #     print self._uti.vm.config
 
     def test_100_delete(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+        self._uti._set_vm(self._uti.vm)
         self._uti.delete()
     
 
