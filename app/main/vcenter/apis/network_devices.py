@@ -196,9 +196,10 @@ class NetWorkManage(Resource):
         args = parser.parse_args()
         datas = []
         try:
+            if not args['networks']:
+                raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if args['networks']:
-                instance.add_network(networks=args['networks'])
+            instance.add_network(networks=args['networks'])
             for network in json.loads(args['networks']):
                 datas.append(dict(type='vm_network', result=True, resources_id=args.get('vm_uuid'),
                                   event=unicode('添加网络，类型：%s' % network), submitter=g.username))
@@ -287,9 +288,10 @@ class NetWorkManage(Resource):
             submitter=g.username,
         )
         try:
+            if not args['networks']:
+                raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-            if args['networks']:
-                instance.del_network(networks=args['networks'])
+            instance.del_network(networks=args['networks'])
             data['result'] = True
         except Exception as e:
             # print(e)

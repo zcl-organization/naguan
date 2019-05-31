@@ -90,8 +90,7 @@ def vcenter_tree_update(tree_type, platform_id, mor_name, name=None, dc_host_fol
 
 # 根据获取所有
 def vcenter_tree_get_all_id(platform_id):
-    result = db.session.query(VCenterTree.id).filter_by(platform_id=platform_id).all()
-    return result
+    return db.session.query(VCenterTree.id).filter_by(platform_id=platform_id).all()
 
 
 # 根据id删除tree信息
@@ -104,10 +103,8 @@ def vcenter_tree_delete_by_id(id):
 
 
 def vcenter_tree_list_by_platform_id(platform_id):
-    result = db.session.query(VCenterTree).filter_by(platform_id=platform_id).all()
-    return result
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).all()
 
 
 def vcenter_tree_by_id(id):
-    result = db.session.query(VCenterTree).filter_by(id=id).first()
-    return result
+    return db.session.query(VCenterTree).filter_by(id=id).first()

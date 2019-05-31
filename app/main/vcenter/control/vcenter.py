@@ -309,7 +309,6 @@ def vcenter_tree_list(platform_id):
 
     vcenter_list = []
     if vcenter_tree:
-
         for tree in vcenter_tree:
             tree_tmp = dict()
             tree_tmp['id'] = tree.id

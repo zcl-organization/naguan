@@ -8,6 +8,8 @@ def get_image_path(image_id):
     if query:
         path = query.path
         return path
+    else:
+        return ''
 
 
 def image_list(image_id, name, ds_name):
@@ -29,8 +31,7 @@ def get_image_by_image_id(image_id):
 
 
 def get_image_by_platform_id(platform_id):
-    images = db.session.query(VCenterImage).filter_by(platform_id=platform_id).all()
-    return images
+    return db.session.query(VCenterImage).filter_by(platform_id=platform_id).all()
 
 
 def get_image_name_by_platform_id(platform_id, ds_name):

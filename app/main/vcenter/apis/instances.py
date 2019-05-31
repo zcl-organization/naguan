@@ -40,7 +40,7 @@ parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def post(self):
         """
          操作 vm 信息
@@ -162,22 +162,18 @@ class InstanceManage(Resource):
                 data['event'] = unicode('开启虚拟机')
                 instance.start()
                 g.error_code = 2040
-
             elif args['action'] == 'stop':
                 data['event'] = unicode('关闭虚拟机')
                 instance.stop()
                 g.error_code = 2042
-
             elif args['action'] == 'suspend':
                 data['event'] = unicode('挂起虚拟机')
                 instance.suspend()
                 g.error_code = 2044
-
             elif args['action'] == 'restart':
                 data['event'] = unicode('重启虚拟机')
                 instance.restart()
                 g.error_code = 2046
-
             elif args['action'] == 'create':
                 data['event'] = unicode('创建虚拟机')
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
@@ -365,15 +361,14 @@ class InstanceManage(Resource):
         try:
             instance = Instance(platform_id=args['platform_id'])
             # print(args['pgnum'])
-            pgnum = args['pgnum']
-            if not pgnum:
-                pgnum = 1  # 默认第一页
+            pgnum = args['pgnum'] if args['pgnum'] else 1
+            # if not pgnum:
+            #     pgnum = 1  # 默认第一页
             # print(args['pgsort'])
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
                                      pgsort=args['pgsort'])
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
             #                                    vm_name=args['vm_name'])
-
         except Exception as e:
             return set_return_val(False, [], str(e), 2031), 400
         return set_return_val(True, data, 'instance gets success.', 2030, pg)

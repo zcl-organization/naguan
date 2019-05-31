@@ -144,10 +144,8 @@ class DiskManage(Resource):
         try:
             if not all([args['platform_id'], args['vm_uuid']]):
                 raise Exception('Parameter error')
-            if not args['pgnum']:
-                pgnum = 1
-            else:
-                pgnum = args['pgnum']
+
+            pgnum = args['pgnum'] if args['pgnum'] else 1
             data, pg = control.disks.get_disk_by_vm_uuid(platform_id=args['platform_id'], vm_uuid=args['vm_uuid'],
                                                          pgnum=pgnum)
         except Exception as e:
@@ -233,12 +231,12 @@ class DiskManage(Resource):
         args = parser.parse_args()
         datas = []
         try:
-            instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if not args['disks']:
                 g.error_code = 2101
                 raise Exception('Parameter error')
-            instance.add_disk(disks=args['disks'])
 
+            instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
+            instance.add_disk(disks=args['disks'])
             for disk in json.loads(args['disks']):
                 datas.append(dict(type='vm_disk', result=True, resources_id=args.get('vm_uuid'),
                                   event=unicode('创建磁盘，类型：%s，大小： %s'
@@ -325,11 +323,11 @@ class DiskManage(Resource):
             submitter=g.username,
         )
         try:
-            instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
-
             if not args['disks']:
                 g.error_code = 2111
                 raise Exception('Parameter error')
+
+            instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             instance.delete_disk(disks=args['disks'])
             data['result'] = True
         except Exception as e:

@@ -34,10 +34,8 @@ def network_update(id, name, mor_name, dc_name, dc_mor_name):
 
 
 def network_list_by_id(id):
-    data = db.session.query(VCenterNetworkPortGroup).filter_by(id=id).first()
-    return data
+    return db.session.query(VCenterNetworkPortGroup).filter_by(id=id).first()
 
 
 def list_all(platform_id):
-    data = db.session.query(VCenterNetworkPortGroup).filter_by(platform_id=platform_id).all()
-    return data
+    return db.session.query(VCenterNetworkPortGroup).filter_by(platform_id=platform_id).all()
