@@ -270,7 +270,7 @@ class TestIntance(unittest.TestCase):
         self._uti._set_vm(self._uti.vm)
 
         with app.test_request_context():
-            self._uti.clone(clone_name, 1)
+            self._uti.clone(clone_name, 2, 2)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], clone_name)
         self.assertEqual(dd.summary.config.name, clone_name)
@@ -284,7 +284,7 @@ class TestIntance(unittest.TestCase):
         old_instance_uuid = self._uti.vm.summary.config.instanceUuid
 
         with app.test_request_context():
-            self._uti.cold_migrate('192.168.12.203', 1)
+            self._uti.cold_migrate('192.168.12.203', 2, 2)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], old_vm_name)
         self.assertEqual(dd.summary.config.name, old_vm_name)
