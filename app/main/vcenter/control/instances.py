@@ -180,12 +180,14 @@ class Instance(object):
             disk_data = json.loads(disks) if isinstance(disks, str) else disks
             for disk in disks:
                 if not disk.get('type') or not disk.get('size'):
-                    g.error_code = 2003
+                    g.error_code = 2001
                     raise Exception('The disk information format is incorrect.')
 
         dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
         # dc_name = dc_info.name
-
+        if not dc_info:
+            g.error_code = 2002
+            raise Exception('The dc_id error')
         if self._vm_device_info_manager.build_without_device_info(vm_name, dc_info.name, int(new_cpu), int(new_memory)):
             self._set_vm(self._vm_device_info_manager.vm)
             self.update_vm_local()
