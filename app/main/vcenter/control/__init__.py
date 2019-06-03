@@ -11,4 +11,5 @@ from app.main.vcenter.control import snapshots
 from app.main.vcenter.control import resource_pool
 from app.main.vcenter.control import ovf
 from app.main.vcenter.control import datacenters
+from app.main.vcenter.control import clusters
 

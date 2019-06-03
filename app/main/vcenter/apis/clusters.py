@@ -8,6 +8,7 @@ from app.main.vcenter import control
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
 parser.add_argument('dc_name')
+# parser.add_argument('c_name')
 
 
 class DataCenterManage(Resource):
@@ -27,11 +28,10 @@ class DataCenterManage(Resource):
     #     except Exception as e:
     #         return set_return_val(False, [], str(e), 2441), 400
     #     return set_return_val(True, data, 'Datastore gets success.', 2440)
-
     def post(self):
         args = parser.parse_args()
-        dc = control.datacenters.create_datacenter(platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
-        # control.datacenters.create_cluster(datacenter=dc, cluster_name=args.get('c_name'))
+
+        control.clusters.create_cluster(datacenter=dc, cluster_name=args.get('c_name'))
 
     def put(self):
         pass
