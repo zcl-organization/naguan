@@ -396,6 +396,7 @@ class VMDeviceInfoManager:
             virtual_disk_destory_spec = vim.vm.device.VirtualDeviceSpec()
             virtual_disk_destory_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.remove
             virtual_disk_destory_spec.device = virtual_disk_device
+            virtual_disk_destory_spec.fileOperation = vim.vm.device.VirtualDeviceSpec.FileOperation.destroy
         
             destory_spec = vim.vm.ConfigSpec()
             destory_spec.deviceChange = [virtual_disk_destory_spec]

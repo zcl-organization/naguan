@@ -48,7 +48,7 @@ class Instance(object):
         if uuid:
             self.local_vm = db.instances.list_by_uuid(self.platform_id, self.uuid)
 
-            vm = get_obj(self.content, [vim.VirtualMachine], local_vm.vm_name)
+            vm = get_obj(self.content, [vim.VirtualMachine], self.local_vm.vm_name)
             self._set_vm(vm)
         else:
             self.local_vm = None
