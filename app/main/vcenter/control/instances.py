@@ -47,8 +47,7 @@ class Instance(object):
         self._vm_device_info_manager = VMDeviceInfoManager(self.si, self.content)
         if uuid:
             self.local_vm = db.instances.list_by_uuid(self.platform_id, self.uuid)
-
-            vm = get_obj(self.content, [vim.VirtualMachine], local_vm.vm_name)
+            vm = get_obj(self.content, [vim.VirtualMachine], self.local_vm.vm_name)
             self._set_vm(vm)
         else:
             self.local_vm = None
@@ -248,7 +247,7 @@ class Instance(object):
 
             # TODO
             if not self._vm_device_info_manager.remove_network(device.label):
-                g.error_code = 221
+                g.error_code = 2212
                 raise Exception('vm network delete failed')
         
         sync_network_device(self.platform_id, self.vm)
