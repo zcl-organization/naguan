@@ -29,9 +29,13 @@ class DataCenterManage(Resource):
     #     return set_return_val(True, data, 'Datastore gets success.', 2440)
 
     def post(self):
-        args = parser.parse_args()
-        dc = control.datacenters.create_datacenter(platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
-        # control.datacenters.create_cluster(datacenter=dc, cluster_name=args.get('c_name'))
+        try:
+            args = parser.parse_args()
+            data = control.datacenters.create_datacenter(platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
+                # control.datacenters.create_cluster(datacenter=dc, cluster_name=args.get('c_name'))
+        except Exception as e:
+            return set_return_val(False, {}, 'Datacenter create fail.', 3001)
+        return set_return_val(True, data, 'Datastore create success.', 3000)
 
     def put(self):
         pass
