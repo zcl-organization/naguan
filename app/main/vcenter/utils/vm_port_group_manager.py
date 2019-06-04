@@ -4,7 +4,7 @@ from pyVim.task import WaitForTask
 
 
 class VMPortGroupManager:
-    
+
     def __init__(self, host_system):
         self._host_system = host_system
 
@@ -17,7 +17,8 @@ class VMPortGroupManager:
         port_group.spec.vswitchName = vswitch_name
         port_group.spec.name = portgroup_name
         port_group.spec.vlanId = vlan_id
-        port_group.spec.policy = vim.host.NetworkPolicy()   # TODO 优化配置
+        # TODO 配置项的优化   目前提供的能力是最为基础的配置项
+        port_group.spec.policy = vim.host.NetworkPolicy()
 
         try:
             self._host_system.configManager.networkSystem.AddPortGroup(
@@ -40,80 +41,56 @@ class VMPortGroupManager:
         return True
     
 
-if __name__ == "__main__":
-    import atexit
-    from pyVim import connect
-    from app.main.vcenter.control.utils import get_obj, connect_server
-    hostname = '192.168.12.203'
-    vswitch_name = 'vSwitch0'
-    portgroup_name = 'test_group'
-    # si, content, xx = get_connect(1)
-
-    platform = {
-        'ip': '192.168.12.205', 
-        'name': 'administrator@vsphere.local', 
-        'password': 'Aiya@2018', 
-        'port': '443'
-    }
-    s = connect_server(platform['ip'], platform['name'], platform['password'], platform['port'])
-    atexit.register(connect.Disconnect, s)
-    content = s.RetrieveContent()
+class VMDvsPortGroupManager:
     
-    # container = content.viewManager.CreateContainerView(
-    #     content.rootFolder, [vim.HostSystem], True)
-    # for c in container.view:
-    #     print c.name
+    def __init__(self, dv_switch):
+        self._dv_switch = dv_switch
 
-    hs = get_obj(content, [vim.HostSystem], hostname)
-    if hs:
-        # print hs, dir(hs)
-        # print hs.configManager, dir(hs.configManager)
-        # print hs.configManager.networkSystem, dir(hs.configManager.networkSystem)
-        # print vim.host.PortGroup.Config, dir(vim.host.PortGroup.Config())
-        vpgm = VMPortGroupManager(hs)
-        # vpgm.create_port_group(vswitch_name, portgroup_name)
-        vpgm.delete_port_group(portgroup_name)
-    else:
-        print 'No Host System!!!'
+    def create_port_group(self, portgroup_name, num_ports, portgroup_type='earlyBinding', vlan_id=0):
+        """
+        创建端口组
+        TODO 目前已知的portgroup_type类型只有earlyBinding  需要查询出更多类型  2019.06.04
+        """
+        config = vim.dvs.DistributedVirtualPortgroup.ConfigSpec()
 
-    
-# class VMDvsPortGroupManager:
+        config.name = portgroup_name
+        config.numPorts = num_ports
+        # TODO 配置项的优化   目前提供的能力是最为基础的配置项
+        config.defaultPortConfig = vim.dvs.VmwareDistributedVirtualSwitch.VmwarePortConfigPolicy()
+        config.defaultPortConfig.vlan = vim.dvs.VmwareDistributedVirtualSwitch.VlanIdSpec()
+        config.defaultPortConfig.vlan.vlanId = vlan_id
+        config.defaultPortConfig.vlan.inherited = False
+        config.defaultPortConfig.securityPolicy = vim.dvs.VmwareDistributedVirtualSwitch.SecurityPolicy()
+        teamingPolicy = vim.dvs.VmwareDistributedVirtualSwitch.UplinkPortTeamingPolicy()
+        config.defaultPortConfig.uplinkTeamingPolicy = teamingPolicy
+        config.policy = vim.dvs.VmwareDistributedVirtualSwitch.VMwarePortgroupPolicy()
+        config.type = portgroup_type
 
-#     def create_port_group(self):
-#         """
-#         1. 获取dswitch
-#         2. 配置相关项目   目前考虑基本项
-#         3. 调用dswitch的创建任务操作
-#         4. 等待任务完成并且处理异常
-#         """
+        try:
+            task = self._dv_switch.AddDVPortgroup_Task([config])
+            WaitForTask(task)
+        except Exception as e:
+            return False
 
-#         config = vim.dvs.DistributedVirtualPortgroup.ConfigSpec()
+        return True
 
-#         # Basic config
-#         config.name = self.module.params['portgroup_name']
-#         config.numPorts = self.module.params['num_ports']
+    def delete_port_group(self, portgroup_name):
+        """
+        删除端口组
+        """
+        dvs_portgroup = self._find_portgroup_by_name(portgroup_name)
 
-#         try:
-#             task = self.dv_switch.AddDVPortgroup_Task([config])
-#             changed, result = wait_for_task(task)
-#         except Exception as e:
-#             print e
-#             return False
+        try:
+            task = dvs_portgroup.Destroy_Task()
+            WaitForTask(task)
+        except Exception as e:
+            return False
 
-#         return True
+        return True
 
-#     def delete_port_group(self):
-#         """
-#         1. 获取dswitch
-#         2. 获取dswitch端口组
-#         3. 调用dswitch的删除任务操作
-#         4. 等待任务完成并且处理异常
-#         """
-#         try:
-#             task = self.dvs_portgroup.Destroy_Task()
-#             changed, result = wait_for_task(task)
-#         except Exception as e:
-#             print e
-#             return False
+    def _find_portgroup_by_name(self, portgroup_name):
+        for pg in self._dv_switch.portgroup:
+            if pg.name == portgroup_name:
+                return pg
 
-#         return True
+        raise Exception('No Find DVS PortGroup')
