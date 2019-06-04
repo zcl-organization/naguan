@@ -8,6 +8,7 @@ def get_datacenters(platform_id):
     return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(type=2)
 
 
+# 同步datacenter，存在更新，不存在创建
 def sync_datacenters(platform_id, dc_name, dc_mor, dc_host_moc, dc_vm_moc, pid):
     data_center = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
         filter_by(type=2).filter_by(mor_name=dc_mor).first()
@@ -42,3 +43,13 @@ def del_datacenter(platform_id, dc_mor):
         filter_by(type=2).filter_by(mor_name=dc_mor).first()
     db.session.delete(data_center)
     db.session.commit()
+
+
+# 根据id获取datacenter
+def get_datacenter(dc_id):
+    dc = db.session.query(VCenterTree).get(dc_id)
+    if dc.type == 2:
+        return dc
+    else:
+        return None
+

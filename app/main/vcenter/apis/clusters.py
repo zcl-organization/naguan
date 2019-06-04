@@ -7,34 +7,30 @@ from app.main.vcenter import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
-parser.add_argument('dc_name')
-# parser.add_argument('c_name')
+parser.add_argument('c_name')  # cluster_name 群集名
+parser.add_argument('dc_id')
 
 
-class DataCenterManage(Resource):
-
-    # @basic_auth.login_required
-    # def get(self):
-    #     """
-    #      获取vCenter center 信息
-    #     ---
-    #     """
-    #     args = parser.parse_args()
-    #     # test_get_ds(args['platform_id'])
-    #     try:
-    #         if not args['platform_id']:
-    #             raise Exception('Parameter error')
-    #         data = control.datastores.get_datastore_by_platform_id(args['platform_id'])
-    #     except Exception as e:
-    #         return set_return_val(False, [], str(e), 2441), 400
-    #     return set_return_val(True, data, 'Datastore gets success.', 2440)
+class ClustersManage(Resource):
     def post(self):
-        args = parser.parse_args()
+        try:
+            args = parser.parse_args()
 
-        control.clusters.create_cluster(datacenter=dc, cluster_name=args.get('c_name'))
+            data = control.clusters.create_cluster(args.get('platform_id'),
+                                                   dc_id=args.get('dc_id'), cluster_name=args.get('c_name'))
+        except Exception as e:
+            return set_return_val(False, {}, 'clusters create fail.', 3001)
+        return set_return_val(True, data, 'clusters create success.', 3000)
 
     def put(self):
         pass
 
     def delete(self):
-        pass
+        try:
+            args = parser.parse_args()
+
+            data = control.clusters.del_cluster(args.get('platform_id'),
+                                                dc_id=args.get('dc_id'), cluster_name=args.get('c_name'))
+        except Exception as e:
+            return set_return_val(False, {}, 'clusters create fail.', 3001)
+        return set_return_val(True, data, 'clusters create success.', 3000)

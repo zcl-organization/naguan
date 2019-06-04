@@ -1,4 +1,5 @@
 # -*- coding=utf-8 -*-
+from pyVim.task import WaitForTask
 from pyVmomi import vim
 from app.main.vcenter.control.instances import Instance
 from app.main.vcenter.control.utils import get_mor_name
@@ -8,15 +9,15 @@ from app.main.vcenter import db
 def create_datacenter(platform_id, dc_name, folder=None):
     instance = Instance(platform_id)
     si, content, platform = instance.si, instance.content, instance.platform
-
-    if len(dc_name) > 79:
+    # import pdb
+    # pdb.set_trace()
+    if len(dc_name) > 80:
         raise ValueError("The name of the datacenter must be under "
                          "80 characters.")
     if folder is None:
         folder = si.content.rootFolder
     if folder is not None and isinstance(folder, vim.Folder):
-        dc_moref = folder.CreateDatacenter(name=dc_name)
-
+        folder.CreateDatacenter(name=dc_name)
     else:
         raise Exception('Failed to create datacenter')
     try:
@@ -46,3 +47,26 @@ def create_datacenter(platform_id, dc_name, folder=None):
         return dc_name
     except Exception as e:
         pass
+
+
+# 根据id获取datacenter
+def get_dc(platform_id, dc_id):
+    instance = Instance(platform_id)
+    si, content = instance.si, instance.content
+    local_dc = db.datacenters.get_datacenter(dc_id)
+    datacenters = content.rootFolder.childEntity
+    for dc in datacenters:
+        dc_mor = get_mor_name(dc)
+        if dc_mor == local_dc.mor_name:
+            return dc
+
+
+def del_datacenter(platform_id, dc_id):
+    dc = get_dc(platform_id, dc_id)
+    dc_mor = get_mor_name(dc)
+    # 任务销毁并等待
+    task = dc.Destroy_Task()
+    WaitForTask(task)
+    # 删除本地数据库
+    db.datacenters.del_datacenter(platform_id, dc_mor)
+

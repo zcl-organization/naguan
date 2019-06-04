@@ -17,6 +17,7 @@ from app.main.base.apis.task_logs import LogTask
 
 from app.main.base.apis.role import RoleManage
 from app.main.base.apis.roles_users import RolesUsersManage
+from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
 
 from app.main.vcenter.apis.instances import InstanceManage
@@ -132,6 +133,8 @@ api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET']
 # vCenter DataCenter
 api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST', 'DELETE'],
                  endpoint='DataCenterMg')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST', 'DELETE'],
+                 endpoint='ClustersManage')
 
 # vCenter disk
 api.add_resource(DiskManage, '/api/v1.0/vCenter/disk', methods=['GET', 'POST', 'DELETE'], endpoint='DiskMg')
