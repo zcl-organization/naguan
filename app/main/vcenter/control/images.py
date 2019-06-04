@@ -7,8 +7,8 @@ from pyVmomi import vim
 from app.main.vcenter.control.utils import get_mor_name
 
 
-def images_list(image_id, name, ds_name):
-    images = db.images.image_list(image_id, name, ds_name)
+def images_list(image_id, name, ds_name, pgnum):
+    images, pg = db.images.image_list(image_id, name, ds_name, pgnum)
     image_list = []
     for image in images:
         data = {
@@ -22,7 +22,7 @@ def images_list(image_id, name, ds_name):
             'last_change_time': image.last_change_time,
         }
         image_list.append(data)
-    return image_list
+    return image_list, pg
 
 
 def match_files(ds, pattern):
@@ -57,7 +57,6 @@ def match_files(ds, pattern):
 
 
 def sync_image(platform, ds):
-
     image_list_match = match_files(ds, '*.iso')
     image_lists = db.images.get_image_name_by_platform_id(platform['id'], ds.name)
 
@@ -83,4 +82,3 @@ def sync_image(platform, ds):
     if image_list_db:
         for image_name in image_list_db:
             db.images.delete_image_by_image_name(image_name)
-

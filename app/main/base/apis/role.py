@@ -4,7 +4,6 @@ from flask_restful import Resource, reqparse
 
 from auth import basic_auth
 from app.common.tool import set_return_val
-from app.main.base.control.role import role_list, role_create, role_update, role_delete
 from app.main.base import control
 
 parser = reqparse.RequestParser()
@@ -138,10 +137,9 @@ class RoleManage(Resource):
                                                event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
 
             return set_return_val(False, [], str(e), 1301), 400
-        control.event_logs.eventlog_create(type='role', result=True, resources_id=id,
+        control.event_logs.eventlog_create(type='role', result=True, resources_id=role[0]['id'],
                                            event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'The role information is created successfully.', 1300)
-
 
     @basic_auth.login_required
     def put(self, id):
@@ -233,11 +231,12 @@ class RoleManage(Resource):
                     properties:
           """
         try:
-            name = control.role.role_delete(id)
+            role = control.role.role_delete(id)
         except Exception as e:
             control.event_logs.eventlog_create(type='role', result=False, resources_id=id,
-                                               event=unicode('删除角色信息'), submitter=g.username)
+                                               event=unicode('删除角色信息失败'), submitter=g.username)
             return set_return_val(False, [], str(e), 1311), 400
-        control.event_logs.eventlog_create(type='role', result=True, resources_id=id, event=unicode('删除角色:%s' % name),
+        control.event_logs.eventlog_create(type='role', result=True, resources_id=id,
+                                           event=unicode('删除角色:%s' % role.name),
                                            submitter=g.username)
         return set_return_val(True, [], 'The role information was deleted successfully.', 1310)

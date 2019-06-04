@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 
 from flask_restful import Resource, reqparse
+from flask_security import roles_accepted
 
 from app.common.tool import set_return_val
 from app.main.base import control
+from app.main.base.apis import roles_un_permission
 from auth import basic_auth
 from flask import g
 
@@ -23,7 +25,7 @@ parser.add_argument('all')
 
 
 class MenuManage(Resource):
-    # @roles_accepted('admin', 'user')
+    # @roles_accepted('admin')
     @basic_auth.login_required
     def get(self):
         """
@@ -127,7 +129,8 @@ class MenuManage(Resource):
         #                                    submitter=g.username)
         return set_return_val(True, data, 'Get menu success', 1230)
 
-
+    @roles_un_permission('unauthorized')
+    @roles_accepted('admin')
     @basic_auth.login_required
     def post(self):
         """
@@ -233,11 +236,11 @@ class MenuManage(Resource):
             control.event_logs.eventlog_create(type='menu', result=False, resources_id='',
                                                event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
-        control.event_logs.eventlog_create(type='menu', result=True, resources_id=id,
+        control.event_logs.eventlog_create(type='menu', result=True, resources_id=menu[0]['id'],
                                            event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
         return set_return_val(True, [], 'Create menu successfully', 1200)
 
-
+    @roles_un_permission('unauthorized')
     @basic_auth.login_required
     def delete(self, id):
         """
@@ -283,7 +286,7 @@ class MenuManage(Resource):
                                            submitter=g.username)
         return set_return_val(False, [], 'Menu deletion successfully', 1210)
 
-
+    @roles_un_permission('unauthorized')
     @basic_auth.login_required
     def put(self, id):
         """

@@ -119,14 +119,14 @@ class PlatformTypeMg(Resource):
             raise Exception('Please pass in the platform type name.')
 
         try:
-            menu = control.platform_type.type_create(name=args['name'])
+            platform_type = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
                                                event=unicode('增加平台类型'), submitter=g.username)
 
             return set_return_val(False, [], str(e), 1501), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=platform_type[0]['id'], event=unicode('增加平台类型'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type create succeeded.', 1500)
 

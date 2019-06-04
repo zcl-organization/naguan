@@ -11,13 +11,11 @@ from app.main.vcenter.control.instances import Instance
 from app.main.base import control as base_control
 from app.main.base.apis.auth import basic_auth
 
-
 parser = reqparse.RequestParser()
 
 parser.add_argument('platform_id')  # 云主机ID
 parser.add_argument('vm_uuid')  # 虚拟机uuid
 parser.add_argument('networks')
-
 
 
 class NetWorkManage(Resource):

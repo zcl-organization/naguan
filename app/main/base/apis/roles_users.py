@@ -38,6 +38,10 @@ class RolesUsersManage(Resource):
            name: role_name
            type: string
            description: 角色名
+         - in: query
+           name: role_id
+           type: string
+           description: 角色id
        responses:
            200:
             description: 获取用户角色信息
@@ -75,11 +79,10 @@ class RolesUsersManage(Resource):
         try:
 
             args = parser.parse_args()
-            # user_name = args.get('user_name')
-            # role_name = args.get('role_name')
+
             # 获取所有用户角色权限 列表
             # data = role_user_manage.role_user_list(args['user_name'], args['role_name'])
-            data = control.roles_users.role_user_list(args['user_name'], args['role_name'])
+            data = control.roles_users.role_user_list(args['user_name'], args['role_name'], args['role_id'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 1431), 400
         return set_return_val(True, data, '获取列表成功', 1430)

@@ -322,7 +322,7 @@ class UserManage(Resource):
             user = control.user.user_create(username=args['username'], password=args['password'], email=args['email'],
                                             first_name=args['first_name'], uid=1, mobile=args['mobile'],
                                             department=args['department'], job='it', location='location',
-                                            company=args['company'], sex=int(sex), uac='uac', active=active,
+                                            company=args['company'], sex=int(sex), uac=1, active=active,
                                             is_superuser=is_superuser, remarks=args['remarks'], current_login_ip=g.ip)
 
 
@@ -337,10 +337,9 @@ class UserManage(Resource):
                                                event=unicode('创建新用户'), submitter=g.username)
 
             return set_return_val(False, [], str(e), 1103), 400
-        control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
+        control.event_logs.eventlog_create(type='user', result=True, resources_id=user[0]['id'],
                                            event=unicode('创建新用户:%s' % args['username']), submitter=g.username)
         return set_return_val(True, [], 'User created successfully', 1100)
-
 
     @basic_auth.login_required
     def put(self, id):
@@ -405,21 +404,13 @@ class UserManage(Resource):
         if args['active']:
             if int(args['active']) not in [1, 2]:
                 return set_return_val(False, [], str('Please pass in the correct parameters. 1 is True and 2 is False'),
-<<<<<<< HEAD
                                       1121), 400
         if args['active'] or args['password']:
             pass
         else:
             return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
                                   1122), 400
-=======
-                                      1001), 400
-        # if args['active'] or args['password']:
-        #     pass
-        # else:
-        #     return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
-        #                           1001), 400
->>>>>>> develop_zcl
+
         try:
 
             username = control.user.user_update(id=id, active=args['active'], username=args['username'],

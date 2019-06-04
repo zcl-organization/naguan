@@ -57,7 +57,7 @@ def device_delete_by_uuid(platform_id, disk_uuid):
 
 def device_delete_by_vm_uuid(platform_id, vm_uuid):
     query = db.session.query(VCenterDisk)
-    disk_willdel = query.filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).delete(
+    disk_middle = query.filter_by(platform_id=platform_id).filter_by(vm_uuid=vm_uuid).delete(
         synchronize_session=False)
     db.session.commit()
 

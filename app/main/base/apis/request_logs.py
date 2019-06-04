@@ -7,8 +7,11 @@ from app.main.base import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('request_id', type=str)
+parser.add_argument('submitter', type=str)
 parser.add_argument('status', type=int)
 parser.add_argument('pgnum', type=int)
+parser.add_argument('time_start', type=int)
+parser.add_argument('end_at', type=int)
 response_data = {}
 
 
@@ -26,6 +29,10 @@ class LogRequest(Resource):
             name: request_id
             type: string
             description: 请求id
+          - in: query
+            name: submitter
+            type: string
+            description: 提交者
           - in: query
             name: pgnum
             type: int

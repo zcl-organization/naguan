@@ -18,7 +18,7 @@ parser.add_argument('logo', type=werkzeug.datastructures.FileStorage, location='
 
 
 class SystemLogo(Resource):
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def put(self):
         """
         update logo

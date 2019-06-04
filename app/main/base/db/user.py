@@ -63,7 +63,7 @@ def user_list_by_id(id):
 def user_create(username, password, email, first_name, uid, mobile, department, job, location, company, sex, uac,
                 active, is_superuser, remarks, current_login_ip):
     # query = db.session.query(Users)
-    print(email)
+
     newuser = Users()
     newuser.username = username
     # newuser.password = args['password']

@@ -176,9 +176,7 @@ class VCenterManage(Resource):
             data['result'] = True
             # task = control.vcenter.sync_tree.apply_async(args=[args['platform_id']], queue='vsphere')
             # print(dir(task))
-            # data = {
-            #     'task_id': task.id
-            # }
+            # data = {'task_id': task.id}
             # request_id = g.request_id
             # base_control.task_logs.create_log(request_id, task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:

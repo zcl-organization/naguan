@@ -99,9 +99,9 @@ def children_menu_list(id):
 # 删除菜单
 def menu_delete(id=None):
     query = db.session.query(Menu)
-    menu_dellist = query.filter_by(id=id).first()
-    name = menu_dellist.name
-    db.session.delete(menu_dellist)
+    menu_middle = query.filter_by(id=id).first()
+    name = menu_middle.name
+    db.session.delete(menu_middle)
     db.session.commit()
     return name
 
@@ -150,9 +150,3 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
 def menu_list_by_parent_id(parent_id):
     return db.session.query(Menu).filter_by(parent_id=parent_id).all()
 
-#
-# # 获取资源id
-# def get_menu_id():
-#     menu = db.session.query(Menu).order_by(-Menu.id).first()
-#     mid = menu.id
-#     return mid

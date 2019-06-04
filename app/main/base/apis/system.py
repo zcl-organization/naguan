@@ -70,17 +70,19 @@ result_fields2 = {
 
 
 class System(Resource):
-    @basic_auth.login_required
+    # @basic_auth.login_required
     @marshal_with(result_fields)
     def post(self):
         """
         初始化系统配置
         ---
-        tags:
+       tags:
           - system config
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -117,7 +119,7 @@ class System(Resource):
                   default: 1
                   description: debug 模式
                   example: 1
-        responses:
+       responses:
           200:
             description: 创建系统配置
             schema:
@@ -155,7 +157,7 @@ class System(Resource):
                                            submitter=g.username)
         return set_return_val(True, [], 'System config created successfully', 1600)
 
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def get(self):
         """
         获取系统配置信息
@@ -211,7 +213,7 @@ class System(Resource):
             return set_return_val(False, [], str(e), 1631), 400
         return set_return_val(True, data, 'System configuration succeeded', 1630)
 
-    @basic_auth.login_required
+    # @basic_auth.login_required
     @marshal_with(result_fields2)
     def put(self):
         """

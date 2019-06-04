@@ -10,16 +10,29 @@ def get_image_path(image_id):
         return path
 
 
-def image_list(image_id, name, ds_name):
+def image_list(image_id, name, ds_name, pgnum):
     query = db.session.query(VCenterImage)
+
+    if image_id:
+        query = query.filter_by(id=image_id)
+    if name:
+        query = query.filter_by(iso_name=name)
+    if ds_name:
+        query = query.filter_by(ds_name=ds_name)
+    if pgnum:  # 默认获取分页获取所有日志
+        query = query.paginate(page=int(pgnum), per_page=10, error_out=False)
+
     try:
-        if image_id:
-            query = query.filter_by(id=image_id)
-        if name:
-            query = query.filter_by(iso_name=name)
-        if ds_name:
-            query = query.filter_by(ds_name=ds_name)
-        return query.all()
+        results = query.items
+
+        pg = {
+            'has_next': query.has_next,
+            'has_prev': query.has_prev,
+            'page': query.page,
+            'pages': query.pages,
+            'total': query.total,
+        }
+        return results, pg
     except Exception as e:
         raise Exception('Database operation exception')
 
@@ -46,7 +59,6 @@ def delete_image_by_image_name(image_name):
 
 
 def create_image(platform_id, image_name, path, ds_name, ds_mor_name, size, last_change_time):
-
     new_image = VCenterImage()
     new_image.platform_id = platform_id
     new_image.iso_name = image_name
