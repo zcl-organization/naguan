@@ -5,9 +5,15 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter.control import network_port_group as network_manage
 from app.main.base.apis.auth import basic_auth
+from app.main.vcenter.control.network_port_group import PortGroup
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
+parser.add_argument('host_name')   # 创建端口组的host地址
+parser.add_argument('switch_name')  # 创建或是删除的Switch名字 （包括DSwitch和VSwitch）
+parser.add_argument('portgroup_id')  # 端口组id
+parser.add_argument('portgroup_name')  # 端口组名称
+parser.add_argument('port_num')  # 虚拟端口数量
 
 
 class NetworkPortGroupManage(Resource):
@@ -16,18 +22,18 @@ class NetworkPortGroupManage(Resource):
         """
          获取vCenter network port group 信息
         ---
-       tags:
+        tags:
           - vCenter network port group
-       security:
-       - basicAuth:
+        security:
+        - basicAuth:
           type: http
           scheme: basic
-       parameters:
+        parameters:
           - in: query
             name: platform_id
             type: integer
             required: true
-       responses:
+        responses:
           200:
             description: vCenter port group 信息
             schema:
@@ -98,18 +104,51 @@ class NetworkPortGroupManage(Resource):
 
     @basic_auth.login_required
     def post(self):
-        args = parser.parse_args()
-        # platform_id
-        # uuid
-        # network_id
-        # network_manage.
+        """
+        """
+        try:
+            args = parser.parse_args()
+
+            if network_manage.check_if_portgroup_exists(args['portgroup_name'], args['host_name']):
+                raise Exception
+            
+            pg = PortGroup(args['platform_id'])
+            pg.create_vswitch_portgroup(args['host_name'], args['switch_name'], args['portgroup_name'])
+        except Exception as e:
+            return set_return_val(False, [], 'Failed to Create network group', 2463), 400
+
+        return set_return_val(True, [], "Create Network Group Success", 2462)
+
+    @basic_auth.login_required
+    def delete(self):
+        """
+        """
+        try:
+            args = parser.parse_args()
+
+            if not network_manage.check_if_portgroup_exists(args['portgroup_name'], args['host_name']):
+                raise Exception
+
+            pg = PortGroup(args['platform_id'])
+            # pg.delete_vswitch_portgroup(args['host_name'], args['portgroup_name'])
+            pg.delete_vswitch_portgroup(args['portgroup_id'])
+        except Exception as e:
+            return set_return_val(False, [], 'Failed to Delete network group', 2465), 400
+
+        return set_return_val(True, [], 'Delete Network Group Success', 2464)
 
     @basic_auth.login_required
     def put(self):
         pass
+
+
+class NetworkDVSPortGroupManage(Resource):
+    @basic_auth.login_required
+    def post(self):
+        # try:
+        #     args = parser.parse_args()
+        pass
+
     @basic_auth.login_required
     def delete(self):
         pass
-
-
-
