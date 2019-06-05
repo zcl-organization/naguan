@@ -9,4 +9,6 @@ from app.main.vcenter.db import snapshots
 from app.main.vcenter.db import resource_pool
 from app.main.vcenter.db import datacenters
 from app.main.vcenter.db import resource_pool
+from app.main.vcenter.db import clusters
+
 

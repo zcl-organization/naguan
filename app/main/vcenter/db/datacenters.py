@@ -8,6 +8,11 @@ def get_datacenters(platform_id):
     return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(type=2)
 
 
+# 判断是否存在datacenter名
+def dc_name_if_exist(dc_name):
+    return db.session.query(VCenterTree).filter_by(name=dc_name).first()
+
+
 # 同步datacenter，存在更新，不存在创建
 def sync_datacenters(platform_id, dc_name, dc_mor, dc_host_moc, dc_vm_moc, pid):
     data_center = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
@@ -17,7 +22,7 @@ def sync_datacenters(platform_id, dc_name, dc_mor, dc_host_moc, dc_vm_moc, pid):
         data_center.mor_name = dc_mor
         data_center.dc_host_folder_mor_name = dc_host_moc
         data_center.dc_mor_name = dc_mor
-        data_center.dc_oc_name = dc_host_moc
+        data_center.dc_oc_name = dc_name
         data_center.dc_vm_folder_mor_name = dc_vm_moc
         data_center.pid = pid
         db.session.add(data_center)
@@ -31,7 +36,7 @@ def sync_datacenters(platform_id, dc_name, dc_mor, dc_host_moc, dc_vm_moc, pid):
         new_data_center.mor_name = dc_mor
         new_data_center.dc_host_folder_mor_name = dc_host_moc
         new_data_center.dc_mor_name = dc_mor
-        new_data_center.dc_oc_name = dc_host_moc
+        new_data_center.dc_oc_name = dc_name
         new_data_center.dc_vm_folder_mor_name = dc_vm_moc
         new_data_center.pid = pid
         db.session.add(new_data_center)
@@ -39,9 +44,9 @@ def sync_datacenters(platform_id, dc_name, dc_mor, dc_host_moc, dc_vm_moc, pid):
 
 
 def del_datacenter(platform_id, dc_mor):
-    data_center = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
+    datacenter = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
         filter_by(type=2).filter_by(mor_name=dc_mor).first()
-    db.session.delete(data_center)
+    db.session.delete(datacenter)
     db.session.commit()
 
 
@@ -53,3 +58,12 @@ def get_datacenter(dc_id):
     else:
         return None
 
+
+# 判断datacenter下是否存在资源（根据pid)
+def get_clusters_from_dc(platform_id, dc_id):
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(pid=dc_id).all()
+
+
+def get_clusters_from_dc2(platform_id, dc_id):
+    query = db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(id=dc_id)
+    

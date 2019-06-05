@@ -147,6 +147,14 @@ def sync_vcenter_tree(si, content, platform):
         vCenter_pid = db.vcenter.vcenter_tree_create(tree_type=1, platform_id=platform['id'],
                                                      name=platform['platform_name'])
     datacenters = content.rootFolder.childEntity
+    sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid)
+
+    print ('sync_end:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
+    # return True
+
+
+# 同步datacenters
+def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid):
     for dc in datacenters:
         # print('pid:', vCenter_pid)
         dc_mor = get_mor_name(dc)
@@ -299,9 +307,6 @@ def sync_vcenter_tree(si, content, platform):
         for id in vcenter_list:
             # db_vcenter.vcenter_tree_delete_by_id(id)
             db.vcenter.vcenter_tree_delete_by_id(id)
-
-    print ('sync_end:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
-    # return True
 
 
 def vcenter_tree_list(platform_id):

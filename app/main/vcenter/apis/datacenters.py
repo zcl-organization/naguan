@@ -18,7 +18,7 @@ class DataCenterManage(Resource):
             data = control.datacenters.create_datacenter(
                 platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
         except Exception as e:
-            return set_return_val(False, {}, 'Datacenter create fail.', 3001)
+            return set_return_val(False, {}, str(e), 3001)
         return set_return_val(True, data, 'Datastore create success.', 3000)
 
     def put(self):
@@ -30,7 +30,7 @@ class DataCenterManage(Resource):
             dc_id = args.get('dc_id')
             control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=dc_id)
         except Exception as e:
-            return set_return_val(False, {}, 'Datacenter delete fail.', 3001)
+            return set_return_val(False, {}, str(e), 3001)
         return set_return_val(True, {}, 'Datastore delete success.', 3000)
 
 
