@@ -49,17 +49,13 @@ def sync_network_port_group(netwroks, dc_name, dc_mor_name, platform_id):
         db.network_dvs_port_group.dvs_network_delete(dvs_local_portgroups[item])
 
 
-def sync_single_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, host, check=False):
+def sync_single_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, host):
     """
     同步单个端口组信息  vswitch
     """
     # import pdb;pdb.set_trace()
     # pg_name = network.name if isinstance(network, vim.Network) else network.spec.name# network.name
     network_info = db.network_port_group.find_portgroup_by_name(network_name, host)  # change
-    if check and (network_info and not network_name):  # 提供单个清理功能   TODO 改进
-        # network_info->local  network->remote   本地有远程无认为当前数据执行删除操作了清理本地数据
-        db.network_port_group.network_delete(network_info.id)
-        return
     
     if not network_info:
         db.network_port_group.network_create(
@@ -80,15 +76,12 @@ def sync_single_network_port_group(network_name, network_mor_name, dc_name, dc_m
         )
 
 
-def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, switch, check=False):
+def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, switch):
     """
     同步dswitch端口组信息
     """
     network_info = db.network_dvs_port_group.find_dvs_portgroup_by_name(network_name, switch)
-    if check and (network_info and not network_name):  # 提供单个清理能力  TODO 改进
-        db.network_dvs_port_group.dvs_network_delete(network_info.id)
-        return
-    
+
     if not network_info:
         db.network_dvs_port_group.dvs_network_create(
             name=network_name,
@@ -221,7 +214,7 @@ class PortGroup:
         
         # 同步本地  TODO
         dc = self._get_hostsystem_data_center(_host_system)
-        sync_single_network_port_group(portgroup_name, '', dc.name, get_mor_name(dc), self._platform_id, hostsystem_name, check=True)
+        sync_single_network_port_group(portgroup_name, '', dc.name, get_mor_name(dc), self._platform_id, host_name)
 
     def delete_vswitch_portgroup(self, host_name, portgroup_name):
         """

@@ -20,20 +20,20 @@ class NetworkPortGroupManage(Resource):
     @basic_auth.login_required
     def get(self):
         """
-         获取vCenter network port group 信息
+         获取vCenter network port group 信息 （vswitch）
         ---
-        tags:
+       tags:
           - vCenter network port group
-        security:
-        - basicAuth:
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
           - in: query
             name: platform_id
             type: integer
             required: true
-        responses:
+       responses:
           200:
             description: vCenter port group 信息
             schema:
@@ -74,6 +74,10 @@ class NetworkPortGroupManage(Resource):
                         type: string
                         default: 1
                         description: platform_id
+                      host:
+                        type: string
+                        default: 192.168.12.203
+                        description: host_system名称
           400:
             description: 获取失败
             schema:
@@ -107,13 +111,13 @@ class NetworkPortGroupManage(Resource):
         """
          创建vCenter network port group 信息（vswitch）
         ---
-        tags:
+       tags:
           - vCenter network port group
-        security:
-        - basicAuth:
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
           - in: body
             name: body
             required: true
@@ -144,7 +148,7 @@ class NetworkPortGroupManage(Resource):
                   default: test_vswitch_portgroup
                   description: 端口组名称
                   example: test_vswitch_portgroup
-        responses:
+       responses:
           200:
             description: vCenter port group 信息
             schema:
@@ -191,6 +195,7 @@ class NetworkPortGroupManage(Resource):
             pg = PortGroup(args['platform_id'])
             pg.create_vswitch_portgroup(args['host_name'], args['switch_name'], args['portgroup_name'])
         except Exception as e:
+            print e
             return set_return_val(False, [], 'Failed to Create network group', 2463), 400
 
         return set_return_val(True, [], "Create Network Group Success", 2462)
@@ -200,13 +205,13 @@ class NetworkPortGroupManage(Resource):
         """
          删除vCenter network port group 信息（vswitch）
         ---
-        tags:
+       tags:
           - vCenter network port group
-        security:
-        - basicAuth:
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
           - in: query
             name: platform_id
             type: integer
@@ -217,7 +222,7 @@ class NetworkPortGroupManage(Resource):
             type: integer
             required: true
             description: '8 -- portgroup_id'
-        responses:
+       responses:
           200:
             description: vCenter port group 信息
             schema:
@@ -273,6 +278,85 @@ class NetworkPortGroupManage(Resource):
 class NetworkDVSPortGroupManage(Resource):
     @basic_auth.login_required
     def get(self):
+        """
+         获取vCenter network port group 信息 （dvswitch）
+        ---
+       tags:
+          - vCenter network port group
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic0
+       parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+       responses:
+          200:
+            description: vCenter port group 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      dc_mor_name:
+                        type: string
+                        default: datacenter-661
+                        description: dc_mor_name
+                      dc_name:
+                        type: string
+                        default: Datacenter
+                        description: dc_name
+                      id:
+                        type: string
+                        default: 1
+                        description: id
+                      mor_name:
+                        type: string
+                        default: dvportgroup-1284
+                        description: mor_name
+                      name:
+                        type: string
+                        default: NSX-DVUplinks-1283
+                        description: name
+                      platform_id:
+                        type: string
+                        default: 1
+                        description: platform_id
+                      switch:
+                        type: string
+                        default: Dvswitch-test
+                        description: 交换设备名称
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                  default: 1302
+                msg:
+                  type: string
+                  default: "vm not found"
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         try:
             args = parser.parse_args()
             data = network_manage.get_dvs_network_port_group_all(args['platform_id'])
@@ -286,13 +370,13 @@ class NetworkDVSPortGroupManage(Resource):
         """
          创建vCenter network port group 信息（dvswitch）
         ---
-        tags:
+       tags:
           - vCenter network port group
-        security:
-        - basicAuth:
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
           - in: body
             name: body
             required: true
@@ -310,9 +394,9 @@ class NetworkDVSPortGroupManage(Resource):
                   example: 1
                 switch_name:
                   type: string
-                  default: vSwitch0
+                  default: DSwitch-test
                   description: 创建端口组关联的Switch名字
-                  example: vSwitch0
+                  example: DSwitch-test
                 portgroup_name:
                   type: string
                   default: test_vswitch_portgroup
@@ -323,7 +407,7 @@ class NetworkDVSPortGroupManage(Resource):
                   default: 4
                   description: 创建端口数量
                   example: 4
-        responses:
+       responses:
           200:
             description: vCenter port group 信息
             schema:
@@ -376,16 +460,16 @@ class NetworkDVSPortGroupManage(Resource):
 
     @basic_auth.login_required
     def delete(self):
-         """
+        """
          删除vCenter network port group 信息（dvswitch）
         ---
-        tags:
+       tags:
           - vCenter network port group
-        security:
-        - basicAuth:
+       security:
+       - basicAuth:
           type: http
           scheme: basic
-        parameters:
+       parameters:
           - in: query
             name: platform_id
             type: integer
@@ -396,7 +480,7 @@ class NetworkDVSPortGroupManage(Resource):
             type: integer
             required: true
             description: '8 -- portgroup_id'
-        responses:
+       responses:
           200:
             description: vCenter port group 信息
             schema:
