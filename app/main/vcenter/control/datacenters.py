@@ -22,14 +22,26 @@ def create_datacenter(platform_id, dc_name, folder=None):
         folder = si.content.rootFolder
     try:
         if folder is not None and isinstance(folder, vim.Folder):
-            folder.CreateDatacenter(name=dc_name)
+            new_datacenter = folder.CreateDatacenter(name=dc_name)
+            try:
+                result = db.vcenter.vcenter_tree_get_by_platform(platform['id'], platform['platform_name'], 1)
+                if result:
+                    vCenter_pid = result.id
+                else:
+                    vCenter_pid = 1
+                dc_mor_name = get_mor_name(new_datacenter)
+                dc_host_moc = get_mor_name(new_datacenter.hostFolder)
+                dc_vm_moc = get_mor_name(new_datacenter.vmFolder)
+                db.vcenter.vcenter_tree_create(tree_type=2, platform_id=platform_id, name=new_datacenter.name,
+                                               dc_host_folder_mor_name=dc_host_moc,
+                                               dc_mor_name=dc_mor_name, dc_oc_name=new_datacenter.name,
+                                               dc_vm_folder_mor_name=dc_vm_moc, mor_name=dc_mor_name,
+                                               cluster_mor_name=None, cluster_oc_name=None, pid=vCenter_pid)
+                return dc_name
+            except Exception as e:
+                raise Exception('sync datacenters fail. %s' % str(e))
     except Exception as e:
         raise Exception('Failed to create datacenter. %s' % str(e))
-    try:
-        sync_datacenters(platform_id)
-        return dc_name
-    except Exception as e:
-        raise Exception('sync datacenters fail. %s' % str(e))
 
 
 # 根据id获取datacenter
@@ -54,49 +66,25 @@ def del_datacenter(platform_id, dc_id):
     clusters = instance_dc.hostFolder.childEntity
     if clusters:
         # 同步数据至本地
-        local_clusters = db.datacenters.get_clusters_from_dc2(platform_id, dc_id)
-        vcenter_list = []
-        for cluster in local_clusters:
-            vcenter_list.append(cluster.id)
-        instance = Instance(platform_id)
-        si, content, platform = instance.si, instance.content, instance.platform
-        sync_datacenter([instance_dc], si, content,
-                        platform, vcenter_list, dc_id)
+        sync_the_datacenter(platform_id, dc_id, instance_dc)
         raise Exception('Resources exist under the vCenter datacenter, unable to delete')
 
-    dc = get_dc(platform_id, dc_id)
-    dc_mor = get_mor_name(dc)
+    dc_mor = get_mor_name(instance_dc)
     # 任务销毁并等待
-    task = dc.Destroy_Task()
+    task = instance_dc.Destroy_Task()
     WaitForTask(task)
     # 删除本地数据库
     db.datacenters.del_datacenter(platform_id, dc_mor)
 
 
-# 同步datacenter
-def sync_datacenters(platform_id):
+def sync_the_datacenter(platform_id, dc_id, instance_dc):
+    dc = db.datacenters.get_datacenter(dc_id)
+    dc_mor_name = dc.dc_mor_name
+    dc_and_child = db.datacenters.get_dc_and_its(platform_id, dc_mor_name)  #
+    vcenter_list = []
+    for child in dc_and_child:
+        vcenter_list.append(child.id)
     instance = Instance(platform_id)
-    content, platform = instance.content, instance.platform
-    # 本地datacenters
-    datacenters_list = db.datacenters.get_datacenters(platform_id)
-    verify_list = []
-    for datacenter in datacenters_list:
-        verify_list.append(datacenter.mor_name)
-    # 同步至本地
-    datacenters = content.rootFolder.childEntity  # 获取平台datacenter数据
-    for dc in datacenters:
-        # print('pid:', vCenter_pid)
-        result = db.vcenter.vcenter_tree_get_by_platform(platform['id'], platform['platform_name'], 1)  # 判断vcenter
-        if result:
-            pid = result.id
-        else:
-            pid = 1
-        dc_mor = get_mor_name(dc)
-        dc_host_moc = get_mor_name(dc.hostFolder)
-        dc_vm_moc = get_mor_name(dc.vmFolder)
-        exist_name = db.datacenters.sync_datacenters(platform_id, dc.name, dc_mor, dc_host_moc, dc_vm_moc, pid)
-        if exist_name:
-            verify_list.remove(dc_mor)
-    # 删除本地多余的datacenter
-    for dc_more in verify_list:
-        db.datacenters.del_datacenter(platform_id, dc_more)
+    si, content, platform = instance.si, instance.content, instance.platform
+    sync_datacenter([instance_dc], si, content, platform, vcenter_list, dc_id)
+

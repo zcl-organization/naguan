@@ -64,6 +64,6 @@ def get_clusters_from_dc(platform_id, dc_id):
     return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(pid=dc_id).all()
 
 
-def get_clusters_from_dc2(platform_id, dc_id):
-    query = db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(id=dc_id)
-    
+def get_dc_and_its(platform_id, dc_mor_name):
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(dc_mor_name=dc_mor_name).all()
+

@@ -1,7 +1,7 @@
 # -*- coding=utf-8 -*-
 from pyVmomi import vim
 from pyVim.task import WaitForTask
-from app.main.vcenter.control.datacenters import get_dc
+from app.main.vcenter.control.datacenters import get_dc, sync_the_datacenter
 from app.main.vcenter import db
 from app.main.vcenter.control.instances import Instance
 from app.main.vcenter.control.utils import get_mor_name
@@ -13,6 +13,7 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
     :param kwargs:
     :return: Cluster MORef
     """
+
     instance_dc = get_dc(platform_id, dc_id)
     instance = Instance(platform_id)
     content = instance.content
@@ -22,9 +23,10 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
         raise ValueError("Missing value for name.")
     if cluster_spec is None:
         cluster_spec = vim.cluster.ConfigSpecEx()
-
     host_folder = instance_dc.hostFolder
     cluster = host_folder.CreateClusterEx(name=cluster_name, spec=cluster_spec)
+
+    # 同步至本地
     try:
         cluster_mor_name = get_mor_name(cluster)
         # 获取datacenter对象
@@ -49,15 +51,43 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
                                            mor_name=rp_mor, cluster_mor_name=cluster_mor_name,
                                            cluster_oc_name=cluster_name, pid=cluster_id)
     except Exception as e:
-        pass
+        raise Exception('Failed to create cluster. %s' % str(e))
     return cluster_name
 
 
-def del_cluster(platform_id, dc_id, cluster_name):
+def del_cluster(platform_id, cluster_id):
+    # 判断本地cluster下是否存在资源
+    cluster_obj = db.clusters.get_cluster_mor_name(platform_id, cluster_id)
+    if not cluster_obj:
+        raise Exception('Cluster_id error, please confirm before deleting')
+    cluster_mor_name = cluster_obj.mor_name
+    cluster_resource = db.clusters.get_cluster_cluster_resource(platform_id, cluster_mor_name)
+    if len(cluster_resource) > 2:  # 本地校验
+        raise Exception('Resources exist under the local datacenter, unable to delete')
+
+    dc_id = cluster_obj.pid
     instance_dc = get_dc(platform_id, dc_id)
+    instance = Instance(platform_id)
+    si, content, platform = instance.si, instance.content, instance.platform
+    obj = content.viewManager.CreateContainerView(instance_dc, [vim.ResourcePool], True)
+    resourcepools = obj.view
+    for rp in resourcepools:
+        if rp.parent.parent.name == cluster_obj.name:
+            sync_the_datacenter(platform_id, dc_id, instance_dc)
+            raise Exception('Resources exist under the vCenter datacenter, unable to delete')
+
     clusters = instance_dc.hostFolder.childEntity
+    cluster_name = cluster_obj.name
     for cluster in clusters:
         if cluster.name == cluster_name:
-            task = cluster.Destroy_Task()
-            WaitForTask(task)
+            hosts = cluster.host
+            if hosts:
+                sync_the_datacenter(platform_id, dc_id, instance_dc)
+                raise Exception('Resources exist under the vCenter datacenter, unable to delete')
+            else:
+                task = cluster.Destroy_Task()
+                WaitForTask(task)
+                break
+
+
 
