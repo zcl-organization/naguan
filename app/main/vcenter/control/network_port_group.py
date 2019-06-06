@@ -39,7 +39,8 @@ def sync_network_port_group(netwroks, dc_name, dc_mor_name, platform_id):
             if check_tuple in dvs_local_portgroups.keys():
                 local_portgroups.pop(check_tuple)
             
-            sync_single_dvs_network_port_group(network, dc_name, dc_mor_name, platform_id, dvswitch.name)
+            network_mor_name = get_mor_name(network)
+            sync_single_dvs_network_port_group(network.name, network_mor_name, dc_name, dc_mor_name, platform_id, dvswitch.name)
     
     for item in local_portgroups:  # 清理vswitch部分的本地数据
         db.network_port_group.network_delete(local_portgroups[item])
@@ -79,19 +80,18 @@ def sync_single_network_port_group(network_name, network_mor_name, dc_name, dc_m
         )
 
 
-def sync_single_dvs_network_port_group(network, dc_name, dc_mor_name, platform_id, switch, check=False):
+def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, switch, check=False):
     """
     同步dswitch端口组信息
     """
-    network_info = db.network_dvs_port_group.find_dvs_portgroup_by_name(network.name, switch)
-    if check and (network_info and not network):  # 提供单个清理能力  TODO 改进
+    network_info = db.network_dvs_port_group.find_dvs_portgroup_by_name(network_name, switch)
+    if check and (network_info and not network_name):  # 提供单个清理能力  TODO 改进
         db.network_dvs_port_group.dvs_network_delete(network_info.id)
         return
     
-    network_mor_name = get_mor_name(network)
     if not network_info:
         db.network_dvs_port_group.dvs_network_create(
-            name=network.name,
+            name=network_name,
             mor_name=network_mor_name,
             dc_name=dc_name,
             dc_mor_name=dc_mor_name,
@@ -101,7 +101,7 @@ def sync_single_dvs_network_port_group(network, dc_name, dc_mor_name, platform_i
     else:
         db.network_dvs_port_group.dvs_network_update(
             id=network_info.id,
-            name=network_info.name,
+            name=network_info_name,
             mor_name=network_mor_name,
             dc_name=dc_name,
             dc_mor_name=dc_mor_name
@@ -169,20 +169,30 @@ def get_dvs_network_port_group_all(platform_id):
     return network_port_group_list
 
 
-def check_if_portgroup_exists(portgroup_name, host_name):
+def check_if_portgroup_exists(portgroup_id=None, portgroup_name=None, host_name=None):
     """
     检查端口组名称是否已经存在   Vswitch
     """
-    return True if db.network_port_group.find_portgroup_by_name(portgroup_name, host_name) \
-        else False
+    if portgroup_id:
+        return True if db.network_port_group.find_portgroup_by_id(portgroup_id) else False
+    elif portgroup_name and host_name:
+        return True if db.network_port_group.find_portgroup_by_name(portgroup_name, host_name) \
+            else False
+    else:
+        raise Exception
 
 
-def check_if_dvs_portgroup_exists(portgroup_name, switch_name):
+def check_if_dvs_portgroup_exists(portgroup_id=None, portgroup_name=None, switch_name=None):
     """
     检查端口组名称是否已经存在  Dvswitch
     """
-    return True if db.network_dvs_port_group.find_dvs_portgroup_by_name(portgroup_name, switch_name) \
-        else False
+    if portgroup_id:
+        return True if db.network_dvs_port_group.find_dvs_portgroup_by_id(portgroup_id) else False
+    elif portgroup_name and switch_name:
+        return True if db.network_dvs_port_group.find_dvs_portgroup_by_name(portgroup_name, switch_name) \
+            else False
+    else:
+        raise Exception
 
 
 class PortGroup:
@@ -210,7 +220,7 @@ class PortGroup:
             raise Exception("Create Vswitch PortGroup Failed!!!")
         
         # 同步本地  TODO
-        dc = self._get_hostsystem_data_center(host_system)
+        dc = self._get_hostsystem_data_center(_host_system)
         sync_single_network_port_group(portgroup_name, '', dc.name, get_mor_name(dc), self._platform_id, hostsystem_name, check=True)
 
     def delete_vswitch_portgroup(self, host_name, portgroup_name):
@@ -234,6 +244,19 @@ class PortGroup:
         item = db.network_port_group.find_portgroup_by_id(portgroup_id)
         self.delete_vswitch_portgroup(item.host, item.name)
 
+    def _get_hostsystem_data_center(self, host_system):
+        """
+        通过host_system获取对应的data_center
+        """
+        host_system_networks = set(host_system.network)
+        container = self._content.viewManager.CreateContainerView(
+            self._content.rootFolder, [vim.Datacenter], True)
+        for item in container.view:
+            if not (host_system_networks - set(item.network)):
+                return item
+        
+        return None
+
 
 class DVSPortGroup:
     
@@ -256,8 +279,9 @@ class DVSPortGroup:
         _vdpgm = VMDvsPortGroupManager(_dv_switch)
         if not _vdpgm.create_port_group(portgroup_name, port_num):
             raise Exception('Create Dvswitch PortGroup Failed!!!')
-    
-        self._updata_portgourp_local(portgroup_name, switch_name, _dv_switch)
+
+        dc = self._get_dvswitch_data_center(_dv_switch)
+        sync_single_dvs_network_port_group(portgroup_name, '', dc.name, get_mor_name(dc), self._platform_id, switch_name)
 
     def delete_dvswitch_portgroup(self, switch_name, portgroup_name):
         """
@@ -271,13 +295,14 @@ class DVSPortGroup:
         if not _vdpgm.delete_port_group(portgroup_name):
             raise Exception('Create Dvswitch PortGroup Failed!!!')
 
-        self._updata_portgourp_local(portgroup_name, switch_name, _dv_switch)
+        # 同步本地  TODO
+        network_info = db.network_dvs_port_group.find_dvs_portgroup_by_name(portgroup_name, switch_name)
+        if network_info:
+            db.network_dvs_port_group.dvs_network_delete(network_info.id)
 
-    def _updata_portgourp_local(self, portgroup_name, switch_name, switch):
-        dc = self._get_dvswitch_data_center(switch)
-        pg = self._get_dvswitch_portgroup(switch, portgroup_name)
-
-        sync_single_dvs_network_port_group(pg, dc.name, get_mor_name(dc), self._platform_id, switch_name, check=True)
+    def delete_dvswitch_portgroup_by_id(self, portgroup_id):
+        item =  db.network_dvs_port_group.find_dvs_portgroup_by_id(portgroup_id)
+        self.delete_dvswitch_portgroup(item.switch, item.name)
 
     def _get_dvswitch_data_center(self, dvswitch):
         """
@@ -290,14 +315,4 @@ class DVSPortGroup:
             if not (dvswitch_networks - set(item.network)):
                 return item
         
-        return None
-
-    def _get_dvswitch_portgroup(self, dvswitch, portgroup_name):
-        """
-        通过dvswitch获取对应的端口组
-        """
-        for pg in dvswitch.portgroup:
-            if pg.spec.name == portgroup_name:
-                return pg
-            
         return None

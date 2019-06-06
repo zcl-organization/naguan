@@ -109,7 +109,8 @@ class NetworkPortGroupManage(Resource):
         try:
             args = parser.parse_args()
 
-            if network_manage.check_if_portgroup_exists(args['portgroup_name'], args['host_name']):
+            if network_manage.check_if_portgroup_exists(
+                portgroup_name=args['portgroup_name'], host_name=args['host_name']):
                 raise Exception
             
             pg = PortGroup(args['platform_id'])
@@ -126,7 +127,7 @@ class NetworkPortGroupManage(Resource):
         try:
             args = parser.parse_args()
 
-            if not network_manage.check_if_portgroup_exists(args['portgroup_name'], args['host_name']):
+            if not network_manage.check_if_portgroup_exists(portgroup_id=args['portgroup_id']):
                 raise Exception
 
             pg = PortGroup(args['platform_id'])
@@ -157,11 +158,12 @@ class NetworkDVSPortGroupManage(Resource):
         try:
             args = parser.parse_args()
 
-            if network_manage.check_if_dvs_portgroup_exists(args['portgroup_name'], args['switch_name']):
+            if network_manage.check_if_dvs_portgroup_exists(
+                portgroup_name=args['portgroup_name'], switch_name=args['switch_name']):
                 raise Exception
 
             pg = DVSPortGroup(args['platform_id'])
-            pg.create_dvswitch_portgroup(args['switch_name'], args['portgroup_name'], args['port_num'])
+            pg.create_dvswitch_portgroup(args['switch_name'], args['portgroup_name'], int(args['port_num']))
         except Exception as e:
             return set_return_val(False, [], 'Failed to Create Dvswitch network group', 2501), 400
         
@@ -172,11 +174,11 @@ class NetworkDVSPortGroupManage(Resource):
         try:
             args = parser.parse_args()
 
-            if not network_manage.check_if_dvs_portgroup_exists(args['portgroup_name'], args['switch_name']):
+            if not network_manage.check_if_dvs_portgroup_exists(portgroup_id=args['portgroup_id']):
                 raise Exception
 
             pg = DVSPortGroup(args['platform_id'])
-            pg.delete_dvswitch_portgroup(args['switch_name'], args['portgroup_name'])
+            pg.delete_dvswitch_portgroup_by_id(args['portgroup_id'])
         except Exception as e:
             return set_return_val(False, [], 'Failed to Delete Dvswitch network group', 2503), 400
 
