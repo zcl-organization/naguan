@@ -5,7 +5,7 @@ from app.exts import db
 
 def dvs_network_create(name, mor_name, dc_name, dc_mor_name, platform_id, switch):
     """
-    dswitch 数据库存储
+    dvswitch 数据库存储
     """
     new_network = VCenterNetworkDistributedSwitchPortGroup()
     new_network.name = unicode(name)
@@ -19,17 +19,26 @@ def dvs_network_create(name, mor_name, dc_name, dc_mor_name, platform_id, switch
     db.session.commit()
 
 
-def dvs_network_update(id, name, mor_name, dc_name, dc_mor_name, switch):
+def dvs_network_update(id, name, mor_name, dc_name, dc_mor_name):
     """
-    vswitch 数据库更新
+    dvswitch 数据库更新
+    TODO  switch 信息是否不需要更新
     """
     network_info = db.session.query(VCenterNetworkDistributedSwitchPortGroup).filter_by(id=id)
     network_info.name = name
     network_info.mor_name = mor_name
     network_info.dc_name = dc_name
     network_info.dc_mor_name = dc_mor_name
-    network_info.switch = switch
 
+    db.session.commit()
+
+
+def dvs_network_delete(id):
+    """
+    dvswitch 数据库删除
+    """
+    del_portgroup = db.session.query(VCenterNetworkDistributedSwitchPortGroup).filter_by(id=id).first()
+    db.session.delete(del_portgroup)
     db.session.commit()
 
 

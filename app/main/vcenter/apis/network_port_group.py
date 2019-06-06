@@ -5,7 +5,7 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter.control import network_port_group as network_manage
 from app.main.base.apis.auth import basic_auth
-from app.main.vcenter.control.network_port_group import PortGroup
+from app.main.vcenter.control.network_port_group import PortGroup, DVSPortGroup
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -130,8 +130,7 @@ class NetworkPortGroupManage(Resource):
                 raise Exception
 
             pg = PortGroup(args['platform_id'])
-            # pg.delete_vswitch_portgroup(args['host_name'], args['portgroup_name'])
-            pg.delete_vswitch_portgroup(args['portgroup_id'])
+            pg.delete_vswitch_portgroup_by_id(args['portgroup_id'])
         except Exception as e:
             return set_return_val(False, [], 'Failed to Delete network group', 2465), 400
 
@@ -144,11 +143,45 @@ class NetworkPortGroupManage(Resource):
 
 class NetworkDVSPortGroupManage(Resource):
     @basic_auth.login_required
+    def get(self):
+        try:
+            args = parser.parse_args()
+            data = network_manage.get_dvs_network_port_group_all(args['platform_id'])
+        except Exception as e:
+            return set_return_val(False, {}, 'Failed to get network group', 2501), 400
+
+        return set_return_val(True, data, 'Get network group success', 2500)
+
+    @basic_auth.login_required
     def post(self):
-        # try:
-        #     args = parser.parse_args()
-        pass
+        try:
+            args = parser.parse_args()
+
+            if network_manage.check_if_dvs_portgroup_exists(args['portgroup_name'], args['switch_name']):
+                raise Exception
+
+            pg = DVSPortGroup(args['platform_id'])
+            pg.create_dvswitch_portgroup(args['switch_name'], args['portgroup_name'], args['port_num'])
+        except Exception as e:
+            return set_return_val(False, [], 'Failed to Create Dvswitch network group', 2501), 400
+        
+        return set_return_val(True, [], 'Create Dvswitch Network Group Success', 2500)
 
     @basic_auth.login_required
     def delete(self):
+        try:
+            args = parser.parse_args()
+
+            if not network_manage.check_if_dvs_portgroup_exists(args['portgroup_name'], args['switch_name']):
+                raise Exception
+
+            pg = DVSPortGroup(args['platform_id'])
+            pg.delete_dvswitch_portgroup(args['switch_name'], args['portgroup_name'])
+        except Exception as e:
+            return set_return_val(False, [], 'Failed to Delete Dvswitch network group', 2503), 400
+
+        return set_return_val(True, [], 'Delete Dvswitch Network Group Success', 2502)
+
+    @basic_auth.login_required
+    def put(self):
         pass

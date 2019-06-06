@@ -22,6 +22,7 @@ from app.main.vcenter.apis.instances import InstanceManage
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
 from app.main.vcenter.apis.network_port_group import NetworkPortGroupManage
+from app.main.vcenter.apis.network_port_group import NetworkDVSPortGroupManage
 from app.main.vcenter.apis.datastores import DataStoreManage
 from app.main.vcenter.apis.disks import DiskManage
 from app.main.vcenter.apis.network_devices import NetWorkManage
@@ -123,7 +124,11 @@ api.add_resource(ImageManage, '/api/v1.0/vCenter/image', methods=['GET', 'POST',
 
 # vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
-                 methods=['GET'], endpoint='NetworkPortGroupMg')
+                 methods=['GET', 'POST', 'DELETE'], endpoint='NetworkPortGroupMg')
+
+# vCenter Dvswitch网络端口组管理
+api.add_resource(NetworkDVSPortGroupManage, '/api/v1.0/vCenter/dvs_network_port_group/',
+                 methods=['GET', 'POST', 'DELETE'], endpoint='DvsNetworkPortGroupMg')
 
 # vCenter datastore
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
