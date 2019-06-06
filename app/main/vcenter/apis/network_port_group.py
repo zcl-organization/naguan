@@ -105,6 +105,81 @@ class NetworkPortGroupManage(Resource):
     @basic_auth.login_required
     def post(self):
         """
+         创建vCenter network port group 信息（vswitch）
+        ---
+        tags:
+          - vCenter network port group
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
+        parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - host_name
+              - switch_name
+              - portgroup_name
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                host_name:
+                  type: string
+                  default: 192.168.12.203
+                  description: 创建端口组的host地址
+                  example: 192.168.12.203
+                switch_name:
+                  type: string
+                  default: vSwitch0
+                  description: 创建端口组关联的Switch名字
+                  example: vSwitch0
+                portgroup_name:
+                  type: string
+                  default: test_vswitch_portgroup
+                  description: 端口组名称
+                  example: test_vswitch_portgroup
+        responses:
+          200:
+            description: vCenter port group 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      dc_mor_name:
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                  default: "vm not found"
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             args = parser.parse_args()
@@ -123,6 +198,59 @@ class NetworkPortGroupManage(Resource):
     @basic_auth.login_required
     def delete(self):
         """
+         删除vCenter network port group 信息（vswitch）
+        ---
+        tags:
+          - vCenter network port group
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
+        parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+            description: '1 -- platform_id'
+          - in: query
+            name: portgroup_id
+            type: integer
+            required: true
+            description: '8 -- portgroup_id'
+        responses:
+          200:
+            description: vCenter port group 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         try:
             args = parser.parse_args()
@@ -155,6 +283,83 @@ class NetworkDVSPortGroupManage(Resource):
 
     @basic_auth.login_required
     def post(self):
+        """
+         创建vCenter network port group 信息（dvswitch）
+        ---
+        tags:
+          - vCenter network port group
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
+        parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - switch_name
+              - portgroup_name
+              - port_num
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                switch_name:
+                  type: string
+                  default: vSwitch0
+                  description: 创建端口组关联的Switch名字
+                  example: vSwitch0
+                portgroup_name:
+                  type: string
+                  default: test_vswitch_portgroup
+                  description: 端口组名称
+                  example: test_vswitch_portgroup
+                port_num:
+                  type: integer
+                  default: 4
+                  description: 创建端口数量
+                  example: 4
+        responses:
+          200:
+            description: vCenter port group 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      dc_mor_name:
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                  default: "vm not found"
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         try:
             args = parser.parse_args()
 
@@ -171,6 +376,61 @@ class NetworkDVSPortGroupManage(Resource):
 
     @basic_auth.login_required
     def delete(self):
+         """
+         删除vCenter network port group 信息（dvswitch）
+        ---
+        tags:
+          - vCenter network port group
+        security:
+        - basicAuth:
+          type: http
+          scheme: basic
+        parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+            description: '1 -- platform_id'
+          - in: query
+            name: portgroup_id
+            type: integer
+            required: true
+            description: '8 -- portgroup_id'
+        responses:
+          200:
+            description: vCenter port group 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         try:
             args = parser.parse_args()
 
