@@ -89,6 +89,8 @@ class ClustersManage(Resource):
         """
         try:
             args = parser.parse_args()
+            if not all([args['platform_id'], args['dc_id'], args['cluster_name']]):
+                raise Exception('Parameter error')
             data = control.clusters.create_cluster(platform_id=args.get('platform_id'),
                                                    dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
         except Exception as e:
@@ -168,6 +170,8 @@ class ClustersManage(Resource):
         """
         try:
             args = parser.parse_args()
+            if not all([args['platform_id'], args['cluster_id']]):
+                raise Exception('Parameter error')
             data = control.clusters.del_cluster(args.get('platform_id'), cluster_id=args.get('cluster_id'))
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001)

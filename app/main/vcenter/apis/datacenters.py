@@ -41,7 +41,7 @@ class DataCenterManage(Resource):
                 dc_name:
                   type: string
                   default: 1
-                  description: 数据中心名
+                  description: 数据中心名称
                   example: DataCenter
        responses:
           200:
@@ -82,6 +82,8 @@ class DataCenterManage(Resource):
         """
         try:
             args = parser.parse_args()
+            if not all([args['platform_id'], args['dc_name']]):
+                raise Exception('Parameter error')
             data = control.datacenters.create_datacenter(
                 platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
         except Exception as e:
@@ -162,6 +164,8 @@ class DataCenterManage(Resource):
         try:
             args = parser.parse_args()
             dc_id = args.get('dc_id')
+            if not all([args['platform_id'], dc_id]):
+                raise Exception('Parameter error')
             control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=dc_id)
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001)
