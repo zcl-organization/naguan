@@ -87,6 +87,8 @@ def del_cluster(platform_id, cluster_id):
             else:
                 task = cluster.Destroy_Task()
                 WaitForTask(task)
+                for cluster in cluster_resource:
+                    db.vcenter.vcenter_tree_by_id(cluster.id)
                 break
     else:
         raise Exception('No exist cluster.')

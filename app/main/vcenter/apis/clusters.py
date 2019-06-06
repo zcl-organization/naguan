@@ -41,10 +41,10 @@ class ClustersManage(Resource):
                   description: 平台id
                   example: 1
                 dc_id:
-                  type: string
+                  type: integer
                   default: 1
                   description: 数据中心id
-                  example: DataCenter
+                  example: 1
                 cluster_name:
                   type: string
                   default: Cluster
