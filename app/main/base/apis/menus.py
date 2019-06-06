@@ -233,7 +233,7 @@ class MenuManage(Resource):
                                             parent_id=args['parent_id'])
 
         except Exception, e:
-            control.event_logs.eventlog_create(type='menu', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='menu', result=False, resources_id=None,
                                                event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=menu[0]['id'],

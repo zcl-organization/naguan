@@ -328,12 +328,12 @@ class UserManage(Resource):
 
         # 已存在
         except ExistsException as e:
-            control.event_logs.eventlog_create(type='user', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='user', result=False, resources_id=None,
                                                event=unicode('创建新用户：已存在'), submitter=g.username)
             return set_return_val(False, [], str(e), 1102), 400
 
         except Exception as e:
-            control.event_logs.eventlog_create(type='user', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='user', result=False, resources_id=None,
                                                event=unicode('创建新用户'), submitter=g.username)
 
             return set_return_val(False, [], str(e), 1103), 400

@@ -10,8 +10,8 @@ parser.add_argument('request_id', type=str)
 parser.add_argument('submitter', type=str)
 parser.add_argument('status', type=int)
 parser.add_argument('pgnum', type=int)
-parser.add_argument('time_start', type=int)
-parser.add_argument('end_at', type=int)
+parser.add_argument('time_start', type=str)
+parser.add_argument('time_end', type=str)
 response_data = {}
 
 

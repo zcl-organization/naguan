@@ -145,10 +145,10 @@ class RolesUsersManage(Resource):
 
             user_username, role_name = control.roles_users.role_user_add(user_id, role_id)
         except Exception as e:
-            control.event_logs.eventlog_create(type='roles_users', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='roles_users', result=False, resources_id=None,
                                                event=unicode('为用户分配角色'), submitter=g.username)
             return set_return_val(False, {}, str(e), 1401), 400
-        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id='',
+        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id=None,
                                            event=unicode('为用户:%s 分配角色:%s' % (user_username, role_name)),
                                            submitter=g.username)
         return set_return_val(True, {}, '用户角色添加成功', 1400)
@@ -207,7 +207,7 @@ class RolesUsersManage(Resource):
 
             username, new_name, old_name = control.roles_users.role_user_update(user_id, new_role_id, old_role_id)
         except Exception as e:
-            control.event_logs.eventlog_create(type='roles_users', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='roles_users', result=False, resources_id=None,
                                                event=unicode('更新用户角色'), submitter=g.username)
             return set_return_val(False, {}, str(e), 1421), 400
 
@@ -258,10 +258,10 @@ class RolesUsersManage(Resource):
                 raise Exception('参数错误,参数不能为空')
             username = control.roles_users.role_user_delete(user_id)
         except Exception as e:
-            control.event_logs.eventlog_create(type='roles_users', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='roles_users', result=False, resources_id=None,
                                                event=unicode('删除用户角色'), submitter=g.username)
             return set_return_val(False, {}, str(e), 1411), 400
-        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id='',
+        control.event_logs.eventlog_create(type='roles_users', result=True, resources_id=None,
                                            event=unicode('删除用户:%s 的角色' % username),
                                            submitter=g.username, user_id=user_id)
         return set_return_val(True, {}, '用户角色删除成功', 1410)

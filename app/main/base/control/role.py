@@ -37,9 +37,9 @@ def role_update(role_id, name, description):
     role = db.role.list_by_id(role_id)
     if not role:
         raise Exception('Role information not exists')
-    if role.name == 'admin' or 'user':
+    if role.name == 'admin' or role.name == 'user':
         raise Exception('Unable to update super administrator role or normal user role')
-    if db.role.role_exist(name):
+    if db.role.role_exist(name) and role.name != name:
         raise Exception('Role name already exists')
     return db.role.role_update(role_id, name, description)
 
@@ -63,7 +63,6 @@ def role_delete(role_id):
 
 def role_list_by_id(role_id):
     try:
-        data = role_db.list_by_id(role_id)
-        return data
+        return role_db.list_by_id(role_id)
     except Exception as e:
         raise Exception('search user failed')

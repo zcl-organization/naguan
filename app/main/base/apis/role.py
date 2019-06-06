@@ -133,7 +133,7 @@ class RoleManage(Resource):
             role = control.role.role_create(name=args['name'], description=args['description'])
             # id = role[0]['id']
         except Exception as e:
-            control.event_logs.eventlog_create(type='role', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='role', result=False, resources_id=None,
                                                event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
 
             return set_return_val(False, [], str(e), 1301), 400

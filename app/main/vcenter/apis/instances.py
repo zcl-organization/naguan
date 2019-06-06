@@ -186,7 +186,7 @@ class InstanceManage(Resource):
                                resourcepool=args['resourcepool'])
 
             elif args['action'] == 'cold_migrate':
-                data['event'] = unicode('虚拟机转化模板')
+                data['event'] = unicode('虚拟机冷迁移')
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
 

@@ -122,7 +122,7 @@ class PlatformTypeMg(Resource):
             platform_type = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
-            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=None,
                                                event=unicode('增加平台类型'), submitter=g.username)
 
             return set_return_val(False, [], str(e), 1501), 400
