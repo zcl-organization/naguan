@@ -1,5 +1,3 @@
-
-
 from app.main.vcenter.control import disks
 from app.main.vcenter.control import datastores
 from app.main.vcenter.control import images

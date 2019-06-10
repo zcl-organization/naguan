@@ -35,7 +35,7 @@ def vcenter_get_vm_by_uuid(uuid, platform_id):
     if uuid and platform_id:
 
         query = db.session.query(VCenterVm)
-        return query.filter_by(uuid=uuid).filter_by(platform_id=platform_id).first()
+        return query.filter_by(uuid=uuid).filter_by(platform_id=platform_id).filter_by(template=False).first()
     else:
         return False
 
@@ -77,7 +77,8 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
 
 def vcenter_get_vm_by_platform_id(platform_id, host):
     if platform_id and host:
-        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
+        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).filter_by(
+            template=False).all()
         # db.session.remove()
         return result
     else:
@@ -91,7 +92,7 @@ def vm_delete_by_uuid(platform_id, host, uuid):
 
 
 def vm_list(platform_id, host, vm_name, pgnum, pgsort):
-    query = db.session.query(VCenterVm)
+    query = db.session.query(VCenterVm).filter_by(template=False)
     if platform_id:
         query = query.filter_by(platform_id=platform_id)
     if host:

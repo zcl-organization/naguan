@@ -207,7 +207,6 @@ class InstanceManage(Resource):
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'instance action success.', 2000)
 
-
     # 获取 instance 列表
     @basic_auth.login_required
     def get(self):
@@ -355,11 +354,12 @@ class InstanceManage(Resource):
         args = parser.parse_args()
         try:
             instance = Instance(platform_id=args['platform_id'])
-            # print(args['pgnum'])
+
             pgnum = args['pgnum']
             if not pgnum:
                 pgnum = 1  # 默认第一页
-            # print(args['pgsort'])
+            pgnum = pgnum if args['pgnum'] else 1
+
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
                                      pgsort=args['pgsort'])
             # data = instance_manage.vm_list_all(platform_id=args['platform_id'], host=args['host'],
