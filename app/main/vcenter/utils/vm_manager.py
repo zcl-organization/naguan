@@ -258,7 +258,7 @@ class VMDeviceInfoManager:
             disk_spec.device.controllerKey = controller.key
 
             config_spec = vim.vm.ConfigSpec()
-            config_spec.deviceChange = [disk_spec,]
+            config_spec.deviceChange = [disk_spec, ]
 
             WaitForTask(self.vm.ReconfigVM_Task(spec=config_spec))
         except Exception as e:

@@ -22,6 +22,8 @@ from app.main.vcenter.apis.datacenters import DataCenterManage
 from app.main.base.apis.roles_menus import RolesMenusManage
 
 from app.main.vcenter.apis.instances import InstanceManage
+from app.main.vcenter.apis.instance_template import InstanceTemplateManage
+
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
 from app.main.vcenter.apis.network_port_group import NetworkPortGroupManage
@@ -126,6 +128,8 @@ api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:platform_id>/<string
                  endpoint='VmMgDel')
 api.add_resource(ImageManage, '/api/v1.0/vCenter/image', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
+api.add_resource(InstanceTemplateManage, '/api/v1.0/vCenter/template', methods=['GET', 'POST', 'DELETE'],
+                 endpoint='InstanceTemplateMg')
 # vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
                  methods=['GET', 'POST', 'DELETE'], endpoint='NetworkPortGroupMg')

@@ -162,7 +162,6 @@ class Instance(object):
             g.error_code = 2304
             raise Exception('unable to find snapshot, revert failed')
 
-
     def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks, image_id):
         """
         创建主机
@@ -329,11 +328,10 @@ class Instance(object):
         if not self._vm_device_info_manager.add_image(image.path, image.ds_name):
             raise Exception('Add Image Failed')
 
-
     # 获取云主机列表
-    def list(self, host, vm_name, pgnum, pgsort):
+    def list(self, host, vm_name, pgnum, pgsort, template=None):
         try:
-            vms, pg = db.instances.vm_list(self.platform_id, host, vm_name, pgnum, pgsort)
+            vms, pg = db.instances.vm_list(self.platform_id, host, vm_name, pgnum, pgsort, template=template)
             vm_list = []
             if vms:
                 for vm in vms:
