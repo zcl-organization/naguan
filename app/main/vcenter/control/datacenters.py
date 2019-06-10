@@ -85,7 +85,7 @@ def sync_the_datacenter(platform_id, dc_id, instance_dc, instance):
     sync_datacenter([instance_dc], si, content, platform, vcenter_list, vCenter_pid)  # 同步datacenter
 
 
-## 获取Vcenter id
+# 获取Vcenter id
 def get_vCenter_pid(instance):
     platform = instance.platform
     result = db.vcenter.vcenter_tree_get_by_platform(platform['id'], platform['platform_name'], 1)

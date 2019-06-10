@@ -22,6 +22,10 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
         raise ValueError("Missing value for name.")
     if cluster_spec is None:
         cluster_spec = vim.cluster.ConfigSpecEx()
+    cluster = db.clusters.get_cluster_by_name(platform_id, dc_id, cluster_name)
+    if cluster:
+        raise ValueError('The cluster name already exists')
+
     host_folder = instance_dc.hostFolder
     cluster = host_folder.CreateClusterEx(name=cluster_name, spec=cluster_spec)
 
