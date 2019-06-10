@@ -46,6 +46,10 @@ def platform_list(id=None, platform_type_id=None, platform_name=None, platform_t
         # print(platforms_list)
     return platforms_list
 
+def platform_by_id(platform_id):
+    datas = platform_list(id=platform_id) 
+    return datas[0] if len(datas) == 1 else None
+
 
 # def platform_update(id, options=None):
 def platform_update(id, ip, admin_name, admin_password, port, remarks):
