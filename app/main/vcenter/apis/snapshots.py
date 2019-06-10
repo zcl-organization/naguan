@@ -307,7 +307,7 @@ class SnapshotManage(Resource):
                   items:
                     properties:
           400:
-            description: 获取失败
+            description: 删除失败
             schema:
               properties:
                 ok:
@@ -320,7 +320,7 @@ class SnapshotManage(Resource):
                   default: 1302
                 msg:
                   type: string
-                  default: "获取失败"
+                  default: "删除失败"
                 data:
                   type: array
                   items:

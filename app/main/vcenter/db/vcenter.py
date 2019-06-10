@@ -8,17 +8,19 @@ def vcenter_tree_create(tree_type, platform_id, name, dc_host_folder_mor_name=No
                         dc_vm_folder_mor_name=None, mor_name=None, cluster_mor_name=None, cluster_oc_name=None,
                         pid=None):
     # print(options)
+
     new_vcenter = VCenterTree()
     new_vcenter.type = tree_type
     new_vcenter.platform_id = platform_id
     new_vcenter.dc_host_folder_mor_name = dc_host_folder_mor_name
     new_vcenter.dc_mor_name = dc_mor_name
-    new_vcenter.dc_oc_name = dc_oc_name
+    new_vcenter.dc_oc_name = unicode(dc_oc_name)
     new_vcenter.dc_vm_folder_mor_name = dc_vm_folder_mor_name
     new_vcenter.mor_name = mor_name
-    new_vcenter.name = name
+    new_vcenter.name = unicode(name)
     new_vcenter.cluster_mor_name = cluster_mor_name
-    new_vcenter.cluster_oc_name = cluster_oc_name
+    if cluster_oc_name:
+        new_vcenter.cluster_oc_name = unicode(cluster_oc_name)
     new_vcenter.pid = pid
 
     # print(new_vcenter)
@@ -69,20 +71,21 @@ def vcenter_tree_update(tree_type, platform_id, mor_name, name=None, dc_host_fol
     else:
         vcenter_info = db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(
             type=tree_type).filter_by(mor_name=mor_name).first()
+
     if name:
-        vcenter_info.name = name
+        vcenter_info.name = unicode(name)
     if dc_host_folder_mor_name:
         vcenter_info.dc_host_folder_mor_name = dc_host_folder_mor_name
     if dc_mor_name:
         vcenter_info.dc_mor_name = dc_mor_name
     if dc_oc_name:
-        vcenter_info.dc_oc_name = dc_oc_name
+        vcenter_info.dc_oc_name = unicode(dc_oc_name)
     if dc_vm_folder_mor_name:
         vcenter_info.dc_vm_folder_mor_name = dc_vm_folder_mor_name
     if cluster_mor_name:
         vcenter_info.cluster_mor_name = cluster_mor_name
     if cluster_oc_name:
-        vcenter_info.cluster_oc_name = cluster_oc_name
+        vcenter_info.cluster_oc_name = unicode(cluster_oc_name)
     if pid:
         vcenter_info.pid = pid
     db.session.commit()

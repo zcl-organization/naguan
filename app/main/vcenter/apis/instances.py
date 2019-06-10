@@ -40,7 +40,7 @@ parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def post(self):
         """
          操作 vm 信息
@@ -206,7 +206,7 @@ class InstanceManage(Resource):
         except Exception as e:
 
             data['result'] = False
-            return set_return_val(False, [], str(e), g.error_code), 400
+            return set_return_val(False, [], str(e), 404), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)

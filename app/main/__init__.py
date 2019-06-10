@@ -17,6 +17,8 @@ from app.main.base.apis.task_logs import LogTask
 
 from app.main.base.apis.role import RoleManage
 from app.main.base.apis.roles_users import RolesUsersManage
+from app.main.vcenter.apis.clusters import ClustersManage
+from app.main.vcenter.apis.datacenters import DataCenterManage
 from app.main.base.apis.roles_menus import RolesMenusManage
 
 from app.main.vcenter.apis.instances import InstanceManage
@@ -87,7 +89,7 @@ api.add_resource(MenuManage, '/api/v1.0/menu/<id>', methods=['PUT', 'DELETE'], e
 
 # 系统配置
 api.add_resource(System, '/api/v1.0/system/config')
-api.add_resource(SystemLogo, '/api/v1.0/system/Logo/')
+api.add_resource(SystemLogo, '/api/v1.0/system/logo/')
 
 # 请求日志
 api.add_resource(LogRequest, '/api/v1.0/log/request', methods=['GET'], endpoint='LogRequest')
@@ -135,6 +137,15 @@ api.add_resource(NetworkDVSPortGroupManage, '/api/v1.0/vCenter/dvs_network_port_
 # vCenter datastore
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
                  endpoint='DataStoreMg')
+# vCenter DataCenter
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST'],
+                 endpoint='DataCenterMg')
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter/<int:id>', methods=['DELETE'],
+                 endpoint='DataCenterMgDel')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST'],
+                 endpoint='ClustersManage')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters/<int:id>', methods=['DELETE'],
+                 endpoint='ClustersManageDel')
 
 # vCenter disk
 api.add_resource(DiskManage, '/api/v1.0/vCenter/disk', methods=['GET', 'POST', 'DELETE'], endpoint='DiskMg')

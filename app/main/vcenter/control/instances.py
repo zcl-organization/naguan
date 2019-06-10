@@ -47,7 +47,6 @@ class Instance(object):
         self._vm_device_info_manager = VMDeviceInfoManager(self.si, self.content)
         if uuid:
             self.local_vm = db.instances.list_by_uuid(self.platform_id, self.uuid)
-
             vm = get_obj(self.content, [vim.VirtualMachine], self.local_vm.vm_name)
             self._set_vm(vm)
         else:
@@ -180,12 +179,14 @@ class Instance(object):
             disk_data = json.loads(disks) if isinstance(disks, str) else disks
             for disk in disks:
                 if not disk.get('type') or not disk.get('size'):
-                    g.error_code = 2003
+                    g.error_code = 2001
                     raise Exception('The disk information format is incorrect.')
 
         dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
         # dc_name = dc_info.name
-
+        if not dc_info:
+            g.error_code = 2002
+            raise Exception('The dc_id error')
         if self._vm_device_info_manager.build_without_device_info(vm_name, dc_info.name, int(new_cpu), int(new_memory)):
             self._set_vm(self._vm_device_info_manager.vm)
             self.update_vm_local()
@@ -246,7 +247,7 @@ class Instance(object):
 
             # TODO
             if not self._vm_device_info_manager.remove_network(device.label):
-                g.error_code = 221
+                g.error_code = 2212
                 raise Exception('vm network delete failed')
         
         sync_network_device(self.platform_id, self.vm)

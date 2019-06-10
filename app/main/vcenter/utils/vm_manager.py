@@ -187,7 +187,7 @@ class VMDeviceInfoManager:
     @vm.setter
     def vm(self, vm):
         self._vm = vm
-    
+
     def build_without_device_info(self, vm_name, dc_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
         try:
             data_center = self._get_device([vim.Datacenter], dc_name)
