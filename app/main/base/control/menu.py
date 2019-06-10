@@ -2,12 +2,20 @@
 from flask import g
 
 from app.main.base import db
+from app.main.base.control import roles_users as role_user_manage
+from app.main.base.control import roles_menus as role_menu_manage
 
 
 # 获取菜单列表
 def menu_list(menu_id, url, name, identifier, all):
-    if menu_id or url or name or identifier or all:
-
+    # 获取当前用户角色id
+    role_list = role_user_manage.get_current_roles_id()
+    role_id_list = [role.role_id for role in role_list]
+    # print(role_id_list)
+    # 获取当前用户角色所拥有的菜单
+    menu_ids = role_menu_manage.get_menu_id_by_role_list(role_id_list)
+    # print(menu_ids)
+    if all:
         result = db.menu.menu_list(menu_id, url, name, identifier, all)
         data = []
         for menu in result:
@@ -21,39 +29,35 @@ def menu_list(menu_id, url, name, identifier, all):
             data.append(menu_tmp)
         return data
     else:
-        return childer_menu_list(0)
+        return children_menu_list(menu_ids)
 
 
 # 递归获取所有子菜单
-def childer_menu_list(parent_id=0):
+def children_menu_list(menu_ids, parent_id=0):
     menu_level = db.menu.menu_list_by_parent_id(parent_id)
     if menu_level:
-
         menus = []
-        # childer_menus =[]
-
         for menu in menu_level:
-            menu_level_2 = childer_menu_list(menu.id)
-            menu_level_2_list = []
-            if menu_level_2:
+            if menu.id in menu_ids:
+                menu_level_2 = children_menu_list(menu_ids, menu.id)
+                menu_level_2_list = []
+                if menu_level_2:
 
-                for level_2 in menu_level_2:
-                    menu_level_2_list.append(level_2)
+                    for level_2 in menu_level_2:
+                        menu_level_2_list.append(level_2)
 
-            menu_list = {
-                'id': menu.id,
-                'name': menu.name,
-                'icon': menu.icon,
-                'url': menu.url,
-                'identifier': menu.identifier,
-
-            }
-
-            if menu_level_2_list:
-                menu_list['menus'] = menu_level_2_list
-            else:
-                menu_list['menus'] = []
-            menus.append(menu_list)
+                menu_list = {
+                    'id': menu.id,
+                    'name': menu.name,
+                    'icon': menu.icon,
+                    'url': menu.url,
+                    'identifier': menu.identifier,
+                }
+                if menu_level_2_list:
+                    menu_list['menus'] = menu_level_2_list
+                else:
+                    menu_list['menus'] = []
+                menus.append(menu_list)
         return menus
 
     else:
@@ -72,6 +76,11 @@ def menu_create(icon, url, name, identifier, is_hide, is_hide_children, importan
         'url': data.url,
         'identifier': data.identifier,
     }
+
+    # 获取admin角色id
+    admin_role = db.role.get_role_id_by_name('admin')
+    # 为admin角色分配权限
+    db.roles_menus.create_menu_role(admin_role.id, data.id)
     return [menu_dict]
 
 
@@ -93,6 +102,8 @@ def menu_delete(id=None):
                 g.error_code = 1211
                 raise Exception('Menu deletion failed, submenu exists')
             else:
+                # 删除当前菜单 权限相关的角色信息
+                db.roles_menus.delete_by_menu_id(id)
                 return db.menu.menu_delete(id)
         else:
             g.error_code = 1212

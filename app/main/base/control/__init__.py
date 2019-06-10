@@ -10,4 +10,5 @@ from app.main.base.control import system
 from app.main.base.control import request_logs
 from app.main.base.control import event_logs
 from app.main.base.control import task_logs
+from app.main.base.control import roles_menus
 

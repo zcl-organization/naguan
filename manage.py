@@ -3,7 +3,7 @@
 from flask_migrate import MigrateCommand
 from flask_script import Manager, Server
 from app import create_app, db
-from flask import g, request, current_app, session
+from flask import g, request, current_app
 from app.models import RequestLog
 
 import json
@@ -29,11 +29,8 @@ def before_request():
     g.ip = request.remote_addr
     g.url = method + '/' + base_url
     g.time = datetime.datetime.now()
-    # if hasattr(g, 'username'):
-    #     pass
-    # else:
-    #     g.username = 'anonymous'
     g.username = 'anonymous'
+    g.uid = None
 
     g.request_id = str(uuid.uuid5(uuid.uuid4(), 'kaopuyun'))
 

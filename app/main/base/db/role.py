@@ -38,7 +38,6 @@ def role_list(name, pgnum):
 # 创建角色信息
 def role_create(name, description):
     try:
-
         role = Roles()
         role.name = unicode(name)
         role.description = unicode(description)
@@ -71,23 +70,21 @@ def role_update(role_id, name, description):
 def role_delete(role_id):
     query = db.session.query(Roles)
     try:
-        role_willdel = query.filter_by(id=role_id).first()
-        name = role_willdel.name
-        db.session.delete(role_willdel)
+        role_middle = query.filter_by(id=role_id).first()
+        # name = role_middle.name
+        db.session.delete(role_middle)
         db.session.commit()
-        return name
+        return role_middle
     except Exception as e:
         raise Exception('Database operation exception')
 
 
 def list_by_id(role_id):
-
-    data = db.session.query(Roles).filter(Roles.id == role_id).first()
-    return data
+    return db.session.query(Roles).filter(Roles.id == role_id).first()
 
 
-# # 获取资源id
-# def get_role():
-#     role = db.session.query(Roles).order_by(-Roles.id).first()
-#     role_id = role.id
-#     return role_id
+# 根据角色名称获取角色信息
+def get_role_id_by_name(role_name):
+    return db.session.query(Roles).filter_by(name=role_name).first()
+
+

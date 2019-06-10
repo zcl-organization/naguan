@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
+
 from flask import g
+
 
 from app.main.base.db import user as db_user
 from app.common.my_exceptions import ExistsException
 from app.main.base import db
-from app.main.base import task
+# from app.main.base import task
 
 
 # 获取用户列表
@@ -53,6 +55,11 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
         if not user_email:
             user = db.user.user_create(username, password, email, first_name, uid, mobile, department, job, location,
                                        company, sex, uac, active, is_superuser, remarks, current_login_ip)
+            # 获取普通角色id
+
+            role = db.role.get_role_id_by_name('user')
+            # 分配普通角色
+            db.roles_users.create_user_role(user.id, role.id)
             user_dict = {
                 'name': user.username,
                 'first_name': user.first_name,
@@ -112,12 +119,4 @@ def list_by_name(username):
 
 
 def update_login_time(user):
-    # task.user.add(1, 2)
-    # sum_task = task.user.add.apply_async(args=[5, 7])
-
-    # sum_task = task.user.add.apply_async(23, 42)
-    # sum = sum_task.wait()
-    # print(sum)
-    # print (sum_task)
-    # print(sum_task.id)
     return db.user.update_login_time(user)

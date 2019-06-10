@@ -69,7 +69,12 @@ def sync_vcenter_vm(si, content, host, platform):
             ip = vm.summary.guest.ipAddress
         else:
             ip = ''
-        # print(vm_list)
+        #
+        # # 判断为模板 非云主机
+        # if vm.summary.config.template:
+        #     # pass
+        #     continue
+
         if vm.summary.config.uuid in vm_list:
             vm_list.remove(vm.summary.config.uuid)
             db.instances.vcenter_update_vm_by_uuid(uuid=vm.summary.config.uuid, platform_id=platform['id'],
@@ -182,8 +187,7 @@ def sync_vcenter_tree(si, content, platform):
                                                     dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=dc_mor,
                                                     dc_host_folder_mor_name=dc_host_moc,
                                                     dc_vm_folder_mor_name=dc_vm_moc, pid=vCenter_pid)
-        # print(33)
-        # print('dc_pid:', dc_pid)
+
         clusters = dc.hostFolder.childEntity
         # print(clusters.name)
         for cluster in clusters:

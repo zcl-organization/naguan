@@ -193,7 +193,7 @@ class CloudPlatformManage(Resource):
                                                               ip=args['ip'], remarks=args['remarks'])
 
         except Exception, e:
-            control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='cloud_platform', result=False, resources_id=None,
                                                event=unicode('新增云平台信息'), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='cloud_platform', result=True, resources_id=platform[0]['id'],

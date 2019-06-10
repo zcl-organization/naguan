@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from flask import Flask, jsonify
 
+from app.common.tool import set_return_val
 from app.models import Roles, Users, SystemConfig
 from flask_security import Security, SQLAlchemyUserDatastore
 
@@ -12,7 +13,6 @@ from app.main import restful_init
 from app.main import swagger_init
 from app.main.base.control.roles_users import security_init
 from flask_session import Session
-
 
 from app.exts import celery
 
@@ -41,5 +41,16 @@ def create_app(config_name):
             'data': 'hhhhh'
         }
         return jsonify(data)
+
+    @app.route('/api/v1.0/unauthorized')
+    def unauthorized():
+        data = {
+            'ok': False,
+            'data': [],
+            'msg': 'operation is not authorized',
+            'code': 1000
+
+        }
+        return jsonify(data), 400
 
     return app

@@ -18,7 +18,7 @@ parser.add_argument('logo', type=werkzeug.datastructures.FileStorage, location='
 
 
 class SystemLogo(Resource):
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def put(self):
         """
         update logo
@@ -54,7 +54,7 @@ class SystemLogo(Resource):
             logo = args['logo']
             control.system.system_config_update_logo(logo)
         except Exception as e:
-            control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('更新系统logo'),
+            control.event_logs.eventlog_create(type='system', result=False, resources_id=None, event=unicode('更新系统logo'),
                                                submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统logo'),
