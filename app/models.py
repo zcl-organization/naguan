@@ -283,6 +283,21 @@ class VCenterNetworkPortGroup(db.Model):
     dc_name = db.Column(db.String(255))
     dc_mor_name = db.Column(db.String(255))
     platform_id = db.Column(db.Integer)
+    host = db.Column(db.String(255))
+
+
+class VCenterNetworkDistributedSwitchPortGroup(db.Model):
+    """
+    Distributed Switch
+    """
+    __tablename__ = 'vcenter_network_distributed_switch_port_group'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    mor_name = db.Column(db.String(255))
+    dc_name = db.Column(db.String(255))
+    dc_mor_name = db.Column(db.String(255))
+    platform_id = db.Column(db.Integer)
+    switch = db.Column(db.String(255))
 
 
 class VCenterNetworkDevice(db.Model):
