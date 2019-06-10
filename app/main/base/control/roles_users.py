@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+from flask import g
 from app.main.base.db import roles_users as db_role_user
 from flask_security import SQLAlchemyUserDatastore, Security
 from app.models import Users, Roles
@@ -14,8 +15,8 @@ def security_init(app):
     Security(app, user_datastore)
 
 
-def role_user_list(user_name, role_name):
-    data = db_role_user.roles_users_list(user_name, role_name)
+def role_user_list(user_name, role_name, role_id):
+    data = db_role_user.roles_users_list(user_name, role_name, role_id)
     user_role_list = []
     if data:
 
@@ -32,7 +33,6 @@ def role_user_list(user_name, role_name):
 
 
 def role_user_update(user_id, new_role_id, old_role_id):
-
     user_info = user_list_by_id(user_id)
     new_role_info = role_list_by_id(new_role_id)
     old_role_info = role_list_by_id(old_role_id)
@@ -43,7 +43,6 @@ def role_user_update(user_id, new_role_id, old_role_id):
 
 
 def role_user_add(user_id, role_id):
-
     user_info = user_list_by_id(user_id)
     role_info = role_list_by_id(role_id)
     # print(user_info.email)
@@ -63,3 +62,12 @@ def role_user_delete(user_id):
     user_datastore.add_role_to_user(user_info.email, 'user')
     return user_info.username
     # 根据用户id查询所有角色信息
+
+
+def get_current_roles_id():
+    user_id = g.uid
+    return db_role_user.get_roles_id_by_user_id(user_id)
+
+
+def attach_general_role_to_user(user):
+    user_datastore.add_role_to_user(user.email, 'user')

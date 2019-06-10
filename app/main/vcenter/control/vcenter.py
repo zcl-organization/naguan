@@ -69,7 +69,12 @@ def sync_vcenter_vm(si, content, host, platform):
             ip = vm.summary.guest.ipAddress
         else:
             ip = ''
-        # print(vm_list)
+        #
+        # # 判断为模板 非云主机
+        # if vm.summary.config.template:
+        #     # pass
+        #     continue
+
         if vm.summary.config.uuid in vm_list:
             vm_list.remove(vm.summary.config.uuid)
             db.instances.vcenter_update_vm_by_uuid(uuid=vm.summary.config.uuid, platform_id=platform['id'],
@@ -146,6 +151,8 @@ def sync_vcenter_tree(si, content, platform):
 
         vCenter_pid = db.vcenter.vcenter_tree_create(tree_type=1, platform_id=platform['id'],
                                                      name=platform['platform_name'])
+
+    network_sync_datas = []
     datacenters = content.rootFolder.childEntity
     sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid)
 
@@ -161,9 +168,10 @@ def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pi
         dc_host_moc = get_mor_name(dc.hostFolder)
         dc_vm_moc = get_mor_name(dc.vmFolder)
 
-        # 同步vcenter port group
+        # 同步vcenter port group  只收集
         netwroks = dc.network
-        sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
+        network_sync_datas.append((netwroks, dc.name, dc_mor))
+        # sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
 
         # 同步datastore
         sync_datastore(platform, dc, si, content)
@@ -187,8 +195,7 @@ def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pi
                                                     dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=dc_mor,
                                                     dc_host_folder_mor_name=dc_host_moc,
                                                     dc_vm_folder_mor_name=dc_vm_moc, pid=vCenter_pid)
-        # print(33)
-        # print('dc_pid:', dc_pid)
+
         clusters = dc.hostFolder.childEntity
         # print(clusters.name)
         for cluster in clusters:
@@ -301,6 +308,9 @@ def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pi
                 sync_vcenter_vm(si, content, host, platform)
                 # sync_vcenter_vm.apply_async(args=[si, content, host, platform])
                 # sync_vcenter_vm.apply_async(args=[host, platform])
+
+    # 同步所有数据中心下的网络端口组
+    sync_network_port_group(network_sync_datas, platform['id'])
 
     # 删除未操作的 tree
     if vcenter_list:

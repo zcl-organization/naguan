@@ -33,7 +33,9 @@ def vcenter_vm_create(uuid, platform_id, vm_name, vm_mor_name, template, vm_path
 
 def vcenter_get_vm_by_uuid(uuid, platform_id):
     if uuid and platform_id:
-        return db.session.query(VCenterVm).filter_by(uuid=uuid).filter_by(platform_id=platform_id).first()
+
+        query = db.session.query(VCenterVm)
+        return query.filter_by(uuid=uuid).filter_by(platform_id=platform_id).filter_by(template=False).first()
     else:
         return False
 
@@ -68,9 +70,12 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
         
         db.session.commit()
 
+
 def vcenter_get_vm_by_platform_id(platform_id, host):
     if platform_id and host:
-        return db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
+        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).filter_by(
+            template=False).all()
+        return result
     else:
         return False
 
@@ -82,7 +87,7 @@ def vm_delete_by_uuid(platform_id, host, uuid):
 
 
 def vm_list(platform_id, host, vm_name, pgnum, pgsort):
-    query = db.session.query(VCenterVm)
+    query = db.session.query(VCenterVm).filter_by(template=False)
     if platform_id:
         query = query.filter_by(platform_id=platform_id)
     if host:
@@ -124,6 +129,6 @@ def clean_all_vm_rp_name_by_rp_name(platform_id, rp_name):
     db.session.commit()
 
 
-def update_vm_rp_name_by_vm_mor_name(platform_id, vm_mor_name, rp_name):
-    print(rp_name)
-    pass
+# def update_vm_rp_name_by_vm_mor_name(platform_id, vm_mor_name, rp_name):
+#     print(rp_name)
+#     pass

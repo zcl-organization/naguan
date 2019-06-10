@@ -9,6 +9,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('image_id')
 parser.add_argument('name')
 parser.add_argument('ds_name')
+parser.add_argument('pgnum')
 
 
 class ImageManage(Resource):
@@ -104,12 +105,11 @@ class ImageManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        # id = args.get('id')
-        # name = args.get('name')
-        # ds_name = args.get('ds_name')
 
         try:
-            data = control.images.images_list(image_id=args['image_id'], name=args['name'], ds_name=args['ds_name'])
+            pgnum = args['pgnum'] if args['pgnum'] else 1
+            data, pg = control.images.images_list(image_id=args['image_id'], name=args['name'], ds_name=args['ds_name'],
+                                                  pgnum=pgnum)
         except Exception as e:
             return set_return_val(False, [], str(e), 2451), 400
-        return set_return_val(True, data, 'image gets success.', 2450)
+        return set_return_val(True, data, 'image gets success.', 2450, pg)

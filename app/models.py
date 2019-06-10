@@ -56,7 +56,7 @@ class Users(db.Model, UserMixin):
     location = db.Column(db.String(30), nullable=False)  # 地点
     company = db.Column(db.String(100), nullable=False)  # 公司
     sex = db.Column(db.String(3), nullable=False)  # 性别
-    uac = db.Column(db.String(30), nullable=False)  # UAC
+    uac = db.Column(db.Integer)  # UAC
     active = db.Column(db.Boolean, nullable=False)  # 激活状态
     is_superuser = db.Column(db.Boolean, nullable=False)  # 是否是超管
     remarks = db.Column(db.String(255))  # 备注
@@ -220,7 +220,7 @@ class VCenterVm(db.Model):
     ip = db.Column(db.String(20))  # ip
     status = db.Column(db.String(40))
     resource_pool_name = db.Column(db.String(32))
-    created_at = db.Column(db.DateTime) # 创建时间
+    created_at = db.Column(db.DateTime)  # 创建时间
 
 
 class UsersInstances(db.Model):
@@ -283,6 +283,21 @@ class VCenterNetworkPortGroup(db.Model):
     dc_name = db.Column(db.String(255))
     dc_mor_name = db.Column(db.String(255))
     platform_id = db.Column(db.Integer)
+    host = db.Column(db.String(255))
+
+
+class VCenterNetworkDistributedSwitchPortGroup(db.Model):
+    """
+    Distributed Switch
+    """
+    __tablename__ = 'vcenter_network_distributed_switch_port_group'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    mor_name = db.Column(db.String(255))
+    dc_name = db.Column(db.String(255))
+    dc_mor_name = db.Column(db.String(255))
+    platform_id = db.Column(db.Integer)
+    switch = db.Column(db.String(255))
 
 
 class VCenterNetworkDevice(db.Model):
@@ -390,3 +405,8 @@ class VCenterResourcePool(db.Model):
     memory_max_usage = db.Column(db.String(32))
 
 
+class RolesMenus(db.Model):
+    __tablename__ = 'roles_menu'
+    id = db.Column(db.Integer, primary_key=True)
+    role_id = db.Column(db.Integer)
+    menu_id = db.Column(db.Integer)

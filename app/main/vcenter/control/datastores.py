@@ -79,7 +79,7 @@ def sync_datastore(platform, dc, si, content=None):
     # print(11)
     if data_store_list:
         for ds_name in data_store_list:
-            print(ds_name)
+            # print(ds_name)
             db.datastores.delete_datastore_by_ds_name(ds_name)
 
     print ('sync_dc_stop:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))

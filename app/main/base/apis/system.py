@@ -70,17 +70,19 @@ result_fields2 = {
 
 
 class System(Resource):
-    @basic_auth.login_required
+    # @basic_auth.login_required
     @marshal_with(result_fields)
     def post(self):
         """
         初始化系统配置
         ---
-        tags:
+       tags:
           - system config
-        produces:
-          - "application/json"
-        parameters:
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
           - in: body
             name: body
             required: true
@@ -117,7 +119,7 @@ class System(Resource):
                   default: 1
                   description: debug 模式
                   example: 1
-        responses:
+       responses:
           200:
             description: 创建系统配置
             schema:
@@ -149,14 +151,14 @@ class System(Resource):
                                                 user_authentication_mode=args['user_authentication_mode'],
                                                 debug=args['debug'])
         except Exception as e:
-            control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('创建系统配置'),
+            control.event_logs.eventlog_create(type='system', result=False, resources_id=None, event=unicode('创建系统配置'),
                                                submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('创建系统配置'),
                                            submitter=g.username)
         return set_return_val(True, [], 'System config created successfully', 1600)
 
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def get(self):
         """
         获取系统配置信息
@@ -212,7 +214,7 @@ class System(Resource):
             return set_return_val(False, [], str(e), g.error_code), 400
         return set_return_val(True, data, 'System configuration succeeded', 1630)
 
-    @basic_auth.login_required
+    # @basic_auth.login_required
     @marshal_with(result_fields2)
     def put(self):
         """

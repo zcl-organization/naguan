@@ -120,17 +120,18 @@ class PlatformTypeMg(Resource):
             raise Exception('Please pass in the platform type name.')
 
         try:
-            menu = control.platform_type.type_create(name=args['name'])
+            platform_type = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
-            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id='',
+            control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=None,
                                                event=unicode('增加平台类型'), submitter=g.username)
 
             return set_return_val(False, [], str(e), g.error_code), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('增加平台类型'),
-                                           submitter=g.username)
-        return set_return_val(True, [], 'Platform type create succeeded.', 1500)
 
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=platform_type[0]['id'],
+                                           event=unicode('增加平台类型'), submitter=g.username)
+
+        return set_return_val(True, [], 'Platform type create succeeded.', 1500)
 
     @basic_auth.login_required
     def put(self, id):
@@ -183,7 +184,8 @@ class PlatformTypeMg(Resource):
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('更新平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('更新平台类型信息'),
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id,
+                                           event=unicode('更新平台类型信息'),
 
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type update succeeded.', 1520)
@@ -230,6 +232,7 @@ class PlatformTypeMg(Resource):
                                                event=unicode('删除平台类型信息'), submitter=g.username)
 
             return set_return_val(False, [], str(e), g.error_code), 400
-        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id, event=unicode('删除平台类型信息'),
+        control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id,
+                                           event=unicode('删除平台类型信息'),
                                            submitter=g.username)
         return set_return_val(True, [], 'Platform type delete succeeded.', 1510)

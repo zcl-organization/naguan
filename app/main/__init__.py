@@ -19,18 +19,20 @@ from app.main.base.apis.role import RoleManage
 from app.main.base.apis.roles_users import RolesUsersManage
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
+from app.main.base.apis.roles_menus import RolesMenusManage
 
 from app.main.vcenter.apis.instances import InstanceManage
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
 from app.main.vcenter.apis.network_port_group import NetworkPortGroupManage
+from app.main.vcenter.apis.network_port_group import NetworkDVSPortGroupManage
 from app.main.vcenter.apis.datastores import DataStoreManage
 from app.main.vcenter.apis.disks import DiskManage
 from app.main.vcenter.apis.network_devices import NetWorkManage
 from app.main.vcenter.apis.snapshots import SnapshotManage
 from app.main.vcenter.apis.resource_pool import ResourcePoolManage
-from app.main.vcenter.apis.ovf import OvfManage
 
+from app.main.vcenter.apis.ovf import OvfManage
 
 api = Api()
 
@@ -120,12 +122,17 @@ api.add_resource(RolesUsersManage, '/api/v1.0/role_user', methods=['GET', 'POST'
 # vCenter 信息同步
 api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree', methods=['GET', 'POST'], endpoint='TreeMg')
 api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm', methods=['GET', 'POST', 'PUT'], endpoint='VmMg')
-api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:id>/<string:uuid>', methods=['DELETE'], endpoint='VmMgDel')
+api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:platform_id>/<string:uuid>', methods=['DELETE'],
+                 endpoint='VmMgDel')
 api.add_resource(ImageManage, '/api/v1.0/vCenter/image', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
 # vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
-                 methods=['GET'], endpoint='NetworkPortGroupMg')
+                 methods=['GET', 'POST', 'DELETE'], endpoint='NetworkPortGroupMg')
+
+# vCenter Dvswitch网络端口组管理
+api.add_resource(NetworkDVSPortGroupManage, '/api/v1.0/vCenter/dvs_network_port_group/',
+                 methods=['GET', 'POST', 'DELETE'], endpoint='DvsNetworkPortGroupMg')
 
 # vCenter datastore
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
@@ -159,3 +166,7 @@ api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=
 
 api.add_resource(OvfManage, '/api/v1.0/vCenter/ovf', methods=['GET'],
                  endpoint='OvfManage')
+
+api.add_resource(RolesMenusManage, '/api/v1.0/role_menu', methods=['GET', 'POST'], endpoint='RolesMenusMg')
+api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=['PUT', 'DELETE'],
+                 endpoint='RolesMenusMgById')

@@ -10,3 +10,4 @@ from app.main.base.db import request_logs
 from app.main.base.db import event_logs
 from app.main.base.db import task_logs
 from app.main.base.db import user
+from app.main.base.db import roles_menus

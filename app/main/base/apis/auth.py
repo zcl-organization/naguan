@@ -80,10 +80,6 @@ class MyHTTPBasicAuth(HTTPBasicAuth):
 
 basic_auth = MyHTTPBasicAuth()
 
-ret_data = {
-    'ok': True,
-    'data': {}
-}
 
 parser = reqparse.RequestParser()
 parser.add_argument('Action')
@@ -226,6 +222,7 @@ def verify_password(username_or_token, password):
 
         if token_flag == 1:  # 认证成功
             g.username = data['username']
+            g.uid = data['id']
 
         elif token_flag == 2:  # token 超时
             return False
@@ -240,6 +237,7 @@ def verify_password(username_or_token, password):
                 return False
             else:
                 g.username = username_or_token
+                g.uid = user.id
 
         elif ldap:
             ldap_manager = LDAP3LoginManager()
