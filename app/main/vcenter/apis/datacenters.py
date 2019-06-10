@@ -93,7 +93,7 @@ class DataCenterManage(Resource):
     def put(self):
         pass
 
-    def delete(self):
+    def delete(self, id):
         """
          删除DataCenter信息
         ---
@@ -119,11 +119,11 @@ class DataCenterManage(Resource):
                   default: 1
                   description: 平台id
                   example: 1
-                dc_id:
-                  type: string
-                  default: 1
-                  description: 数据中心id
-                  example: 1
+          - in: path
+            type: integer
+            format: int64
+            name: id
+            required: true
        responses:
           200:
             description: vCenter tree 信息
@@ -163,10 +163,9 @@ class DataCenterManage(Resource):
         """
         try:
             args = parser.parse_args()
-            dc_id = args.get('dc_id')
-            if not all([args['platform_id'], dc_id]):
+            if not all([args['platform_id'], id]):
                 raise Exception('Parameter error')
-            control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=dc_id)
+            control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=id)
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001)
         return set_return_val(True, {}, 'Datastore delete success.', 3000)

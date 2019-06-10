@@ -100,7 +100,7 @@ class ClustersManage(Resource):
     def put(self):
         pass
 
-    def delete(self):
+    def delete(self, id):
         """
          删除Cluster信息
         ---
@@ -126,11 +126,11 @@ class ClustersManage(Resource):
                   default: 1
                   description: 平台id
                   example: 1
-                cluster_id:
-                  type: string
-                  default: 1
-                  description: 集群id
-                  example: 1
+          - in: path
+            type: integer
+            format: int64
+            name: id
+            required: true
        responses:
           200:
             description: vCenter tree 信息
@@ -170,9 +170,9 @@ class ClustersManage(Resource):
         """
         try:
             args = parser.parse_args()
-            if not all([args['platform_id'], args['cluster_id']]):
+            if not all([args['platform_id'], id]):
                 raise Exception('Parameter error')
-            data = control.clusters.del_cluster(args.get('platform_id'), cluster_id=args.get('cluster_id'))
+            data = control.clusters.del_cluster(args.get('platform_id'), cluster_id=id)
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001)
         return set_return_val(True, data, 'cluster delete success.', 3000)

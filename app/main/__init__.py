@@ -131,10 +131,14 @@ api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/'
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
                  endpoint='DataStoreMg')
 # vCenter DataCenter
-api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST', 'DELETE'],
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST'],
                  endpoint='DataCenterMg')
-api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST', 'DELETE'],
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter/<int:id>', methods=['DELETE'],
+                 endpoint='DataCenterMgDel')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST'],
                  endpoint='ClustersManage')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters/<int:id>', methods=['DELETE'],
+                 endpoint='ClustersManageDel')
 
 # vCenter disk
 api.add_resource(DiskManage, '/api/v1.0/vCenter/disk', methods=['GET', 'POST', 'DELETE'], endpoint='DiskMg')

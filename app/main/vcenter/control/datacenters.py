@@ -92,5 +92,6 @@ def get_vCenter_pid(instance):
     if result:
         vCenter_pid = result.id
     else:
-        vCenter_pid = 1
+        vCenter_pid = db.vcenter.vcenter_tree_create(tree_type=1, platform_id=platform['id'],
+                                                     name=platform['platform_name'])
     return vCenter_pid
