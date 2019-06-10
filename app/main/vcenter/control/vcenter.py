@@ -146,6 +146,8 @@ def sync_vcenter_tree(si, content, platform):
 
         vCenter_pid = db.vcenter.vcenter_tree_create(tree_type=1, platform_id=platform['id'],
                                                      name=platform['platform_name'])
+
+    network_sync_datas = []
     datacenters = content.rootFolder.childEntity
     for dc in datacenters:
         # print('pid:', vCenter_pid)
@@ -153,9 +155,10 @@ def sync_vcenter_tree(si, content, platform):
         dc_host_moc = get_mor_name(dc.hostFolder)
         dc_vm_moc = get_mor_name(dc.vmFolder)
 
-        # 同步vcenter port group
+        # 同步vcenter port group  只收集
         netwroks = dc.network
-        sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
+        network_sync_datas.append((netwroks, dc.name, dc_mor))
+        # sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
 
         # 同步datastore
         sync_datastore(platform, dc, si, content)
@@ -293,6 +296,9 @@ def sync_vcenter_tree(si, content, platform):
                 sync_vcenter_vm(si, content, host, platform)
                 # sync_vcenter_vm.apply_async(args=[si, content, host, platform])
                 # sync_vcenter_vm.apply_async(args=[host, platform])
+
+    # 同步所有数据中心下的网络端口组
+    sync_network_port_group(network_sync_datas, platform['id'])
 
     # 删除未操作的 tree
     if vcenter_list:

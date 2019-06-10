@@ -7,12 +7,13 @@ from app.main.vcenter import db
 from app.main.vcenter.utils.vm_port_group_manager import VMPortGroupManager, VMDvsPortGroupManager
 
 
-def sync_network_port_group(netwroks, dc_name, dc_mor_name, platform_id):
+# def sync_network_port_group(netwroks, dc_name, dc_mor_name, platform_id):
+def sync_network_port_group(netwrok_datas, platform_id):
     """
     同步一组端口组信息
-    TODO 添加dvs部分: dvs和vs数据同时由net部分传入
+    TODO 问题在于同步时数据不是集中的会有多次datacenter的调用 在当前位置删除会导致最后只保留一个datacenter的网络端口组信息
     """
-    if not netwroks:  # 无更新数据
+    if not netwrok_datas:  # 无更新数据
         return
 
     local_portgroups = {
@@ -23,25 +24,26 @@ def sync_network_port_group(netwroks, dc_name, dc_mor_name, platform_id):
         (item.name, item.switch): item.id for item in db.network_dvs_port_group.dvs_portgroup_all(platform_id)
     }
 
-    for network in netwroks:
-        if not isinstance(network, vim.dvs.DistributedVirtualPortgroup):  # Vswitch处理
-            host_system = _get_portgroup_hostname(network.name, network.host)
-            host_system_name = host_system.name if host_system else ''
-            check_tuple = (network.name, host_system_name)
-            if check_tuple in local_portgroups.keys():
-                local_portgroups.pop(check_tuple)
-            
-            network_mor_name = get_mor_name(network)
-            sync_single_network_port_group(network.name, network_mor_name, dc_name, dc_mor_name, platform_id, host_system_name)
-        else:  # Dvswitch处理
-            dvswitch = _get_portgroup_dswitch(network)
-            check_tuple = (network.name, dvswitch.name)
-            if check_tuple in dvs_local_portgroups.keys():
-                local_portgroups.pop(check_tuple)
-            
-            network_mor_name = get_mor_name(network)
-            sync_single_dvs_network_port_group(network.name, network_mor_name, dc_name, dc_mor_name, platform_id, dvswitch.name)
-    
+    for networks, dc_name, dc_mor_name in netwrok_datas:
+        for network in networks:
+            if not isinstance(network, vim.dvs.DistributedVirtualPortgroup):  # Vswitch处理
+                host_system = _get_portgroup_hostname(network.name, network.host)
+                host_system_name = host_system.name if host_system else ''
+                check_tuple = (network.name, host_system_name)
+                if check_tuple in local_portgroups.keys():
+                    local_portgroups.pop(check_tuple)
+                
+                network_mor_name = get_mor_name(network)
+                sync_single_network_port_group(network.name, network_mor_name, dc_name, dc_mor_name, platform_id, host_system_name)
+            else:  # Dvswitch处理
+                dvswitch = _get_portgroup_dswitch(network)
+                check_tuple = (network.name, dvswitch.name)
+                if check_tuple in dvs_local_portgroups.keys():
+                    dvs_local_portgroups.pop(check_tuple)
+                
+                network_mor_name = get_mor_name(network)
+                sync_single_dvs_network_port_group(network.name, network_mor_name, dc_name, dc_mor_name, platform_id, dvswitch.name)
+
     for item in local_portgroups:  # 清理vswitch部分的本地数据
         db.network_port_group.network_delete(local_portgroups[item])
 
@@ -94,7 +96,7 @@ def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, 
     else:
         db.network_dvs_port_group.dvs_network_update(
             id=network_info.id,
-            name=network_info_name,
+            name=network_name,
             mor_name=network_mor_name,
             dc_name=dc_name,
             dc_mor_name=dc_mor_name
