@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from app.exts import db
 from app.models import VCenterResourcePool
 
@@ -68,6 +69,15 @@ def update_resource_pool(rp_id, platform_id, dc_name, dc_mor_name, cluster_name,
     db.session.commit()
 
 
+def delete_resource_pool(rp_id):
+    """
+    删除本地资源池
+    """
+    rp_info = db.session.query(VCenterResourcePool).filter_by(id=rp_id).first()
+    db.session.delete(rp_info)
+    db.session.commit()
+
+
 def get_rp_by_mor_name(platform_id, mor_name):
     return db.session.query(VCenterResourcePool).filter_by(platform_id=platform_id).filter_by(mor_name=mor_name).first()
 
@@ -81,3 +91,15 @@ def get_resource_pool_list(platform_id, dc_mor_name, cluster_mor_name):
     if cluster_mor_name:
         query = query.filter_by(cluster_mor_name=cluster_mor_name)
     return query.all()
+
+
+def get_resource_pool_by_id(rp_id):
+    return db.session.query(VCenterResourcePool).filter_by(id=rp_id).first()
+
+
+def get_resource_pool_by_names(datacenter_name, cluster_name, resourcepool_name):
+    return db.session.query(VCenterResourcePool).filter_by(
+        dc_name=datacenter_name,
+        cluster_name=cluster_name,
+        name=resourcepool_name
+    ).first()

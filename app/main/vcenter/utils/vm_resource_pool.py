@@ -56,3 +56,6 @@ class VMResourcePoolManager:
                 if item.name == name:
                     return item
         return None
+
+    def find_resource_pool_by_name(self, name):
+        return self._find_resource_pool_by_name(name)

@@ -54,7 +54,7 @@ class VCenter(signleton):
 
     @property
     def platform(self):
-        self.get_platform()
+        return self.get_platform()
 
     def find_hostsystem_by_name(self, host_name):
         return self._get_object([vim.HostSystem], host_name)

@@ -7,6 +7,9 @@ from app.main.vcenter import db
 from app.main.vcenter.control.utils import get_mor_name
 from app.exts import celery
 
+from app.main.vcenter.utils.base import VCenter
+from app.main.vcenter.utils.vm_resource_pool import VMResourcePoolManager
+
 
 @celery.task()
 def sync_resourcepool(platform, dc, cluster, si, content):
@@ -125,3 +128,87 @@ def get_resource_pool_list(platform_id, dc_mor_name, cluster_mor_name):
         }
         resource_list.append(_t)
     return resource_list
+
+
+def check_if_resource_pool_exists(resouce_pool_id=None, dc_name=None, cluster_name=None, resource_pool_name=None):
+    if resouce_pool_id:
+        return True if db.resource_pool.get_resource_pool_by_id(resouce_pool_id) else False
+    elif dc_name and cluster_name and resource_pool_name:
+        return True if db.resource_pool.get_resource_pool_by_names(dc_name, cluster_name, resource_pool_name) else False
+    else:
+        raise RuntimeError
+
+
+class ResourcePool:
+    def __init__(self, platform_id):
+        self._platform_id =  platform_id
+        self._vcenter = VCenter(platform_id)
+
+    def create_pool(self, cluster_name, rp_name, root_rp_name=None, **kw_args):
+        """
+        创建
+        """
+        cluster = self._vcenter.find_cluster_by_name(cluster_name)
+        root_rp = None if root_rp_name else None
+        _vmrpm = VMResourcePoolManager(cluster)
+        if not _vmrpm.create(rp_name, root_resource_pool=root_rp, **kw_args):
+            raise RuntimeError('Create ResourcePool Failed!!!')
+
+        # 同步操作  获取dc、rp对象 保存数据
+        dc = self._find_data_center_by_cluster(cluster)
+        rp = _vmrpm.find_resource_pool_by_name(rp_name)  # 一定会找到 emmm
+        args_dict = dict(
+            platform_id=self._vcenter.platform['id'],
+            dc_name=dc.name,
+            dc_mor_name=get_mor_name(dc),
+            cluster_name=cluster.name,
+            cluster_mor_name=get_mor_name(cluster),
+            name=rp.name,
+            mor_name=get_mor_name(rp),
+            parent_name=rp.parent.name,
+            over_all_status=rp.overallStatus,
+            cpu_expand_able_reservation=rp.summary.config.cpuAllocation.expandableReservation,
+            cpu_reservation=rp.summary.config.cpuAllocation.reservation,
+            cpu_limit=rp.summary.config.cpuAllocation.limit,
+            cpu_shares=rp.summary.config.cpuAllocation.shares.shares,
+            cpu_level=rp.summary.config.cpuAllocation.shares.shares,
+            cpu_over_all_usage=rp.summary.runtime.cpu.overallUsage,
+            cpu_max_usage=rp.summary.runtime.cpu.maxUsage,
+            memory_expand_able_reservation=rp.summary.config.memoryAllocation.expandableReservation,
+            memory_reservation=rp.summary.config.memoryAllocation.reservation,
+            memory_limit=rp.summary.config.memoryAllocation.limit,
+            memory_shares=rp.summary.config.memoryAllocation.shares.shares,
+            memory_level=rp.summary.config.memoryAllocation.shares.level,
+            memory_over_all_usage=rp.summary.runtime.memory.overallUsage,
+            memory_max_usage=rp.summary.runtime.memory.maxUsage
+        )
+        create_resource_pool(**args_dict)
+
+    def delete_pool(self, cluster_name, del_rp_name):
+        """
+        删除动作  不包括同步
+        """
+        cluster = self._vcenter.find_cluster_by_name(cluster_name)
+        _vmrpm = VMResourcePoolManager(cluster)
+        if not _vmrpm.destroy(del_rp_name):
+            raise RuntimeError('Destory ResourcePool Failed!!!')
+
+    def delete_pool_by_id(self, rp_id):
+        """
+        删除动作 包括同步
+        """
+        pool = db.resource_pool.get_resource_pool_by_id(rp_id)
+        self.delete_pool(pool.cluster_name, pool.name)
+
+        # 同步
+        db.resource_pool.delete_resource_pool(rp_id)
+
+    def _find_data_center_by_cluster(self, cluster):
+        cluster_networks = set(cluster.network)
+        container = self._vcenter.connect.viewManager.CreateContainerView(
+            self._vcenter.connect.rootFolder, [vim.Datacenter], True)
+        for item in container.view:
+            if not (cluster_networks - set(item.network)):
+                return item
+
+        return None

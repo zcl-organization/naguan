@@ -4,11 +4,19 @@ from flask_restful import Resource, reqparse
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.base.apis.auth import basic_auth
+from app.main.vcenter.control.resource_pool import check_if_resource_pool_exists
+from app.main.vcenter.control.resource_pool import ResourcePool
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
 parser.add_argument('dc_mor_name')
 parser.add_argument('cluster_mor_name')
+# parser.add_argument('resource_pool_id')   # 删除时的资源池id
+parser.add_argument('cluster_name')  #  创建或是删除资源池所在的集群位置
+parser.add_argument('dc_name')  # 归属的数据中心名称
+parser.add_argument('rp_name')  # 要创建或是删除的资源池名称
+parser.add_argument('root_rp_name')  # 创建资源池归属的根项
+parser.add_argument('data_args')   # 创建资源池使用的参数字典
 
 
 class ResourcePoolManage(Resource):
@@ -179,3 +187,47 @@ class ResourcePoolManage(Resource):
         except Exception as e:
             return set_return_val(False, [], str(e), 2471), 400
         return set_return_val(True, data, 'Datastore gets success.', 2470)
+
+    @basic_auth.login_required
+    def post(self):
+        """
+        1. 判断数据库中是否存在
+        2. 创建创建操作
+        3. 异常处理
+        """
+        args = parser.parse_args()
+
+        try:
+            if not all([args['platform_id'], args['cluster_name'], args['rp_name'], args['dc_name']]):
+                raise RuntimeError('Parameter Error!!!')
+
+            if check_if_resource_pool_exists(
+                dc_name=args['dc_name'], cluster_name=args['cluster_name'], resource_pool_name=args['rp_name']):
+                raise RuntimeError('This ResourcePool Exists')
+
+            rp = ResourcePool(args['platform_id'])
+            data_args = {} if not args['data_args'] else args['data_args']
+            rp.create_pool(args['cluster_name'], args['rp_name'], args['root_rp_name'], **data_args)
+        except Exception as e:
+            return set_return_val(False, {}, str(e), 2551), 400
+
+        return set_return_val(True, {}, 'ResourcePool Create Success', 2550)
+
+    @basic_auth.login_required
+    def delete(self, resource_pool_id):
+        args = parser.parse_args()
+
+        try:
+            if not args['platform_id']:
+                raise RuntimeError('Parameter Error!!!')
+
+            if not check_if_resource_pool_exists(resouce_pool_id=resource_pool_id):
+                raise RuntimeError('This ResourcePool Not Exists')
+
+            rp = ResourcePool(args['platform_id'])
+            # rp.delete_pool(args['cluster_name'], args['rp_name'])
+            rp.delete_pool_by_id(resource_pool_id)
+        except Exception as e:
+            return set_return_val(False, {}, str(e), 2553), 400
+
+        return set_return_val(True, {}, 'ResourcePool Delete Success', 2552)
