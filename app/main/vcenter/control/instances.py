@@ -431,7 +431,6 @@ class Instance(object):
                                            host='192.168.12.203', ip=ip, status=self.vm.summary.runtime.powerState,
                                            resource_pool_name=resource_pool_name, created_at=self.vm.config.createDate)
 
-
     def clone(self, new_vm_name, ds_id, dc_id=None, resourcepool=None):
         """
         克隆虚机

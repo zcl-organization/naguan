@@ -2,14 +2,19 @@
 from flask import g
 from flask_restful import Resource, reqparse
 from app import set_return_val
-from app.main.vcenter.control.instances import Instance
+from app.main.vcenter import control
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
-parser.add_argument('pgnum')
+parser.add_argument('pgnum')  # 翻页
 parser.add_argument('pgsort')
 parser.add_argument('host')
 parser.add_argument('vm_name')
+
+parser.add_argument('uuid')
+parser.add_argument('dc_id')  # 数据中心
+parser.add_argument('ds_id')  # 数据存储
+parser.add_argument('resourcepool')  # 资源中心
 
 
 class InstanceTemplateManage(Resource):
@@ -17,7 +22,7 @@ class InstanceTemplateManage(Resource):
     def get(self):
         args = parser.parse_args()
         try:
-            instance = Instance(platform_id=args['platform_id'])
+            instance = control.instances.Instance(platform_id=args['platform_id'])
 
             pgnum = args['pgnum'] if args['pgnum'] else 1
 
@@ -29,10 +34,14 @@ class InstanceTemplateManage(Resource):
 
     def post(self):
         args = parser.parse_args()
-
-        instance = Instance(platform_id=args['platform_id'])
-
-        pass
+        if not all([args['platform_id'], args['uuid'], args['vm_name'],
+                    args['ds_id'], args['dc_id']]):
+            raise Exception('Parameter error')
+        instance = control.instances.Instance(platform_id=args['platform_id'], uuid=args['uuid'])
+        control.instance_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
+                                                     dc_id=args['dc_id'],  resourcepool=args['resourcepool'])
+        print instance.local_vm
+        print instance.vm
 
     def delete(self, vm_uuid):
         pass

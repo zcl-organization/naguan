@@ -4,7 +4,7 @@ from pyVmomi import vim
 from app.main.vcenter.control.instances import Instance
 from app.main.vcenter.control.utils import get_mor_name
 from app.main.vcenter import db
-from app.main.vcenter.control.vcenter import sync_datacenter
+# from app.main.vcenter.control.vcenter import sync_datacenter
 
 
 def create_datacenter(platform_id, dc_name, folder=None):
