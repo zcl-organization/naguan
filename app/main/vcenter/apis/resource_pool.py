@@ -191,9 +191,79 @@ class ResourcePoolManage(Resource):
     @basic_auth.login_required
     def post(self):
         """
-        1. 判断数据库中是否存在
-        2. 创建创建操作
-        3. 异常处理
+          创建vCenter resource pool
+        ---
+       tags:
+          - vCenter ResourcePool
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - cluster_name
+              - rp_name
+              - dc_name
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                cluster_name:
+                  type: string
+                  default: gaf
+                  description: 集群名称
+                  example: gaf
+                rp_name:
+                  type: string
+                  default: test_rp
+                  description: 资源池名称
+                  example: test_rp
+                dc_name:
+                  type: integer
+                  default: Datacenter
+                  description: 数据中心名称
+                  example: Datacenter
+       responses:
+          200:
+            description: vCenter resource pool 创建状态信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: status
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                  default: 2551
+                msg:
+                  type: string
+                  default: "vm not found"
+                data:
+                  type: array
+                  items:
+                    properties:
         """
         args = parser.parse_args()
 
@@ -215,6 +285,61 @@ class ResourcePoolManage(Resource):
 
     @basic_auth.login_required
     def delete(self, resource_pool_id):
+        """
+         删除vCenter resource pool
+        ---
+       tags:
+          - vCenter ResourcePool
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+            description: '1 -- platform_id'
+          - in: path
+            name: resource_pool_id
+            type: integer
+            required: true
+            description: '8 -- resource_pool_id'
+       responses:
+          200:
+            description: vCenter resource pool 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         args = parser.parse_args()
 
         try:
