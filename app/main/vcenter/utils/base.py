@@ -5,6 +5,7 @@ from pyVmomi import vim
 
 from app.main.base.control import cloud_platform
 from app.main.vcenter.control.utils import connect_server
+from app.main.vcenter.db.datastores import get_ds_by_id
 
 
 class signleton(object):
@@ -55,6 +56,22 @@ class VCenter(signleton):
     @property
     def platform(self):
         return self.get_platform()
+
+    def find_hostsystem_by_id(self, host_id):
+        """TODO 无数据库, 待添加"""
+        raise Exception('No DB')
+
+    def find_datacenter_by_id(self, dc_id):
+        """TODO 无数据库, 待添加"""
+        raise Exception('No DB')
+
+    def find_datastore_by_id(self, ds_id):
+        ds_obj = get_ds_by_id(ds_id)
+        return self.find_datastore_by_name(ds_obj.ds_name)
+
+    def find_cluster_by_id(self, cluster_id):
+        """TODO 无数据库, 待添加"""
+        raise Exception('No DB')
 
     def find_hostsystem_by_name(self, host_name):
         return self._get_object([vim.HostSystem], host_name)

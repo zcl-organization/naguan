@@ -4,7 +4,7 @@ from app.models import VCenterResourcePool
 
 
 def create_resource_pool(platform_id, dc_name, dc_mor_name, cluster_name, cluster_mor_name, name, mor_name, parent_name,
-                         over_all_status, cpu_expand_able_reservation,
+                         parent_id, over_all_status, cpu_expand_able_reservation,
                          cpu_reservation, cpu_limit, cpu_shares, cpu_level, cpu_over_all_usage, cpu_max_usage,
                          memory_expand_able_reservation, memory_reservation, memory_limit, memory_shares, memory_level,
                          memory_over_all_usage, memory_max_usage):
@@ -17,6 +17,7 @@ def create_resource_pool(platform_id, dc_name, dc_mor_name, cluster_name, cluste
     new_rp.name = name
     new_rp.mor_name = mor_name
     new_rp.parent_name = parent_name
+    new_rp.parent_id = parent_id
     new_rp.over_all_status = over_all_status
     new_rp.cpu_expand_able_reservation = cpu_expand_able_reservation
     new_rp.cpu_reservation = cpu_reservation
@@ -37,7 +38,7 @@ def create_resource_pool(platform_id, dc_name, dc_mor_name, cluster_name, cluste
 
 
 def update_resource_pool(rp_id, platform_id, dc_name, dc_mor_name, cluster_name, cluster_mor_name, name, mor_name,
-                         parent_name, over_all_status, cpu_expand_able_reservation,
+                         parent_name, parent_id, over_all_status, cpu_expand_able_reservation,
                          cpu_reservation, cpu_limit, cpu_shares, cpu_level, cpu_over_all_usage, cpu_max_usage,
                          memory_expand_able_reservation, memory_reservation, memory_limit, memory_shares, memory_level,
                          memory_over_all_usage, memory_max_usage):
@@ -50,6 +51,7 @@ def update_resource_pool(rp_id, platform_id, dc_name, dc_mor_name, cluster_name,
     rp_info.cluster_name = cluster_name
     rp_info.cluster_mor_name = cluster_mor_name
     rp_info.parent_name = parent_name
+    rp_info.parent_id = parent_id
     rp_info.over_all_status = over_all_status
     rp_info.cpu_expand_able_reservation = cpu_expand_able_reservation
     rp_info.cpu_reservation = cpu_reservation
@@ -97,9 +99,19 @@ def get_resource_pool_by_id(rp_id):
     return db.session.query(VCenterResourcePool).filter_by(id=rp_id).first()
 
 
-def get_resource_pool_by_names(datacenter_name, cluster_name, resourcepool_name):
+def get_resource_pool_by_names(datacenter_name, cluster_name, resourcepool_name, root_rp_name):
     return db.session.query(VCenterResourcePool).filter_by(
         dc_name=datacenter_name,
         cluster_name=cluster_name,
-        name=resourcepool_name
+        name=resourcepool_name,
+        parent_name=root_rp_name
+    ).first()
+
+def get_resource_pool_by_datas(platform_id, dc_name, cluster_name, name, mor_name):
+    return db.session.query(VCenterResourcePool).filter_by(
+        platform_id=platform_id,
+        dc_name=dc_name,
+        cluster_name=cluster_name,
+        name=name,
+        mor_name=mor_name
     ).first()
