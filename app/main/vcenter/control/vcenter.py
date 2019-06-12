@@ -38,6 +38,7 @@ def sync_vcenter_vm(si, content, host, platform):
     # @celery.task()
     # def sync_vcenter_vm(host, platform):
     print ('sync_vm_start:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
+
     vms = host.vm
 
     # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))

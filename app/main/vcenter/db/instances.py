@@ -73,8 +73,7 @@ def vcenter_update_vm_by_uuid(uuid, platform_id, vm_name, vm_mor_name, template,
 
 def vcenter_get_vm_by_platform_id(platform_id, host):
     if platform_id and host:
-        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).filter_by(
-            template=False).all()
+        result = db.session.query(VCenterVm.uuid).filter_by(platform_id=platform_id).filter_by(host=host).all()
         return result
     else:
         return False
