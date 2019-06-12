@@ -206,7 +206,7 @@ class InstanceManage(Resource):
         except Exception as e:
 
             data['result'] = False
-            return set_return_val(False, [], str(e), g.error_code), 400
+            return set_return_val(False, [], str(e), 404), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
@@ -363,7 +363,7 @@ class InstanceManage(Resource):
             pgnum = args['pgnum'] if args['pgnum'] else 1
 
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
-                                     pgsort=args['pgsort'])
+                                     pgsort=args['pgsort'], template=False)
 
         except Exception as e:
             return set_return_val(False, [], str(e), 2031), 400

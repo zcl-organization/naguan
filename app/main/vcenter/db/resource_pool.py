@@ -115,3 +115,11 @@ def get_resource_pool_by_datas(platform_id, dc_name, cluster_name, name, mor_nam
         name=name,
         mor_name=mor_name
     ).first()
+
+def get_resource_pool_mor_name_by_id(resource_pool_id):
+    resource_pool = db.session.query(VCenterResourcePool).get(resource_pool_id)
+    if resource_pool:
+        return resource_pool.mor_name
+    else:
+        return None
+

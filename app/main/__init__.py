@@ -17,9 +17,13 @@ from app.main.base.apis.task_logs import LogTask
 
 from app.main.base.apis.role import RoleManage
 from app.main.base.apis.roles_users import RolesUsersManage
+from app.main.vcenter.apis.clusters import ClustersManage
+from app.main.vcenter.apis.datacenters import DataCenterManage
 from app.main.base.apis.roles_menus import RolesMenusManage
 
 from app.main.vcenter.apis.instances import InstanceManage
+from app.main.vcenter.apis.instance_template import InstanceTemplateManage
+
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
 from app.main.vcenter.apis.network_port_group import NetworkPortGroupManage
@@ -87,7 +91,7 @@ api.add_resource(MenuManage, '/api/v1.0/menu/<id>', methods=['PUT', 'DELETE'], e
 
 # 系统配置
 api.add_resource(System, '/api/v1.0/system/config')
-api.add_resource(SystemLogo, '/api/v1.0/system/Logo/')
+api.add_resource(SystemLogo, '/api/v1.0/system/logo/')
 
 # 请求日志
 api.add_resource(LogRequest, '/api/v1.0/log/request', methods=['GET'], endpoint='LogRequest')
@@ -124,6 +128,8 @@ api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:platform_id>/<string
                  endpoint='VmMgDel')
 api.add_resource(ImageManage, '/api/v1.0/vCenter/image', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
+api.add_resource(InstanceTemplateManage, '/api/v1.0/vCenter/template', methods=['GET', 'POST', 'DELETE'],
+                 endpoint='InstanceTemplateMg')
 # vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
                  methods=['GET', 'POST', 'DELETE'], endpoint='NetworkPortGroupMg')
@@ -135,6 +141,15 @@ api.add_resource(NetworkDVSPortGroupManage, '/api/v1.0/vCenter/dvs_network_port_
 # vCenter datastore
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
                  endpoint='DataStoreMg')
+# vCenter DataCenter
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST'],
+                 endpoint='DataCenterMg')
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter/<int:id>', methods=['DELETE'],
+                 endpoint='DataCenterMgDel')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST'],
+                 endpoint='ClustersManage')
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters/<int:id>', methods=['DELETE'],
+                 endpoint='ClustersManageDel')
 
 # vCenter disk
 api.add_resource(DiskManage, '/api/v1.0/vCenter/disk', methods=['GET', 'POST', 'DELETE'], endpoint='DiskMg')

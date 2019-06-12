@@ -187,7 +187,7 @@ class VMDeviceInfoManager:
     @vm.setter
     def vm(self, vm):
         self._vm = vm
-    
+
     def build_without_device_info(self, vm_name, dc_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
         try:
             data_center = self._get_device([vim.Datacenter], dc_name)
@@ -258,7 +258,7 @@ class VMDeviceInfoManager:
             disk_spec.device.controllerKey = controller.key
 
             config_spec = vim.vm.ConfigSpec()
-            config_spec.deviceChange = [disk_spec,]
+            config_spec.deviceChange = [disk_spec, ]
 
             WaitForTask(self.vm.ReconfigVM_Task(spec=config_spec))
         except Exception as e:

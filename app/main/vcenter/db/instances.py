@@ -86,8 +86,8 @@ def vm_delete_by_uuid(platform_id, host, uuid):
         synchronize_session=False)
 
 
-def vm_list(platform_id, host, vm_name, pgnum, pgsort):
-    query = db.session.query(VCenterVm).filter_by(template=False)
+def vm_list(platform_id, host, vm_name, pgnum, pgsort, template=None):
+    query = db.session.query(VCenterVm).filter_by(template=template)
     if platform_id:
         query = query.filter_by(platform_id=platform_id)
     if host:
@@ -102,6 +102,7 @@ def vm_list(platform_id, host, vm_name, pgnum, pgsort):
     if pgnum:  # 默认获取分页获取所有日志
         query = query.paginate(page=int(pgnum), per_page=10, error_out=False)
     # print(query)
+
     results = query.items
 
     pg = {

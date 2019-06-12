@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5242b651f92e
+Revision ID: 5749754567ec
 Revises: 
-Create Date: 2019-05-17 14:22:11.907000
+Create Date: 2019-06-11 11:17:36.968000
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5242b651f92e'
+revision = '5749754567ec'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -77,6 +77,12 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_table('roles_menu',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.Column('menu_id', sa.Integer(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('system_config',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('platform_name', sa.String(length=32), nullable=True),
@@ -103,6 +109,7 @@ def upgrade():
     sa.Column('enqueue_time', sa.DateTime(), nullable=True),
     sa.Column('start_time', sa.DateTime(), nullable=True),
     sa.Column('end_time', sa.DateTime(), nullable=True),
+    sa.Column('request_id', sa.String(length=100), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
@@ -118,7 +125,7 @@ def upgrade():
     sa.Column('location', sa.String(length=30), nullable=False),
     sa.Column('company', sa.String(length=100), nullable=False),
     sa.Column('sex', sa.String(length=3), nullable=False),
-    sa.Column('uac', sa.Integer(), nullable=False),
+    sa.Column('uac', sa.Integer(), nullable=True),
     sa.Column('active', sa.Boolean(), nullable=False),
     sa.Column('is_superuser', sa.Boolean(), nullable=False),
     sa.Column('remarks', sa.String(length=255), nullable=True),
@@ -208,6 +215,7 @@ def upgrade():
     sa.Column('ip', sa.String(length=20), nullable=True),
     sa.Column('status', sa.String(length=40), nullable=True),
     sa.Column('resource_pool_name', sa.String(length=32), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('vcenter_network_device',
@@ -220,6 +228,16 @@ def upgrade():
     sa.Column('address_type', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('vcenter_network_distributed_switch_port_group',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=255), nullable=True),
+    sa.Column('mor_name', sa.String(length=255), nullable=True),
+    sa.Column('dc_name', sa.String(length=255), nullable=True),
+    sa.Column('dc_mor_name', sa.String(length=255), nullable=True),
+    sa.Column('platform_id', sa.Integer(), nullable=True),
+    sa.Column('switch', sa.String(length=255), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('vcenter_network_port_group',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=True),
@@ -227,6 +245,7 @@ def upgrade():
     sa.Column('dc_name', sa.String(length=255), nullable=True),
     sa.Column('dc_mor_name', sa.String(length=255), nullable=True),
     sa.Column('platform_id', sa.Integer(), nullable=True),
+    sa.Column('host', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('vcenter_resource_pool',
@@ -302,6 +321,7 @@ def downgrade():
     op.drop_table('vcenter_snapshot')
     op.drop_table('vcenter_resource_pool')
     op.drop_table('vcenter_network_port_group')
+    op.drop_table('vcenter_network_distributed_switch_port_group')
     op.drop_table('vcenter_network_device')
     op.drop_table('vcenter_instance')
     op.drop_table('vcenter_image')
@@ -311,6 +331,7 @@ def downgrade():
     op.drop_table('user')
     op.drop_table('task_log')
     op.drop_table('system_config')
+    op.drop_table('roles_menu')
     op.drop_table('role')
     op.drop_table('request_log')
     op.drop_table('menu')
