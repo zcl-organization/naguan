@@ -49,7 +49,6 @@ class VMResourcePoolManager:
                 raise RuntimeError('Not the Resource Pool, Name: {}'.format(rp_name))
             WaitForTask(resource_pool.Destroy())
         except Exception as e:
-            print e
             return False 
 
         return True

@@ -159,14 +159,14 @@ class ResourcePool:
         root_rp = None if root_rp_id == -1 or not root_rp_id else db.resource_pool.get_resource_pool_by_id(root_rp_id)
         # 获取根节点名称
         root_rp_name = root_rp.name if root_rp else None
-        root_rp_obj = self._find_resource_pool_by_name(root_rp) if root_rp else None
+        cluster = self._vcenter.find_cluster_by_name(cluster_name)
+        root_rp_obj = self._find_resource_pool_by_name(cluster, root_rp.mor_name) if root_rp else None
 
         if check_if_resource_pool_exists(
                 dc_name=data_center_name, cluster_name=cluster_name, 
                 resource_pool_name=rp_name, root_rp_name=root_rp_name):
             raise RuntimeError('This ResourcePool Exists')
 
-        cluster = self._vcenter.find_cluster_by_name(cluster_name)
         _vmrpm = VMResourcePoolManager(cluster)
         if not _vmrpm.create(rp_name, root_resource_pool=root_rp_obj, **kw_args):
             raise RuntimeError('Create ResourcePool Failed!!!')
@@ -240,46 +240,21 @@ class ResourcePool:
 
         return None
 
-    def _find_resource_pool_by_name(self, local_rp_obj):
+    def _find_resource_pool_by_name(self, cluster, rp_mor_name):
         """
-        通过名称查询资源池对象   TODO 优化
-        本地数据库收集父节点树 -> 对照远程获取对应节点
+        通过名称查询资源池对象
         """
-        new_id = local_rp_obj.parent_id
-        names = []
-        while new_id != -1:
-            new_obj = db.resource_pool.get_resource_pool_by_id(new_id)
-            new_id = new_obj.parent_id
-            names.append(new_obj.name)
-        # 收集完毕
-
-        rps = self._vcenter.connect.viewManager.CreateContainerView(
-            self._vcenter.connect.rootFolder, [vim.ResourcePool], True)
-        for item in rps.view:
-            if item.name == local_rp_obj.name:
-                finded_rp = self._search_resource_pool(item.parent, names)
-                if finded_rp:
+        resource_pools = [cluster.resourcePool,]
+        for item in resource_pools:
+            if isinstance(item, vim.ResourcePool):
+                if get_mor_name(item) == rp_mor_name:
                     return item
-        
+                if item.resourcePool:
+                    if isinstance(item.resourcePool, list):
+                        resource_pools.extend(item.resourcePool)
+                    else:
+                        resource_pools.append(item.resourcePool)
         return None
-
-    def _search_resource_pool(self, resource_pool_parent, names):
-        """
-        通过当前资源池的父节点递归判断该节点是否是查询的节点  TODO
-        """
-        if not names:
-            return False
-        
-        if not isinstance(resource_pool_parent, vim.ResourcePool):
-            return False
-
-        if resource_pool_parent.name == names[0]:
-            if len(names) == 1:
-                return True
-            else:
-                return self._search_resource_pool(resource_pool_parent.parent, names[1:])
-        else:
-            return False
 
     def _find_rp_by_parent(self, root_rp, cluster, rp_name):
         """
