@@ -69,7 +69,7 @@ class InstanceVmTemplate:
         rp_name = None
         host_name = None
         if resource_pool_id:
-            rp_name = db.resource_pool.get_resource_pool_by_id(resource_pool_id)
+            rp_name = db.resource_pool.get_resource_pool_mor_name_by_id(resource_pool_id)
         elif host_id:
             host_name = None   # 未做
 

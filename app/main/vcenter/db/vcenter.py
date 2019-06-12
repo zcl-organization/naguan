@@ -108,3 +108,11 @@ def vcenter_tree_list_by_platform_id(platform_id):
 
 def vcenter_tree_by_id(id):
     return db.session.query(VCenterTree).filter_by(id=id).first()
+
+
+def vcenter_tree_del_cluster(id):
+    cluster = db.session.query(VCenterTree).get(id)
+    db.session.delete(cluster)
+    db.session.commit()
+
+
