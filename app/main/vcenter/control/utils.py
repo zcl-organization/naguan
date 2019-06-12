@@ -99,9 +99,6 @@ def connect_server(host, user, password, port, ssl=True):
     return service_instance
 
 
-
-
-
 def get_connect(platform_id):
     options = {
         'id': platform_id

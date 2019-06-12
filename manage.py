@@ -33,13 +33,12 @@ def before_request():
     g.uid = None
 
     g.request_id = str(uuid.uuid5(uuid.uuid4(), 'kaopuyun'))
-
-    g.log_d = {
-        'ip': g.ip,
-        'url': g.url,
-        'time': g.time,
-        'request_id': g.request_id,
-    }
+    # g.log_d = {
+    #     'ip': g.ip,
+    #     'url': g.url,
+    #     'time': g.time,
+    #     'request_id': g.request_id,
+    # }
 
 
 @app.after_request
@@ -52,8 +51,8 @@ def after_request(res):
         request_log.time = g.time
         request_log.submitter = g.username
         request_log.status_num = res.status_code
-        g.log_d['username'] = g.username
-        g.log_d['status_code'] = res.status_code
+        # g.log_d['username'] = g.username
+        # g.log_d['status_code'] = res.status_code
         # current_app.logger.info(g.log_d)
         db.session.add(request_log)
         db.session.commit()
