@@ -165,8 +165,10 @@ api.add_resource(SnapshotManage, '/api/v1.0/vCenter/snapshot/<int:snapshot_id>',
                  endpoint='SnapshotMgDel')
 
 # vCenter resource_pool
-api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=['GET'],
+api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool', methods=['GET', 'POST'],
                  endpoint='ResourcePoolMg')
+api.add_resource(ResourcePoolManage, '/api/v1.0/vCenter/resource_pool/<int:resource_pool_id>', methods=['DELETE'],
+                 endpoint='ResourcePoolMgDel')
 
 api.add_resource(OvfManage, '/api/v1.0/vCenter/ovf', methods=['GET'],
                  endpoint='OvfManage')
