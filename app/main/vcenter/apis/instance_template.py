@@ -23,6 +23,147 @@ parser.add_argument('host_id')  # host
 class InstanceTemplateManage(Resource):
 
     def get(self):
+        """
+         获取 instance模板 信息
+        ---
+       tags:
+          - vCenter instances
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: query
+            name: platform_id
+            type: string
+            description: 平台id
+            required: true
+          - in: query
+            name: host
+            type: string
+            description: host 名称
+          - in: query
+            name: vm_name
+            type: string
+            description: vmOcName
+          - in: query
+            name: pgsort
+            type: string
+            description: pgsort
+          - in: query
+            name: pgnum
+            type: int
+            description: 页码
+       responses:
+          200:
+            description: vCenter tree 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      cpu:
+                        type: string
+                        default: 2
+                        description: cpu
+                      created_at:
+                        type: string
+                        default: 2019-05-17 14:39:00
+                        description: created_at
+                      guest_full_name:
+                        type: string
+                        default: 'Red Hat Enterprise Linux 6 (64-bit)'
+                        description: guest_full_name
+                      guest_id:
+                        type: string
+                        default: rhel6_64Guest
+                        description: guest_id
+                      host:
+                        type: string
+                        default: 192.168.12.203
+                        description: host
+                      id:
+                        type: string
+                        default: 2
+                        description: id
+                      instance_uuid:
+                        type: string
+                        default: 500114bd-a861-f0ae-0f8d-f6e70d7c2c5c
+                        description: instance_uuid
+                      ip:
+                        type: string
+                        default: NUll
+                        description: ip
+                      memory:
+                        type: string
+                        default: 2048
+                        description: memory
+                      num_ethernet_cards:
+                        type: string
+                        default: 2
+                        description: num_ethernet_cards
+                      num_virtual_disks:
+                        type: string
+                        default: 2
+                        description: num_virtual_disks
+                      platform_id:
+                        type: string
+                        default: 2
+                        description: platform_id
+                      status:
+                        type: string
+                        default: poweredOff
+                        description: status
+                      template:
+                        type: string
+                        default: false
+                        description: template
+                      uuid:
+                        type: string
+                        default: 42018b9a-5e13-796b-02fa-57d6f56f3ac8
+                        description: uuid
+                      vm_mor_name:
+                        type: string
+                        default: vm-1362
+                        description: vm_mor_name
+                      vm_name:
+                        type: string
+                        default: 测试菜单1
+                        description: vm_name
+                      vm_path_name:
+                        type: string
+                        default: 测试菜单1
+                        description: '[datastore1] 测试菜单1/测试菜单1.vmx'
+
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                  default: 1302
+                msg:
+                  type: string
+                  default: "获取失败"
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         args = parser.parse_args()
         try:
             if not args['platform_id']:
