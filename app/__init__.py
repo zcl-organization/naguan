@@ -38,7 +38,7 @@ def create_app(config_name):
         data = {
             'status': 1,
             'msg': 'success',
-            'data': 'hhhhh'
+            'data': 'hahah'
         }
         return jsonify(data)
 

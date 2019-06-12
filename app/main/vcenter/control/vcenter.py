@@ -154,14 +154,14 @@ def sync_vcenter_tree(si, content, platform):
 
     network_sync_datas = []
     datacenters = content.rootFolder.childEntity
-    sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid)
-
-    print ('sync_end:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
-    # return True
-
-
-# 同步datacenters
-def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid):
+#     sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid)
+#
+#     print ('sync_end:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
+#     # return True
+#
+#
+# # 同步datacenters
+# def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid):
     for dc in datacenters:
         # print('pid:', vCenter_pid)
         dc_mor = get_mor_name(dc)

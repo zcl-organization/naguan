@@ -72,6 +72,18 @@ def get_obj(content, vimtype, name):
     return obj
 
 
+def get_obj_by_mor_name(content, vimtype, mor_name):
+    obj = None
+    container = content.viewManager.CreateContainerView(
+        content.rootFolder, vimtype, True)
+    for c in container.view:
+        c_mor_name = get_mor_name(c)
+        if c_mor_name == mor_name:
+            obj = c
+            break
+    return obj
+
+
 def connect_server(host, user, password, port, ssl=True):
     # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
     if ssl:

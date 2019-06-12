@@ -40,7 +40,7 @@ parser.add_argument('pgsort')
 
 
 class InstanceManage(Resource):
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def post(self):
         """
          操作 vm 信息
@@ -363,7 +363,7 @@ class InstanceManage(Resource):
             pgnum = args['pgnum'] if args['pgnum'] else 1
 
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
-                                     pgsort=args['pgsort'])
+                                     pgsort=args['pgsort'], template=False)
 
         except Exception as e:
             return set_return_val(False, [], str(e), 2031), 400

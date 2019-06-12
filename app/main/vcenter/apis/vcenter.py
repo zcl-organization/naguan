@@ -178,8 +178,7 @@ class VCenterManage(Resource):
             # request_id = g.request_id
             # base_control.task_logs.create_log(request_id, task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:
-
-            return set_return_val(False, {}, 'Failed to sync vcneter tree', 2401), 400
+            return set_return_val(False, {}, str(e), 2401), 400
         finally:
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, {}, 'Sync vcneter tree success', 2400)
