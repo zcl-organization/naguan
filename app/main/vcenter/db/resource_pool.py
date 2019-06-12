@@ -81,3 +81,11 @@ def get_resource_pool_list(platform_id, dc_mor_name, cluster_mor_name):
     if cluster_mor_name:
         query = query.filter_by(cluster_mor_name=cluster_mor_name)
     return query.all()
+
+
+def get_resource_pool_by_id(resource_pool_id):
+    resource_pool = db.session.query(VCenterResourcePool).get(resource_pool_id)
+    if resource_pool:
+        return resource_pool.mor_name
+    else:
+        return None
