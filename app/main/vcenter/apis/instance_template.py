@@ -4,6 +4,7 @@ from flask_restful import Resource, reqparse
 from app import set_return_val
 from app.main.vcenter import control
 from app.main.base import control as base_control
+from app.main.base.apis.auth import basic_auth
 
 
 parser = reqparse.RequestParser()
@@ -12,6 +13,8 @@ parser.add_argument('pgnum')  # 翻页
 parser.add_argument('pgsort')
 parser.add_argument('host')
 parser.add_argument('vm_name')
+
+parser.add_argument('action')
 
 parser.add_argument('template_uuid')
 parser.add_argument('dc_id')  # 数据中心
@@ -22,6 +25,7 @@ parser.add_argument('host_id')  # host
 
 class InstanceTemplateManage(Resource):
 
+    @basic_auth.login_required
     def get(self):
         """
          获取 instance模板 信息
@@ -190,8 +194,8 @@ class InstanceTemplateManage(Resource):
           scheme: basic
        parameters:
           - in: body
-            name: body
-            required: true
+            name: create
+            required: false
             schema:
               required:
               - platform_id
@@ -225,14 +229,21 @@ class InstanceTemplateManage(Resource):
                   default: 1
                   description: datacenter id
                   example: 1
-          - in: path
-            name: resource_pool_id
-            type: integer
-            format: int64
-          - in: path
-            name: host_id
-            type: integer
-            format: int64
+                resource_pool_id:
+                  type: integer
+                  default: 1
+                  description: resource_pool_id
+                  example: 1
+                host_id:
+                  type: integer
+                  default: 1
+                  description: host_id
+                  example: 1
+          - in: query
+            name: action
+            default: create
+            type: string
+            required: true
        responses:
           200:
             description: vCenter instance_template 信息
@@ -275,25 +286,33 @@ class InstanceTemplateManage(Resource):
             type='instance_template',
             result=True,
             resources_id='',
-            event=unicode('模板创建虚拟机'),
+            event=unicode('模板创建/转换虚拟机'),
             submitter=g.username,
         )
         try:
-            if not all([args['platform_id'], args['template_uuid'], args['vm_name'],
-                        args['ds_id'], args['dc_id']]):
+            if not args['action']:
                 raise Exception('Parameter error')
-            instance_vm_template = control.instance_template.InstanceVmTemplate(
-                platform_id=args['platform_id'], uuid=args['template_uuid'])
-            instance_vm_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
-                                                    dc_id=args['dc_id'], resource_pool_id=args.get('resource_pool_id'),
-                                                    host_id=args.get('host_id'))
+            if args['action'] == 'create':
+                if not all([args['platform_id'], args['template_uuid'], args['vm_name'],
+                            args['ds_id'], args['dc_id']]):
+                    raise Exception('Parameter error')
+                instance_vm_template = control.instance_template.InstanceVmTemplate(
+                    platform_id=args['platform_id'], uuid=args['template_uuid'])
+                instance_vm_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
+                                                        dc_id=args['dc_id'], resource_pool_id=
+                                                        args.get('resource_pool_id'), host_id=args.get('host_id'))
+            elif args['action'] == 'transition':
+                pass
+            else:
+                data['result'] = False
+                raise Exception('Parameter error')
         except Exception as e:
             data['result'] = False
             return set_return_val(False, [], str(e), 2031), 400
         finally:
             data['resources_id'] = args.get('template_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'Template to virtual machine success.', 2030), 200
+        return set_return_val(True, [], 'Template action success.', 2030), 200
 
     def delete(self, vm_uuid):
         pass

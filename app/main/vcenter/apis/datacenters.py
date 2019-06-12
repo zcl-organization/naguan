@@ -13,7 +13,7 @@ parser.add_argument('dc_id')
 
 
 class DataCenterManage(Resource):
-
+    @basic_auth.login_required
     def post(self):
         """
          创建DataCenter信息
@@ -106,6 +106,7 @@ class DataCenterManage(Resource):
     def put(self):
         pass
 
+    @basic_auth.login_required
     def delete(self, id):
         """
          删除DataCenter信息

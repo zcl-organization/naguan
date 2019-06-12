@@ -16,6 +16,7 @@ parser.add_argument('cluster_name')
 
 class ClustersManage(Resource):
 
+    @basic_auth.login_required
     def post(self):
         """
          创建Cluster信息
@@ -113,6 +114,7 @@ class ClustersManage(Resource):
     def put(self):
         pass
 
+    @basic_auth.login_required
     def delete(self, id):
         """
          删除Cluster信息
