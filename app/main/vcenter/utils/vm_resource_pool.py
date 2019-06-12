@@ -3,6 +3,8 @@ from pyVmomi import vim
 from pyVmomi import pyVmomi
 from pyVim.task import WaitForTask
 
+from app.main.vcenter.control.utils import get_mor_name
+
 
 class VMResourcePoolManager:
     def __init__(self, cluster):
@@ -42,20 +44,22 @@ class VMResourcePoolManager:
     def destroy(self, rp_name):
         try:
             resource_pool = self._find_resource_pool_by_name(rp_name)
+
             if not resource_pool:
                 raise RuntimeError('Not the Resource Pool, Name: {}'.format(rp_name))
             WaitForTask(resource_pool.Destroy())
         except Exception as e:
+            print e
             return False 
 
         return True
 
-    def _find_resource_pool_by_name(self, name):
-        for item in self._cluster.resourcePool.resourcePool:
+    def _find_resource_pool_by_name(self, mor_name):
+        resource_pools = [item for item in self._cluster.resourcePool.resourcePool]
+        for item in resource_pools:
             if isinstance(item, vim.ResourcePool):
-                if item.name == name:
+                if get_mor_name(item) == mor_name:
                     return item
+                if item.resourcePool:
+                    resource_pools.extend(item.resourcePool)
         return None
-
-    def find_resource_pool_by_name(self, name):
-        return self._find_resource_pool_by_name(name)

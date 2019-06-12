@@ -139,7 +139,8 @@ def get_resource_pool_list(platform_id, dc_mor_name, cluster_mor_name):
 def check_if_resource_pool_exists(resouce_pool_id=None, dc_name=None, cluster_name=None, resource_pool_name=None, root_rp_name=None):
     if resouce_pool_id:
         return True if db.resource_pool.get_resource_pool_by_id(resouce_pool_id) else False
-    elif dc_name and cluster_name and resource_pool_name and root_rp_name:
+    elif dc_name and cluster_name and resource_pool_name:
+        root_rp_name = root_rp_name if root_rp_name else 'Resources'   # 如果没有给定root_rp_name对象即认为是在集群根目录下创建
         return True if db.resource_pool.get_resource_pool_by_names(dc_name, cluster_name, resource_pool_name, root_rp_name) else False
     else:
         raise RuntimeError
@@ -158,24 +159,23 @@ class ResourcePool:
         root_rp = None if root_rp_id == -1 or not root_rp_id else db.resource_pool.get_resource_pool_by_id(root_rp_id)
         # 获取根节点名称
         root_rp_name = root_rp.name if root_rp else None
+        root_rp_obj = self._find_resource_pool_by_name(root_rp) if root_rp else None
 
         if check_if_resource_pool_exists(
-                dc_name=args['dc_name'], cluster_name=args['cluster_name'], 
-                resource_pool_name=args['rp_name'], root_rp_name=root_rp_name):
+                dc_name=data_center_name, cluster_name=cluster_name, 
+                resource_pool_name=rp_name, root_rp_name=root_rp_name):
             raise RuntimeError('This ResourcePool Exists')
 
         cluster = self._vcenter.find_cluster_by_name(cluster_name)
         _vmrpm = VMResourcePoolManager(cluster)
-        if not _vmrpm.create(rp_name, root_resource_pool=root_rp, **kw_args):
+        if not _vmrpm.create(rp_name, root_resource_pool=root_rp_obj, **kw_args):
             raise RuntimeError('Create ResourcePool Failed!!!')
-
-        
 
         # 同步操作  获取dc、rp对象 保存数据
         dc = self._find_data_center_by_cluster(cluster)
-        rp = _vmrpm.find_resource_pool_by_name(rp_name)  # 一定会找到 emmm
+        rp = self._find_rp_by_parent(root_rp_obj, cluster, rp_name)  # 一定会找到 emmm
         parent = db.resource_pool.get_resource_pool_by_datas(
-            platform['id'], dc.name, cluster.name, rp.parent.name, get_mor_name(rp.parent))
+            self._vcenter.platform['id'], dc.name, cluster.name, rp.parent.name, get_mor_name(rp.parent))
         parent_id = parent.id
         args_dict = dict(
             platform_id=self._vcenter.platform['id'],
@@ -205,13 +205,13 @@ class ResourcePool:
         )
         create_resource_pool(**args_dict)
 
-    def delete_pool(self, cluster_name, del_rp_name):
+    def delete_pool(self, cluster_name, del_rp_mor_name):
         """
         删除动作  不包括同步
         """
         cluster = self._vcenter.find_cluster_by_name(cluster_name)
         _vmrpm = VMResourcePoolManager(cluster)
-        if not _vmrpm.destroy(del_rp_name):
+        if not _vmrpm.destroy(del_rp_mor_name):
             raise RuntimeError('Destory ResourcePool Failed!!!')
 
     def delete_pool_by_id(self, rp_id):
@@ -222,12 +222,15 @@ class ResourcePool:
             raise RuntimeError('This ResourcePool Not Exists')
 
         pool = db.resource_pool.get_resource_pool_by_id(rp_id)
-        self.delete_pool(pool.cluster_name, pool.name)
+        self.delete_pool(pool.cluster_name, pool.mor_name)
 
         # 同步
         db.resource_pool.delete_resource_pool(rp_id)
 
     def _find_data_center_by_cluster(self, cluster):
+        """
+        通过cluster查找数据中心   cluster.parent -> vim.Folder
+        """
         cluster_networks = set(cluster.network)
         container = self._vcenter.connect.viewManager.CreateContainerView(
             self._vcenter.connect.rootFolder, [vim.Datacenter], True)
@@ -235,4 +238,58 @@ class ResourcePool:
             if not (cluster_networks - set(item.network)):
                 return item
 
+        return None
+
+    def _find_resource_pool_by_name(self, local_rp_obj):
+        """
+        通过名称查询资源池对象   TODO 优化
+        本地数据库收集父节点树 -> 对照远程获取对应节点
+        """
+        new_id = local_rp_obj.parent_id
+        names = []
+        while new_id != -1:
+            new_obj = db.resource_pool.get_resource_pool_by_id(new_id)
+            new_id = new_obj.parent_id
+            names.append(new_obj.name)
+        # 收集完毕
+
+        rps = self._vcenter.connect.viewManager.CreateContainerView(
+            self._vcenter.connect.rootFolder, [vim.ResourcePool], True)
+        for item in rps.view:
+            if item.name == local_rp_obj.name:
+                finded_rp = self._search_resource_pool(item.parent, names)
+                if finded_rp:
+                    return item
+        
+        return None
+
+    def _search_resource_pool(self, resource_pool_parent, names):
+        """
+        通过当前资源池的父节点递归判断该节点是否是查询的节点  TODO
+        """
+        if not names:
+            return False
+        
+        if not isinstance(resource_pool_parent, vim.ResourcePool):
+            return False
+
+        if resource_pool_parent.name == names[0]:
+            if len(names) == 1:
+                return True
+            else:
+                return self._search_resource_pool(resource_pool_parent.parent, names[1:])
+        else:
+            return False
+
+    def _find_rp_by_parent(self, root_rp, cluster, rp_name):
+        """
+        通过父节点查找资源池对象
+        """
+        if not root_rp:
+            root_rp = cluster.resourcePool
+        
+        for item in root_rp.resourcePool:
+            if item.name == rp_name:
+                return item
+        
         return None
