@@ -387,7 +387,7 @@ class VCenterResourcePool(db.Model):
     name = db.Column(db.String(255))
     mor_name = db.Column(db.String(32))
     parent_name = db.Column(db.String(255))
-
+    parent_id = db.Column(db.Integer)
     over_all_status = db.Column(db.String(32))
     cpu_expand_able_reservation = db.Column(db.String(32))
     cpu_reservation = db.Column(db.String(32))

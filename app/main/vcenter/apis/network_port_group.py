@@ -195,7 +195,6 @@ class NetworkPortGroupManage(Resource):
             pg = PortGroup(args['platform_id'])
             pg.create_vswitch_portgroup(args['host_name'], args['switch_name'], args['portgroup_name'])
         except Exception as e:
-            print e
             return set_return_val(False, [], 'Failed to Create network group', 2463), 400
 
         return set_return_val(True, [], "Create Network Group Success", 2462)
