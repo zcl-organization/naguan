@@ -25,12 +25,12 @@ def create_datacenter(platform_id, dc_name, folder=None):
                 dc_mor_name = get_mor_name(new_datacenter)
                 dc_host_moc = get_mor_name(new_datacenter.hostFolder)
                 dc_vm_moc = get_mor_name(new_datacenter.vmFolder)
-                db.vcenter.vcenter_tree_create(tree_type=2, platform_id=platform_id, name=new_datacenter.name,
+                vcenter_id = db.vcenter.vcenter_tree_create(tree_type=2, platform_id=platform_id, name=new_datacenter.name,
                                                dc_host_folder_mor_name=dc_host_moc,
                                                dc_mor_name=dc_mor_name, dc_oc_name=new_datacenter.name,
                                                dc_vm_folder_mor_name=dc_vm_moc, mor_name=dc_mor_name,
                                                cluster_mor_name=None, cluster_oc_name=None, pid=vCenter_pid)
-                return dc_name
+                return vcenter_id
             except Exception as e:
                 raise Exception('sync datacenters fail. %s' % str(e))
     except Exception as e:

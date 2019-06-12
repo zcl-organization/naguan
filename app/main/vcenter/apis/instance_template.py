@@ -27,7 +27,7 @@ class InstanceTemplateManage(Resource):
          获取 instance模板 信息
         ---
        tags:
-          - vCenter instances
+          - vCenter instance_template
        security:
        - basicAuth:
           type: http
@@ -56,7 +56,7 @@ class InstanceTemplateManage(Resource):
             description: 页码
        responses:
           200:
-            description: vCenter tree 信息
+            description: vCenter instance_template 信息
             schema:
               properties:
                 ok:
@@ -125,7 +125,7 @@ class InstanceTemplateManage(Resource):
                         description: status
                       template:
                         type: string
-                        default: false
+                        default: true
                         description: template
                       uuid:
                         type: string
@@ -179,6 +179,97 @@ class InstanceTemplateManage(Resource):
         return set_return_val(True, data, 'instance gets success.', 2030, pg), 200
 
     def post(self):
+        """
+         模板创建vm信息
+        ---
+       tags:
+          - vCenter instance_template
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - template_uuid
+              - vm_name
+              - ds_id
+              - dc_id
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                template_uuid:
+                  type: string
+                  default: 42016538-e4d6-e46f-782f-5a9f091ab221
+                  description: 模板uuid
+                  example: 42016538-e4d6-e46f-782f-5a9f091ab221
+                vm_name:
+                  type: string
+                  default: xinjianvm
+                  description: 新vm名称
+                  example: xinjianvm
+                ds_id:
+                  type: integer
+                  default: 1
+                  description: DataStore id
+                  example: 1
+                dc_id:
+                  type: integer
+                  default: 1
+                  description: datacenter id
+                  example: 1
+          - in: path
+            name: resource_pool_id
+            type: integer
+            format: int64
+          - in: path
+            name: host_id
+            type: integer
+            format: int64
+       responses:
+          200:
+            description: vCenter instance_template 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                  default: "创建成功"
+                data:
+                  type: array
+                  items:
+                    properties:
+          400:
+            description: 创建失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                  default: "创建失败"
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         args = parser.parse_args()
         data = dict(
             type='instance_template',

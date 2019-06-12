@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -80,14 +82,25 @@ class DataCenterManage(Resource):
                   items:
                     properties:
         """
+        args = parser.parse_args()
+        data = dict(
+            type='DataCenter',
+            result=True,
+            resources_id='',
+            event=unicode('创建datacenter'),
+            submitter=g.username,
+        )
         try:
-            args = parser.parse_args()
             if not all([args['platform_id'], args['dc_name']]):
                 raise Exception('Parameter error')
-            data = control.datacenters.create_datacenter(
+            vcenter_id = control.datacenters.create_datacenter(
                 platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
+            data['resources_id'] = vcenter_id
         except Exception as e:
-            return set_return_val(False, {}, str(e), 3001)
+            data['result'] = False
+            return set_return_val(False, data, str(e), 3001)
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, data, 'Datastore create success.', 3000)
 
     def put(self):
@@ -161,13 +174,23 @@ class DataCenterManage(Resource):
                   items:
                     properties:
         """
+        data = dict(
+            type='DataCenter',
+            result=True,
+            resources_id=id,
+            event=unicode('删除datacenter'),
+            submitter=g.username,
+        )
         try:
             args = parser.parse_args()
             if not all([args['platform_id'], id]):
                 raise Exception('Parameter error')
             control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=id)
         except Exception as e:
-            return set_return_val(False, {}, str(e), 3001)
-        return set_return_val(True, {}, 'Datastore delete success.', 3000)
+            data['result'] = False
+            return set_return_val(False, data, str(e), 3001)
+        finally:
+            base_control.event_logs.eventlog_create(**data)
+        return set_return_val(True, data, 'Datastore delete success.', 3000)
 
 
