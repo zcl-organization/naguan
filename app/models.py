@@ -410,3 +410,16 @@ class RolesMenus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     role_id = db.Column(db.Integer)
     menu_id = db.Column(db.Integer)
+
+
+class VCenterVswitch(db.Model):
+    __table_name__ = 'vcenter_vswitch'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    platform_id = db.Column(db.Integer)  # 平台id
+    name = db.Column(db.String(255))  # 交换机名称
+    mor_name = db.Column(db.String(32))  # 交换机mor_name
+    host_name = db.Column(db.String(255))  # hostsystem 对象名称
+    host_mor_name = db.Column(db.String(32))  # hostsystem mor_name
+    mtu = db.Column(db.Integer)   # 交换机mtu设置
+    num_of_port = db.Column(db.Integer)  # 交换机端口数量
+    nics = db.Column(db.String(255))  # 交换机上行链路
