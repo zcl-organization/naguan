@@ -86,7 +86,7 @@ class DataCenterManage(Resource):
         data = dict(
             type='DataCenter',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('创建datacenter'),
             submitter=g.username,
         )

@@ -152,7 +152,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('虚拟机操作'),
             submitter=g.username,
         )
@@ -433,7 +433,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('删除虚拟机'),
             submitter=g.username,
         )
@@ -530,7 +530,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('更新虚拟机'),
             submitter=g.username,
         )

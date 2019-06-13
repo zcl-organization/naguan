@@ -93,7 +93,7 @@ class ClustersManage(Resource):
         data = dict(
             type='Cluster',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('创建cluster'),
             submitter=g.username,
         )

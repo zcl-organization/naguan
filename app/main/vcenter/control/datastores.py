@@ -62,7 +62,6 @@ def sync_datastore(platform, dc, si, content=None):
 
         # host = platform['ip']
         host = ds.host[0].key.name
-
         capacity = ds_capacity  # 存储容量
         free_capacity = ds_freespace  # 可用
         used_capacity = ds_capacity - ds_freespace
@@ -74,14 +73,13 @@ def sync_datastore(platform, dc, si, content=None):
         else:
             db.datastores.create_datastore(platform['id'], ds_name, ds_mor_name, dc_name, dc_mor_name, capacity,
                                            used_capacity, free_capacity, type, version, uuid, ssd, local, host)
-
         sync_image(platform, ds)
+
     # print(11)
     if data_store_list:
         for ds_name in data_store_list:
             # print(ds_name)
             db.datastores.delete_datastore_by_ds_name(ds_name)
-
     print ('sync_dc_stop:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
 
 

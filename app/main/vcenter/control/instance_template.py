@@ -10,10 +10,11 @@ class InstanceVmTemplate:
     def __init__(self, platform_id, uuid):
         self.si, self.content, self.platform = get_connect(platform_id)
         template = db.instances.list_by_uuid(platform_id, uuid)
-        self.platform_id = platform_id
+        self.platform_id, self.uuid = platform_id, uuid
         self.template_name = template.vm_name
         self.template = get_obj(self.content, [vim.VirtualMachine], self.template_name)  # 模板文件
 
+    # host_id 未做
     def template_create_vm(self, new_vm_name, ds_id, dc_id, resource_pool_id=None, host_id=None):
         datastore = self.get_ds(ds_id)
         data_center, vmfloder = self.get_dc_vmfloder(dc_id)
@@ -38,13 +39,13 @@ class InstanceVmTemplate:
         clonespec.powerOn = False
         clonespec.config = configSpec
 
-        print ("cloning VM...")
+        print ("Templates create vm...")
         # 执行
         WaitForTask(self.template.Clone(folder=vmfloder, name=new_vm_name, spec=clonespec))
         # 同步
         for vm in resource_pool.vm:
             if new_vm_name == vm.name:
-                self.sync_one_instance(vm)
+                self.sync_instance(vm)
                 break
 
     def get_ds(self, ds_id):
@@ -86,7 +87,7 @@ class InstanceVmTemplate:
             resource_pool = data_center.hostFolder.childEntity[0].resourcePool
         return resource_pool
 
-    def sync_one_instance(self, vm):
+    def sync_instance(self, vm):
         if vm.summary.guest is not None:
             ip = vm.summary.guest.ipAddress
         else:
@@ -110,4 +111,18 @@ class InstanceVmTemplate:
                                        guest_full_name=vm.summary.config.guestFullName,
                                        host=vm.summary.runtime.host.name, ip=ip, status=vm.summary.runtime.powerState,
                                        resource_pool_name=resource_pool_name, created_at=vm.config.createDate)
+
+    def template_transform_vm(self, dc_id, resource_pool_id=None, host_id=None):
+        # MarkAsVirtualMachine
+        data_center, vmfloder = self.get_dc_vmfloder(dc_id)
+        resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
+                                               host_id=None, data_center=data_center)
+        print ("Template transform vm...")
+        # 执行
+        self.template.MarkAsVirtualMachine(pool=resource_pool)  # host未做
+        # 同步
+        self.update_template_transform_vm(resource_pool.name)
+
+    def update_template_transform_vm(self, resource_pool_name):
+        db.instances.vcenter_update_template_transform_vm(self.platform_id, self.uuid, resource_pool_name)
 

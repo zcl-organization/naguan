@@ -185,7 +185,7 @@ class EventLog(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     resource_type = db.Column(db.String(32), nullable=False)  # 操作资源类型
     result = db.Column(db.String(10))  # 操作结果
-    operation_resources_id = db.Column(db.Integer)  # 操作资源ID
+    operation_resources_id = db.Column(db.String(100))  # 操作资源ID
     operation_event = db.Column(db.String(255))  # 操作事件
     submitter = db.Column(db.String(32), nullable=False)  # 提交者
     time = db.Column(db.DateTime, default=datetime.datetime.now())  # 创建时间

@@ -281,7 +281,7 @@ class NetWorkManage(Resource):
         data = dict(
             type='vm_network',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('删除网络,id：%s' % args.get('networks')),
             submitter=g.username,
         )

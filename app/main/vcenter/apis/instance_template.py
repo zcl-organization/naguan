@@ -285,7 +285,7 @@ class InstanceTemplateManage(Resource):
         data = dict(
             type='instance_template',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('模板创建/转换虚拟机'),
             submitter=g.username,
         )
@@ -301,8 +301,16 @@ class InstanceTemplateManage(Resource):
                 instance_vm_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
                                                         dc_id=args['dc_id'], resource_pool_id=
                                                         args.get('resource_pool_id'), host_id=args.get('host_id'))
-            elif args['action'] == 'transition':
-                pass
+                data['event'] = unicode('模板创建虚拟机')
+            elif args['action'] == 'transform':
+                if not all([args['platform_id'], args['template_uuid'], args['dc_id']]):
+                    raise Exception('Parameter error')
+                instance_vm_template = control.instance_template.InstanceVmTemplate(
+                    platform_id=args['platform_id'], uuid=args['template_uuid'])
+                instance_vm_template.template_transform_vm(dc_id=args['dc_id'],
+                                                           resource_pool_id=args.get('resource_pool_id'),
+                                                           host_id=args.get('host_id'))
+                data['event'] = unicode('模板转换虚拟机')
             else:
                 data['result'] = False
                 raise Exception('Parameter error')
