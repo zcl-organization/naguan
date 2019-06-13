@@ -271,7 +271,7 @@ class System(Resource):
                                                 debug=args['debug'])
 
         except Exception as e:
-            control.event_logs.eventlog_create(type='system', result=False, resources_id='', event=unicode('更新系统配置'),
+            control.event_logs.eventlog_create(type='system', result=False, resources_id=None, event=unicode('更新系统配置'),
                                                submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统配置'),

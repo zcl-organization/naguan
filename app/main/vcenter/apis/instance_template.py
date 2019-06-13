@@ -183,7 +183,7 @@ class InstanceTemplateManage(Resource):
         data = dict(
             type='instance_template',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('模板创建虚拟机'),
             submitter=g.username,
         )

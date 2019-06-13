@@ -163,7 +163,7 @@ class VCenterManage(Resource):
         data = dict(
             type='vcenter',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('同步vcenter信息'),
             submitter=g.username,
         )
