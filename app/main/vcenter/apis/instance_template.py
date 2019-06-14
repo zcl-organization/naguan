@@ -182,6 +182,7 @@ class InstanceTemplateManage(Resource):
             return set_return_val(False, [], str(e), 2031), 400
         return set_return_val(True, data, 'instance gets success.', 2030, pg), 200
 
+    # @basic_auth.login_required
     def post(self):
         """
          模板创建vm信息
@@ -194,7 +195,7 @@ class InstanceTemplateManage(Resource):
           scheme: basic
        parameters:
           - in: body
-            name: create
+            name: body
             required: false
             schema:
               required:
@@ -290,27 +291,23 @@ class InstanceTemplateManage(Resource):
             submitter=g.username,
         )
         try:
-            if not args['action']:
+            if not all([args['action'], args['platform_id'], args['template_uuid']]):
                 raise Exception('Parameter error')
+            instance_vm_template = control.instance_template.InstanceVmTemplate(
+                platform_id=args['platform_id'], uuid=args['template_uuid'])
             if args['action'] == 'create':
-                if not all([args['platform_id'], args['template_uuid'], args['vm_name'],
-                            args['ds_id'], args['dc_id']]):
+                data['event'] = unicode('模板创建虚拟机')
+                if not all([args['vm_name'], args['ds_id'], args['dc_id']]):
                     raise Exception('Parameter error')
-                instance_vm_template = control.instance_template.InstanceVmTemplate(
-                    platform_id=args['platform_id'], uuid=args['template_uuid'])
                 instance_vm_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
                                                         dc_id=args['dc_id'], resource_pool_id=
                                                         args.get('resource_pool_id'), host_id=args.get('host_id'))
-                data['event'] = unicode('模板创建虚拟机')
             elif args['action'] == 'transform':
-                if not all([args['platform_id'], args['template_uuid'], args['dc_id']]):
-                    raise Exception('Parameter error')
-                instance_vm_template = control.instance_template.InstanceVmTemplate(
-                    platform_id=args['platform_id'], uuid=args['template_uuid'])
-                instance_vm_template.template_transform_vm(dc_id=args['dc_id'],
-                                                           resource_pool_id=args.get('resource_pool_id'),
-                                                           host_id=args.get('host_id'))
                 data['event'] = unicode('模板转换虚拟机')
+                if not args['resource_pool_id']:
+                    raise Exception('Parameter error')
+                instance_vm_template.template_transform_vm(resource_pool_id=args.get('resource_pool_id'),
+                                                           host_id=args.get('host_id'))
             else:
                 data['result'] = False
                 raise Exception('Parameter error')
@@ -322,5 +319,25 @@ class InstanceTemplateManage(Resource):
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Template action success.', 2030), 200
 
-    def delete(self, vm_uuid):
-        pass
+    def delete(self):
+        args = parser.parse_args()
+        data = dict(
+            type='instance_template',
+            result=True,
+            resources_id=None,
+            event=unicode('删除模板'),
+            submitter=g.username,
+        )
+        try:
+            if not all([args['platform_id'], args['template_uuid']]):
+                raise Exception('Parameter error')
+            instance_vm_template = control.instance_template.InstanceVmTemplate(
+                platform_id=args['platform_id'], uuid=args['template_uuid'])
+            instance_vm_template.del_template()
+        except Exception as e:
+            data['result'] = False
+            return set_return_val(False, [], str(e), 2031), 400
+        finally:
+            data['resources_id'] = args.get('template_uuid')
+            base_control.event_logs.eventlog_create(**data)
+        return set_return_val(True, [], 'Template del success.', 2030), 200

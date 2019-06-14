@@ -132,10 +132,24 @@ def clean_all_vm_rp_name_by_rp_name(platform_id, rp_name):
 # def update_vm_rp_name_by_vm_mor_name(platform_id, vm_mor_name, rp_name):
 #     print(rp_name)
 #     pass
-def vcenter_update_template_transform_vm(platform_id, uuid, resource_pool_name):
+def vcenter_sync_template_transform_vm(platform_id, uuid, resource_pool_name):
     vm = db.session.query(VCenterVm).filter_by(platform_id=platform_id).filter_by(
         uuid=uuid).first()
     vm.template = False
     vm.resource_pool_name = resource_pool_name
     db.session.commit()
+
+
+def del_template(platform_id, uuid):
+    will_del = db.session.query(VCenterVm).filter_by(platform_id=platform_id).filter_by(uuid=uuid).first()
+    db.session.delete(will_del)
+    db.session.commit()
+
+
+def vcenter_sync_vm_transform_template(platform_id, uuid):
+    vm = db.session.query(VCenterVm).filter_by(platform_id=platform_id).filter_by(
+        uuid=uuid).first()
+    vm.template = True
+    db.session.commit()
+
 

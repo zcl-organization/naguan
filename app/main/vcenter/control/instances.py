@@ -559,6 +559,18 @@ class Instance(object):
             g.error_code = 2072
             raise Exception('Caught exception fault: %s' % str(e))
 
+    def vm_transform_template(self):
+        # MarkAsTemplate
+        if self.vm:
+            if not self.vm.summary.config.template:
+                print ("Vm transform template...")
+                self.vm.MarkAsTemplate()
+                # 同步
+                db.instances.vcenter_sync_vm_transform_template(self.platform_id, self.uuid)
+            else:
+                raise Exception('Object are not vm')
+        else:
+            raise ValueError('The vm does not exist.')
 # def find_snapshot(snapshot, snapshot_name):
 #     for snapshot in snapshot.childSnapshotList:
 #         if snapshot.name == snapshot_name:
@@ -575,3 +587,4 @@ class Instance(object):
 #         'Chinese': u'硬盘 '
 #     }
 #     return language_prefix_label_mapper.get(language)
+

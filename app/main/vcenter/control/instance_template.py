@@ -9,13 +9,15 @@ class InstanceVmTemplate:
 
     def __init__(self, platform_id, uuid):
         self.si, self.content, self.platform = get_connect(platform_id)
-        template = db.instances.list_by_uuid(platform_id, uuid)
+        template = db.instances.list_by_uuid(platform_id, uuid)  # 数据库模板
         self.platform_id, self.uuid = platform_id, uuid
         self.template_name = template.vm_name
         self.template = get_obj(self.content, [vim.VirtualMachine], self.template_name)  # 模板文件
 
     # host_id 未做
     def template_create_vm(self, new_vm_name, ds_id, dc_id, resource_pool_id=None, host_id=None):
+        if not self.template:
+            raise ValueError('The template does not exist.')
         datastore = self.get_ds(ds_id)
         data_center, vmfloder = self.get_dc_vmfloder(dc_id)
         resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
@@ -67,16 +69,16 @@ class InstanceVmTemplate:
         return data_center, vmfloder
 
     def get_resource_pool(self, resource_pool_id=None, host_id=None, data_center=None):
-        rp_name = None
+        rp_mor_name = None
         host_name = None
         if resource_pool_id:
-            rp_name = db.resource_pool.get_resource_pool_mor_name_by_id(resource_pool_id)
+            rp_mor_name = db.resource_pool.get_resource_pool_mor_name_by_id(resource_pool_id)
         elif host_id:
             host_name = None   # 未做
 
         resource_pool = None
-        if rp_name:
-            resource_pool = get_obj_by_mor_name(self.content, [vim.ResourcePool], rp_name)
+        if rp_mor_name:
+            resource_pool = get_obj_by_mor_name(self.content, [vim.ResourcePool], rp_mor_name)
         elif host_name:
             for cluster in data_center.hostFolder.childEntity:
                 for host in cluster.host:
@@ -112,17 +114,31 @@ class InstanceVmTemplate:
                                        host=vm.summary.runtime.host.name, ip=ip, status=vm.summary.runtime.powerState,
                                        resource_pool_name=resource_pool_name, created_at=vm.config.createDate)
 
-    def template_transform_vm(self, dc_id, resource_pool_id=None, host_id=None):
+    def template_transform_vm(self, resource_pool_id=None, host_id=None):
         # MarkAsVirtualMachine
-        data_center, vmfloder = self.get_dc_vmfloder(dc_id)
+        # data_center = self.template.datastore[0].parent.parent
+        if not self.template:
+            raise ValueError('The template does not exist.')
+        if not self.template.summary.config.template:
+            raise Exception('Object are not template')
         resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
-                                               host_id=None, data_center=data_center)
+                                               host_id=None, data_center=None)
         print ("Template transform vm...")
         # 执行
         self.template.MarkAsVirtualMachine(pool=resource_pool)  # host未做
         # 同步
-        self.update_template_transform_vm(resource_pool.name)
+        self.sync_template_transform_vm(resource_pool.name)
 
-    def update_template_transform_vm(self, resource_pool_name):
-        db.instances.vcenter_update_template_transform_vm(self.platform_id, self.uuid, resource_pool_name)
+    def sync_template_transform_vm(self, resource_pool_name):
+        db.instances.vcenter_sync_template_transform_vm(self.platform_id, self.uuid, resource_pool_name)
 
+    def del_template(self):
+        if self.template:
+            WaitForTask(self.template.Destroy())
+            # 同步
+            self.sync_del_template()
+        else:
+            raise ValueError('Template does not exist.')
+
+    def sync_del_template(self):
+        db.instances.del_template(self.platform_id, self.uuid)

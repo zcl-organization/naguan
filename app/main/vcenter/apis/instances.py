@@ -198,7 +198,10 @@ class InstanceManage(Resource):
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
                 g.error_code = 2070
-
+            elif args['action'] == 'transform':
+                data['event'] = unicode('虚拟机转换模板')
+                instance.vm_transform_template()
+                g.error_code = 2080
             else:
                 data['result'] = False
                 g.error_code = 2009
