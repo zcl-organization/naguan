@@ -18,7 +18,7 @@ host_name = '192.168.12.203'
 num_port = 15
 new_num_port = 128
 mtu = 1500
-nics = ['vmnic3',]
+nics = []#['vmnic3',]
 switch_name = 'Mu_Test'
 
 
@@ -29,14 +29,14 @@ class TestResourcePool(unittest.TestCase):
         host_system = _vcenter.find_hostsystem_by_name(host_name)
         self._vmvsm = VMVswitchManager(host_system)
 
-    def test_create(self):
+    def test_01_create(self):
         self.assertTrue(self._vmvsm.create(switch_name, num_port, mtu, nics))
 
-    def test_update(self):
+    def test_02_update(self):
         old = {'pnic': nics, 'mtu': mtu, 'num_ports': num_port}
         self.assertTrue(self._vmvsm.update(switch_name, old, number_of_ports=new_num_port))
 
-    def test_destroy(self):
+    def test_03_destroy(self):
         self.assertTrue(self._vmvsm.destroy(switch_name))
 
     

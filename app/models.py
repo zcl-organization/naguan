@@ -413,7 +413,7 @@ class RolesMenus(db.Model):
 
 
 class VCenterVswitch(db.Model):
-    __table_name__ = 'vcenter_vswitch'
+    __tablename__ = 'vcenter_vswitch'
     id = db.Column(db.Integer, primary_key=True)  # id
     platform_id = db.Column(db.Integer)  # 平台id
     name = db.Column(db.String(255))  # 交换机名称

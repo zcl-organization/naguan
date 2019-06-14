@@ -34,7 +34,7 @@ class VMVswitchManager:
 
     def update(self, switch_name, vswitch_old_infos, number_of_ports=None, mtu=None, nics=[]):
         diff = False    # 更改配置标记
-        
+
         remain_pnic = []
         for desired_pnic in nics:
             if desired_pnic not in vswitch_old_infos['pnic']:
@@ -53,8 +53,8 @@ class VMVswitchManager:
             return False
 
         # 避开默认参数值的干扰
-        mtu = mtu if mtu else vswitch_old_infos['mtu']
-        number_of_ports = number_of_ports if number_of_ports else vswitch_old_infos['num_ports']
+        mtu = int(mtu) if mtu else vswitch_old_infos['mtu']
+        number_of_ports = int(number_of_ports) if number_of_ports else vswitch_old_infos['num_ports']
 
         try:
             vss_spec = vim.host.VirtualSwitch.Specification()

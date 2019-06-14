@@ -4,6 +4,7 @@ import datetime
 from app.main.vcenter.control.resource_pool import sync_resourcepool
 from app.main.vcenter.control.utils import get_mor_name, connect_server, get_connect
 from app.main.vcenter.control.network_port_group import sync_network_port_group
+from app.main.vcenter.control.vswitch import sync_vswitch
 from app.main.vcenter.control import network_devices as netowrk_device_manage
 from app.main.vcenter.control import disks as disk_manage
 from app.main.vcenter import db
@@ -153,7 +154,8 @@ def sync_vcenter_tree(si, content, platform):
         vCenter_pid = db.vcenter.vcenter_tree_create(tree_type=1, platform_id=platform['id'],
                                                      name=platform['platform_name'])
 
-    network_sync_datas = []
+    network_sync_datas = []  # 网络端口组收集
+    vswitch_datas = []   # vswitch交换机数据收集
     datacenters = content.rootFolder.childEntity
 #     sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid)
 #
@@ -283,8 +285,12 @@ def sync_vcenter_tree(si, content, platform):
             hosts = cluster.host
             for host in hosts:
                 host_mor = get_mor_name(host)
-                # 获取 host tree
 
+                # 收集vswitch数据
+                for vss in host.configManager.networkSystem.networkInfo.vswitch:
+                    vswitch_datas.append((vss, host))
+
+                # 获取 host tree
                 result = db.vcenter.vcenter_tree_get_by_mor_name(platform['id'], host_mor, 4)
 
                 if result:
@@ -312,6 +318,9 @@ def sync_vcenter_tree(si, content, platform):
 
     # 同步所有数据中心下的网络端口组
     sync_network_port_group(network_sync_datas, platform['id'])
+
+    # 同步所有数据中心下的vswitch信息
+    sync_vswitch(vswitch_datas, platform['id'])  # vswitch_datas
 
     # 删除未操作的 tree
     if vcenter_list:
