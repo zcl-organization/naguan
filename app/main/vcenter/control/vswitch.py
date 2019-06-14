@@ -45,7 +45,17 @@ def get_vswitch_infos(platform_id):
     vswitch_list = []
 
     for vswitch in vswitchs:
-        vs_item = dict(vswitch)
+        vs_item = dict(
+            id=vswitch.id,
+            platform_id=vswitch.platform_id,
+            name=vswitch.name,
+            mor_name=vswitch.mor_name,
+            host_name=vswitch.host_name,
+            host_mor_name=vswitch.host_mor_name,
+            mtu=vswitch.mtu,
+            num_of_port=vswitch.num_of_port,
+            nics=json.loads(vswitch.nics)
+        )
 
         vswitch_list.append(vs_item)
 
@@ -78,9 +88,15 @@ class VSwitch:
             platform_id=args['platform_id'], host_name=args['host_name'], switch_name=args['switch_name']):
             raise RuntimeError("Project Already Exists!!!")
 
-        mtu=args['mtu'] if args['mtu'] else 1500,
-        num_port=args['num_port'] if args['num_port'] else 128,
-        nics=args['nics'] if args['nics'] else []
+        mtu=int(args['mtu']) if args['mtu'] else 1500
+        num_port=int(args['num_port']) if args['num_port'] else 128
+        if args['nics']:
+            if isinstance(args['nics'], list):
+                nics = args['nics']
+            else:
+                nics = [args['nics'],]
+        else:
+            nics = []
 
         hostsystem = self._vcenter.find_hostsystem_by_name(args['host_name'])
 
@@ -88,7 +104,18 @@ class VSwitch:
         if not vmvsm.create(args['switch_name'], num_port, mtu, nics):
             raise RuntimeError("Create VSwitch Failed!!!")
         
-        # TODO 同步
+        created_info = self._find_vswitch_by_name(hostsystem, args['switch_name'])
+        data = {
+            'platform_id': args['platform_id'],
+            'name': args['switch_name'],
+            'mor_name': '',
+            'host_name': args['host_name'],
+            'host_mor_name': get_mor_name(hostsystem),
+            'mtu': created_info.mtu,
+            'num_of_port': created_info.numPorts,
+            'nics': json.dumps([item for item in created_info.spec.policy.nicTeaming.nicOrder.activeNic])
+        }
+        db.vswitch.vswitch_create(**data)
     
     def delete_vswitch_by_name(self, host_name, switch_name):
         """
@@ -109,9 +136,9 @@ class VSwitch:
 
         self.delete_vswitch_by_name(data.host_name, data.name)
 
-        # TODO  同步
+        db.vswitch.vswitch_delete(vswitch_id)
 
-    def update_vswich(self, args, switch_id):
+    def update_vswich(self, switch_id, args):
         """
         更新vswitch
         """
@@ -124,12 +151,36 @@ class VSwitch:
             num_ports=data.num_of_port,
             pnic=json.loads(data.nics)
         )
-        nics = nics if nics else []
+        if args['nics']:
+            if isinstance(args['nics'], list):
+                nics = args['nics']
+            else:
+                nics = [args['nics'],]
+        else:
+            nics = []
 
         hostsystem = self._vcenter.find_hostsystem_by_name(args['host_name'])
         vmvsm = VMVswitchManager(hostsystem)
         
-        if not vmvsm.update(args['switch_name'], old_data, args['num_port'], args['mtu'], args['nics']):
+        if not vmvsm.update(args['switch_name'], old_data, args['num_port'], args['mtu'], nics):
             raise RuntimeError("Updata VSwitch Failed!!!")
         
-        # TODO 同步
+        updated_info = self._find_vswitch_by_name(hostsystem, args['switch_name'])
+        data = dict(
+            vswitch_id=switch_id,
+            platform_id=args['platform_id'],
+            name=args['switch_name'], 
+            mor_name='',
+            host_name=args['host_name'],
+            host_mor_name=get_mor_name(hostsystem),
+            mtu=updated_info.mtu,
+            num_of_port=updated_info.numPorts,
+            nics=json.dumps([item for item in updated_info.spec.policy.nicTeaming.nicOrder.activeNic])
+        )
+        db.vswitch.vswitch_update(**data)
+
+    def _find_vswitch_by_name(self, host, vswitch_name):
+        for vss in host.configManager.networkSystem.networkInfo.vswitch:
+            if vss.name == vswitch_name:
+                return vss
+        return None
