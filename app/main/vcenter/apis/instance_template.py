@@ -14,9 +14,9 @@ parser.add_argument('pgsort')
 parser.add_argument('host')
 parser.add_argument('vm_name')
 
-parser.add_argument('action')
+parser.add_argument('action')  # 功能
 
-parser.add_argument('template_uuid')
+parser.add_argument('template_uuid')  # 模板uuid
 parser.add_argument('dc_id')  # 数据中心
 parser.add_argument('ds_id')  # 数据存储
 parser.add_argument('resource_pool_id')  # 资源中心

@@ -20,6 +20,7 @@ from app.main.base.apis.roles_users import RolesUsersManage
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
 from app.main.base.apis.roles_menus import RolesMenusManage
+from app.main.vcenter.apis.host import ResourceHostManage
 
 from app.main.vcenter.apis.instances import InstanceManage
 from app.main.vcenter.apis.instance_template import InstanceTemplateManage
@@ -181,10 +182,10 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=
                  endpoint='RolesMenusMgById')
 
 # vCenter host
-# api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
-#                  endpoint='ResourcePoolMg')
-# api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['DELETE'],
-#                  endpoint='ResourceHostMgDel')
+api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
+                 endpoint='ResourceHostMg')
+api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['DELETE'],
+                 endpoint='ResourceHostMgDel')
 
 # vCenter VSwitch
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')

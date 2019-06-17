@@ -184,7 +184,7 @@ class EventLog(db.Model):
     __tablename__ = 'event_log'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     resource_type = db.Column(db.String(32), nullable=False)  # 操作资源类型
-    result = db.Column(db.String(10))  # 操作结果
+    result = db.Column(db.Boolean)  # 操作结果
     operation_resources_id = db.Column(db.String(100))  # 操作资源ID
     operation_event = db.Column(db.String(255))  # 操作事件
     submitter = db.Column(db.String(32), nullable=False)  # 提交者
@@ -423,3 +423,32 @@ class VCenterVswitch(db.Model):
     mtu = db.Column(db.Integer)   # 交换机mtu设置
     num_of_port = db.Column(db.Integer)  # 交换机端口数量
     nics = db.Column(db.String(255))  # 交换机上行链路
+
+
+class VCenterHost(db.Model):
+    __tablename__ = 'vcenter_host'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    name = db.Column(db.String(32))  # 主机名称
+    ip = db.Column(db.String(32))
+    port = db.Column(db.Integer)
+    power_state = db.Column(db.String(32))  # 连接状态
+    maintenance_mode = db.Column(db.String(32))  # 维护模式
+    platform_id = db.Column(db.Integer)  # 平台id
+    uuid = db.Column(db.String(100))  # uuid
+    cpu = db.Column(db.String(128))  # cpu(GHz)
+    ram = db.Column(db.String(128))  # 内存(容量)
+    used_ram = db.Column(db.String(128))
+    rom = db.Column(db.String(128))  # 存储(容量)
+    used_rom = db.Column(db.String(128))
+    cpu_model = db.Column(db.String(32))  # 处理器类型
+    version = db.Column(db.String(32))  # 版本
+    image = db.Column(db.String(32))  # 映像 （VMware ESXI）
+    build = db.Column(db.String(32))  # 内部版本
+    fullName = db.Column(db.String(32))  # image + version + build
+    boot_time = db.Column(db.String(32))  # 添加时间
+    uptime = db.Column(db.String(32))  # 正常运行时间
+    # logic_processor_nums = db.Column(db.Integer)  # 逻辑处理器数
+    # network_nums = db.Column(db.Integer)  # 网卡数
+    # vm_nums = db.Column(db.Integer)  # 虚拟机数
+
+
