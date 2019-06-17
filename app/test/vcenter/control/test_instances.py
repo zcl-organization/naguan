@@ -15,9 +15,9 @@ from app.main.vcenter.control import network_devices as network_device_manage
 create_info = {
     'new_cpu': '1',
     'new_memory': '512',
-    'dc_id': 2,
+    'dc_id': 6,
     'ds_id': '', 
-    'vm_name': ' 12312312',
+    'vm_name': 'unit_test',
     'networks': '',
     'disks': '', 
     'image_id': ''
@@ -31,9 +31,9 @@ snapshot_info = {
 }
 
 ip_info  = {
-    'ip': '192.168.12.123',
+    'ip': '192.168.78.123',
     'subnet': '255.255.255.0',
-    'gateway': '192.168.12.1',
+    'gateway': '192.168.78.1',
     'dns': '8.8.8.8'
 }
 clone_name = "unit_test2"
@@ -68,7 +68,7 @@ class TestIntance(unittest.TestCase):
             'platform_id': 1,
             # 'vm_uuid': '42016f82-0f85-9b36-1f90-d6580b264691'
         }
-        platforms = [{'ip': '192.168.12.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'},]
+        platforms = [{'ip': '192.168.78.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'},]
         cloud_platform.platform_list = Mock(return_value=platforms)
         
         with app.test_request_context():
@@ -271,7 +271,7 @@ class TestIntance(unittest.TestCase):
         self._uti._set_vm(self._uti.vm)
 
         with app.test_request_context():
-            self._uti.clone(clone_name, 2, 2)
+            self._uti.clone(clone_name, 2, 6)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], clone_name)
         self.assertEqual(dd.summary.config.name, clone_name)
@@ -285,7 +285,7 @@ class TestIntance(unittest.TestCase):
         old_instance_uuid = self._uti.vm.summary.config.instanceUuid
 
         with app.test_request_context():
-            self._uti.cold_migrate('192.168.12.203', 2, 2)
+            self._uti.cold_migrate('192.168.78.203', 2, 6)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], old_vm_name)
         self.assertEqual(dd.summary.config.name, old_vm_name)

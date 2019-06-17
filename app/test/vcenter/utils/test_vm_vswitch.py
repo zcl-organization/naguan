@@ -7,13 +7,13 @@ from app.main.vcenter.utils.vm_vswitch import VMVswitchManager
 
 platforms = [
     {
-        'ip': '192.168.12.205', 
+        'ip': '192.168.78.205', 
         'name': 'administrator@vsphere.local', 
         'password': 'Aiya@2018', 
         'port': '443'
     },
 ]
-host_name = '192.168.12.203'
+host_name = '192.168.78.203'
 
 num_port = 15
 new_num_port = 128

@@ -7,7 +7,7 @@ from app.main.vcenter.control.utils import get_obj, connect_server
 from app.main.vcenter.utils.vm_port_group_manager import VMPortGroupManager
 from app.main.vcenter.utils.vm_port_group_manager import VMDvsPortGroupManager
 
-HOSTNAME = '192.168.12.203'
+HOSTNAME = '192.168.78.203'
 VSWITCH_NAME = 'vSwitch0'
 PORTGROUP_NAME = 'test_group'
 DVSWITCH_NAME = 'DSwitch-test'
@@ -16,7 +16,7 @@ NUM_PORT = 4
 
 class TestVMPortGroupManager(unittest.TestCase):
     def setUp(self):
-        platform = {'ip': '192.168.12.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'}
+        platform = {'ip': '192.168.78.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'}
         si = connect_server(platform['ip'], platform['name'], platform['password'], platform['port'])
         atexit.register(connect.Disconnect, si)
         content = si.RetrieveContent()
@@ -33,7 +33,7 @@ class TestVMPortGroupManager(unittest.TestCase):
 
 class TestVMDvsPortGroupManager(unittest.TestCase):
     def setUp(self):
-        platform = {'ip': '192.168.12.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'}
+        platform = {'ip': '192.168.78.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'}
         si = connect_server(platform['ip'], platform['name'], platform['password'], platform['port'])
         atexit.register(connect.Disconnect, si)
         content = si.RetrieveContent()
