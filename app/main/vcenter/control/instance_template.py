@@ -5,7 +5,7 @@ from app.main.vcenter import db
 from app.main.vcenter.control.utils import get_obj, get_connect, get_obj_by_mor_name, get_mor_name
 
 
-class InstanceVmTemplate:
+class InstanceTemplate:
 
     def __init__(self, platform_id, uuid):
         self.si, self.content, self.platform = get_connect(platform_id)
@@ -18,14 +18,16 @@ class InstanceVmTemplate:
     def template_create_vm(self, new_vm_name, ds_id, dc_id, resource_pool_id=None, host_id=None):
         if not self.template:
             raise ValueError('The template does not exist.')
+        if not self.template.summary.config.template:
+            raise Exception('Object are not template')
         datastore = self.get_ds(ds_id)
-        data_center, vmfloder = self.get_dc_vmfloder(dc_id)
+        data_center, vmfloder = self.get_dc_and_vmfloder(dc_id)
         resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
                                                host_id=host_id, data_center=data_center)
         # 判断是否存在同名虚拟机
         for vm in resource_pool.vm:
             if new_vm_name == vm.name:
-                raise ValueError('Existing virtual machine names')
+                raise ValueError('Existing vm names')
         # RelocateSpec
         relospec = vim.vm.RelocateSpec()
         relospec.datastore = datastore
@@ -33,7 +35,7 @@ class InstanceVmTemplate:
 
         # ConfigSpec
         configSpec = vim.vm.ConfigSpec()
-        configSpec.annotation = "This is a translation from the template"  ##
+        configSpec.annotation = "This is a create from the template"  ##
 
         # CloneSpec
         clonespec = vim.vm.CloneSpec()
@@ -56,10 +58,10 @@ class InstanceVmTemplate:
             raise Exception('Unable to get DataStore')
         data_store = get_obj(self.content, [vim.Datastore], ds_info.ds_name)  # 数据存储
         if not data_store:
-            raise Exception('Unable To Get DataStore')
+            raise Exception('Unable to Get DataStore')
         return data_store
 
-    def get_dc_vmfloder(self, dc_id):
+    def get_dc_and_vmfloder(self, dc_id):
         dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
         if dc_info.name:
             data_center = get_obj(self.content, [vim.Datacenter], dc_info.name)  # 数据中心
@@ -134,9 +136,12 @@ class InstanceVmTemplate:
 
     def del_template(self):
         if self.template:
-            WaitForTask(self.template.Destroy())
-            # 同步
-            self.sync_del_template()
+            if self.template.summary.config.template:
+                WaitForTask(self.template.Destroy())
+                # 同步
+                self.sync_del_template()
+            else:
+                raise Exception('Object are not template')
         else:
             raise ValueError('Template does not exist.')
 
