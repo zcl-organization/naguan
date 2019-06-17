@@ -228,7 +228,7 @@ class SnapshotManage(Resource):
         data = dict(
             type='vm_snapshot',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('生成/恢复快照'),
             submitter=g.username,
         )
@@ -330,7 +330,7 @@ class SnapshotManage(Resource):
         data = dict(
             type='vm_snapshot',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('删除快照'),
             submitter=g.username,
         )

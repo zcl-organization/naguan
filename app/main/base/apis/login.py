@@ -129,7 +129,7 @@ class LoginManage(Resource):
                     control.user.update_login_time(user)
         except Exception as e:
 
-            control.event_logs.eventlog_create(type='login', result=False, resources_id='', event=unicode('登陆'),
+            control.event_logs.eventlog_create(type='login', result=False, resources_id=None, event=unicode('登陆'),
                                                submitter=args['username'])
 
             return set_return_val(False, {}, str(e), g.error_code), 400
