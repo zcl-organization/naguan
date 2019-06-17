@@ -16,7 +16,7 @@ create_info = {
     'new_memory': '512',
     'dc_id': 2,
     'ds_id': 2,
-    'vm_name': 'u',
+    'vm_name': '1231',
     'networks': '',
     'disks': '',
     'image_id': '',
@@ -73,11 +73,11 @@ class TestIntance(unittest.TestCase):
     def tearDown(self):
         pass
 
-    # def test_01_boot(self):
-    #     with app.test_request_context():
-    #         self._uti.vm = None
-    #         self._uti.boot(**create_info)
-    #         self.assertIsNotNone(self._uti.vm)
+    def test_01_boot(self):
+        with app.test_request_context():
+            self._uti.vm = None
+            self._uti.boot(**create_info)
+            self.assertIsNotNone(self._uti.vm)
 
     # def test_02_start(self):
     #     self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])

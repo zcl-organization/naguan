@@ -57,18 +57,15 @@ def match_files(ds, pattern):
 
 
 def sync_image(platform, ds):
+
     image_list_match = match_files(ds, '*.iso')
     image_lists = db.images.get_image_name_by_platform_id(platform['id'], ds.name)
-
     # print(image_lists)
     image_list_db = []
     for image in image_lists:
         image_list_db.append(image.image_name)
-
     for image in image_list_match:
-
         if image['image_name'] in image_list_db:
-
             image_list_db.remove(image['image_name'])
             # print(image_list_db)
             db.images.update_image(platform_id=platform['id'], image_name=image['image_name'], path=image['path'],

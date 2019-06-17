@@ -1,3 +1,4 @@
+# -*- coding=utf-8 -*-
 import json
 import unittest
 
@@ -16,7 +17,7 @@ create_info = {
     'new_memory': '512',
     'dc_id': 2,
     'ds_id': '', 
-    'vm_name': 'unit_test1',
+    'vm_name': ' 12312312',
     'networks': '',
     'disks': '', 
     'image_id': ''

@@ -5,24 +5,29 @@ from app.main.vcenter import db
 from app.main.vcenter.control.utils import get_obj, get_connect, get_obj_by_mor_name, get_mor_name
 
 
-class InstanceVmTemplate:
+class InstanceTemplate:
 
     def __init__(self, platform_id, uuid):
         self.si, self.content, self.platform = get_connect(platform_id)
-        template = db.instances.list_by_uuid(platform_id, uuid)
-        self.platform_id = platform_id
+        template = db.instances.list_by_uuid(platform_id, uuid)  # 数据库模板
+        self.platform_id, self.uuid = platform_id, uuid
         self.template_name = template.vm_name
         self.template = get_obj(self.content, [vim.VirtualMachine], self.template_name)  # 模板文件
 
+    # host_id 未做
     def template_create_vm(self, new_vm_name, ds_id, dc_id, resource_pool_id=None, host_id=None):
+        if not self.template:
+            raise ValueError('The template does not exist.')
+        if not self.template.summary.config.template:
+            raise Exception('Object are not template')
         datastore = self.get_ds(ds_id)
-        data_center, vmfloder = self.get_dc_vmfloder(dc_id)
+        data_center, vmfloder = self.get_dc_and_vmfloder(dc_id)
         resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
                                                host_id=host_id, data_center=data_center)
         # 判断是否存在同名虚拟机
         for vm in resource_pool.vm:
             if new_vm_name == vm.name:
-                raise ValueError('Existing virtual machine names')
+                raise ValueError('Existing vm names')
         # RelocateSpec
         relospec = vim.vm.RelocateSpec()
         relospec.datastore = datastore
@@ -30,7 +35,7 @@ class InstanceVmTemplate:
 
         # ConfigSpec
         configSpec = vim.vm.ConfigSpec()
-        configSpec.annotation = "This is a translation from the template"  ##
+        configSpec.annotation = "This is a create from the template"  ##
 
         # CloneSpec
         clonespec = vim.vm.CloneSpec()
@@ -38,13 +43,13 @@ class InstanceVmTemplate:
         clonespec.powerOn = False
         clonespec.config = configSpec
 
-        print ("cloning VM...")
+        print ("Templates create vm...")
         # 执行
         WaitForTask(self.template.Clone(folder=vmfloder, name=new_vm_name, spec=clonespec))
         # 同步
         for vm in resource_pool.vm:
             if new_vm_name == vm.name:
-                self.sync_one_instance(vm)
+                self.sync_instance(vm)
                 break
 
     def get_ds(self, ds_id):
@@ -53,10 +58,10 @@ class InstanceVmTemplate:
             raise Exception('Unable to get DataStore')
         data_store = get_obj(self.content, [vim.Datastore], ds_info.ds_name)  # 数据存储
         if not data_store:
-            raise Exception('Unable To Get DataStore')
+            raise Exception('Unable to Get DataStore')
         return data_store
 
-    def get_dc_vmfloder(self, dc_id):
+    def get_dc_and_vmfloder(self, dc_id):
         dc_info = db.vcenter.vcenter_tree_by_id(dc_id)
         if dc_info.name:
             data_center = get_obj(self.content, [vim.Datacenter], dc_info.name)  # 数据中心
@@ -66,16 +71,16 @@ class InstanceVmTemplate:
         return data_center, vmfloder
 
     def get_resource_pool(self, resource_pool_id=None, host_id=None, data_center=None):
-        rp_name = None
+        rp_mor_name = None
         host_name = None
         if resource_pool_id:
-            rp_name = db.resource_pool.get_resource_pool_mor_name_by_id(resource_pool_id)
+            rp_mor_name = db.resource_pool.get_resource_pool_mor_name_by_id(resource_pool_id)
         elif host_id:
             host_name = None   # 未做
 
         resource_pool = None
-        if rp_name:
-            resource_pool = get_obj_by_mor_name(self.content, [vim.ResourcePool], rp_name)
+        if rp_mor_name:
+            resource_pool = get_obj_by_mor_name(self.content, [vim.ResourcePool], rp_mor_name)
         elif host_name:
             for cluster in data_center.hostFolder.childEntity:
                 for host in cluster.host:
@@ -86,7 +91,7 @@ class InstanceVmTemplate:
             resource_pool = data_center.hostFolder.childEntity[0].resourcePool
         return resource_pool
 
-    def sync_one_instance(self, vm):
+    def sync_instance(self, vm):
         if vm.summary.guest is not None:
             ip = vm.summary.guest.ipAddress
         else:
@@ -111,3 +116,34 @@ class InstanceVmTemplate:
                                        host=vm.summary.runtime.host.name, ip=ip, status=vm.summary.runtime.powerState,
                                        resource_pool_name=resource_pool_name, created_at=vm.config.createDate)
 
+    def template_transform_vm(self, resource_pool_id=None, host_id=None):
+        # MarkAsVirtualMachine
+        # data_center = self.template.datastore[0].parent.parent
+        if not self.template:
+            raise ValueError('The template does not exist.')
+        if not self.template.summary.config.template:
+            raise Exception('Object are not template')
+        resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
+                                               host_id=None, data_center=None)
+        print ("Template transform vm...")
+        # 执行
+        self.template.MarkAsVirtualMachine(pool=resource_pool)  # host未做
+        # 同步
+        self.sync_template_transform_vm(resource_pool.name)
+
+    def sync_template_transform_vm(self, resource_pool_name):
+        db.instances.vcenter_sync_template_transform_vm(self.platform_id, self.uuid, resource_pool_name)
+
+    def del_template(self):
+        if self.template:
+            if self.template.summary.config.template:
+                WaitForTask(self.template.Destroy())
+                # 同步
+                self.sync_del_template()
+            else:
+                raise Exception('Object are not template')
+        else:
+            raise ValueError('Template does not exist.')
+
+    def sync_del_template(self):
+        db.instances.del_template(self.platform_id, self.uuid)

@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
+from app.main.base import control as base_control
 
 
 parser = reqparse.RequestParser()
@@ -14,6 +16,7 @@ parser.add_argument('cluster_name')
 
 class ClustersManage(Resource):
 
+    @basic_auth.login_required
     def post(self):
         """
          创建Cluster信息
@@ -87,19 +90,31 @@ class ClustersManage(Resource):
                   items:
                     properties:
         """
+        data = dict(
+            type='Cluster',
+            result=True,
+            resources_id=None,
+            event=unicode('创建cluster'),
+            submitter=g.username,
+        )
         try:
             args = parser.parse_args()
             if not all([args['platform_id'], args['dc_id'], args['cluster_name']]):
                 raise Exception('Parameter error')
-            data = control.clusters.create_cluster(platform_id=args.get('platform_id'),
-                                                   dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
+            vcenter_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
+                                                         dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
+            data['resources_id'] = vcenter_id
         except Exception as e:
-            return set_return_val(False, {}, str(e), 3001)
+            data['result'] = False
+            return set_return_val(False, data, str(e), 3001)
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, data, 'clusters create success.', 3000)
 
     def put(self):
         pass
 
+    @basic_auth.login_required
     def delete(self, id):
         """
          删除Cluster信息
@@ -168,11 +183,21 @@ class ClustersManage(Resource):
                   items:
                     properties:
         """
+        data = dict(
+            type='Cluster',
+            result=True,
+            resources_id=id,
+            event=unicode('删除cluster'),
+            submitter=g.username,
+        )
         try:
             args = parser.parse_args()
             if not all([args['platform_id'], id]):
                 raise Exception('Parameter error')
-            data = control.clusters.del_cluster(args.get('platform_id'), cluster_id=id)
+            control.clusters.del_cluster(args.get('platform_id'), cluster_id=id)
         except Exception as e:
-            return set_return_val(False, {}, str(e), 3001)
+            data['result'] = False
+            return set_return_val(False, data, str(e), 3001)
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, data, 'cluster delete success.', 3000)

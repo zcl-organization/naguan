@@ -52,9 +52,9 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
                                            dc_vm_folder_mor_name=dc_obj.dc_vm_folder_mor_name,
                                            mor_name=rp_mor, cluster_mor_name=cluster_mor_name,
                                            cluster_oc_name=cluster_name, pid=cluster_id)
+        return cluster_id
     except Exception as e:
         raise Exception('Failed to create cluster. %s' % str(e))
-    return cluster_name
 
 
 def del_cluster(platform_id, cluster_id):
