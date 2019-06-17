@@ -184,7 +184,7 @@ class Instance(object):
         if not dc_info:
             g.error_code = 2002
             raise Exception('The dc_id error')
-        if self._vm_device_info_manager.build_without_device_info(vm_name, dc_info.name, int(new_cpu), int(new_memory)):
+        if self._vm_device_info_manager.build_without_device_info(vm_name, dc_info.dc_oc_name, int(new_cpu), int(new_memory)):
             self._set_vm(self._vm_device_info_manager.vm)
             self.update_vm_local()
         else:
@@ -448,7 +448,7 @@ class Instance(object):
 
         clone_status = self._vm_device_info_manager.clone(
             new_vm_name=new_vm_name,
-            dc_name=validate_input(dc_info.name) if dc_info else None,
+            dc_name=validate_input(dc_info.dc_oc_name) if dc_info else None,
             ds_name=validate_input(ds_info.ds_name),
             rp_name=validate_input(resourcepool)
         )
@@ -480,7 +480,7 @@ class Instance(object):
 
         clone_status = self._vm_device_info_manager.clone(
             new_vm_name=vm_name_tmp,
-            dc_name=validate_input(dc_info.name) if dc_info else None,
+            dc_name=validate_input(dc_info.dc_oc_name) if dc_info else None,
             ds_name=validate_input(ds_info.ds_name),
             rp_name=validate_input(resourcepool),
             target_host_name=host_name
