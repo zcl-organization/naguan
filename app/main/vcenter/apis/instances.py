@@ -152,7 +152,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('虚拟机操作'),
             submitter=g.username,
         )
@@ -198,7 +198,10 @@ class InstanceManage(Resource):
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
                 g.error_code = 2070
-
+            elif args['action'] == 'transform':
+                data['event'] = unicode('虚拟机转换模板')
+                instance.vm_transform_template()
+                g.error_code = 2080
             else:
                 data['result'] = False
                 g.error_code = 2009
@@ -433,7 +436,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('删除虚拟机'),
             submitter=g.username,
         )
@@ -530,7 +533,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=False,
-            resources_id='',
+            resources_id=None,
             event=unicode('更新虚拟机'),
             submitter=g.username,
         )

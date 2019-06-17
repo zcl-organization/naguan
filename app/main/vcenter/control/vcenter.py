@@ -177,9 +177,9 @@ def sync_vcenter_tree(si, content, platform):
         # sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
 
         # 同步datastore
+
         sync_datastore(platform, dc, si, content)
         # 异步处理 同步ds信息
-
         # sync_datastore.apply_async(args=[platform, dc, si])
 
         # 获取 dc tree
@@ -281,8 +281,8 @@ def sync_vcenter_tree(si, content, platform):
             sync_resourcepool(platform, dc, cluster, si, content)
             # 异步处理 同步rp信息
             # sync_resourcepool.apply_async(args=[platform, dc, cluster, si, content])
-
             hosts = cluster.host
+
             for host in hosts:
                 host_mor = get_mor_name(host)
 

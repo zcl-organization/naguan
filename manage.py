@@ -24,6 +24,7 @@ def before_first_request():
 
 @app.before_request
 def before_request():
+    g.error_code = 500
     base_url = request.base_url
     method = request.method
     g.ip = request.remote_addr

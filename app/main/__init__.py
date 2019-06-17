@@ -129,8 +129,10 @@ api.add_resource(InstanceManage, '/api/v1.0/vCenter/vm/<int:platform_id>/<string
                  endpoint='VmMgDel')
 api.add_resource(ImageManage, '/api/v1.0/vCenter/image', methods=['GET', 'POST', 'PUT', 'DELETE'], endpoint='ImageMg')
 
-api.add_resource(InstanceTemplateManage, '/api/v1.0/vCenter/template', methods=['GET', 'POST', 'DELETE'],
+api.add_resource(InstanceTemplateManage, '/api/v1.0/vCenter/template', methods=['GET', 'POST'],
                  endpoint='InstanceTemplateMg')
+api.add_resource(InstanceTemplateManage, '/api/v1.0/vCenter/template/<int:template_uuid>', methods=['DELETE'],
+                 endpoint='InstanceTemplateMgDel')
 # vCenter 网络端口组管理
 api.add_resource(NetworkPortGroupManage, '/api/v1.0/vCenter/network_port_group/',
                  methods=['GET', 'POST', 'DELETE'], endpoint='NetworkPortGroupMg')
@@ -178,6 +180,13 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu', methods=['GET', 'POST'
 api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=['PUT', 'DELETE'],
                  endpoint='RolesMenusMgById')
 
+# vCenter host
+# api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
+#                  endpoint='ResourcePoolMg')
+# api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['DELETE'],
+#                  endpoint='ResourceHostMgDel')
+
 # vCenter VSwitch
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch/<int:vswiter_id>', methods=['DELETE', 'PUT'], endpoint='VSwitch_id')
+

@@ -33,7 +33,7 @@ target_metadata = current_app.extensions['migrate'].db.metadata
 
 
 def run_migrations_offline():
-    """Run migrations in 'offline' mode.
+    """Run migrations000 in 'offline' mode.
 
     This configures the context with just a URL
     and not an Engine, though an Engine is acceptable
@@ -54,7 +54,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    """Run migrations in 'online' mode.
+    """Run migrations000 in 'online' mode.
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
@@ -81,7 +81,6 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            compare_type=True,
             process_revision_directives=process_revision_directives,
             **current_app.extensions['migrate'].configure_args
         )

@@ -214,6 +214,7 @@ class VMDeviceInfoManager:
             WaitForTask(build_task)
             self.vm = self._get_device([vim.VirtualMachine], vm_name)
         except Exception as e:
+            print e
             return False
         
         return True
