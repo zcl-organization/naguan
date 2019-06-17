@@ -216,7 +216,7 @@ class VSwitchManage(Resource):
         return set_return_val(True, [], 'Create Vswitch Success!!!', 3002)
 
     @basic_auth.login_required
-    def delete(self, vswiter_id):
+    def delete(self, vswitch_id):
         """
          删除vSwitch
         ---
@@ -279,14 +279,14 @@ class VSwitchManage(Resource):
                 raise RuntimeError('Parameter Error!!!')
 
             vsw = VSwitch(args['platform_id'])
-            vsw.delete_vswitch_by_id(vswiter_id)
+            vsw.delete_vswitch_by_id(vswitch_id)
         except Exception as e:
             return set_return_val(False, [], str(e), 3005), 400
 
         return set_return_val(True, [], 'Delete Vswitch Success!!!', 3004)
 
     @basic_auth.login_required
-    def put(self, vswiter_id):
+    def put(self, vswitch_id):
         """
           更新vSwitch
         ---
@@ -384,7 +384,7 @@ class VSwitchManage(Resource):
                 raise RuntimeError('Parameter Error!!!')
 
             vsw = VSwitch(args['platform_id'])
-            vsw.update_vswich(vswiter_id, args)
+            vsw.update_vswich(vswitch_id, args)
         except Exception as e:
             return set_return_val(False, [], str(e), 3007)
 
