@@ -33,6 +33,7 @@ from app.main.vcenter.apis.disks import DiskManage
 from app.main.vcenter.apis.network_devices import NetWorkManage
 from app.main.vcenter.apis.snapshots import SnapshotManage
 from app.main.vcenter.apis.resource_pool import ResourcePoolManage
+from app.main.vcenter.apis.vswitch import VSwitchManage
 
 from app.main.vcenter.apis.ovf import OvfManage
 
@@ -184,3 +185,8 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=
 #                  endpoint='ResourcePoolMg')
 # api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['DELETE'],
 #                  endpoint='ResourceHostMgDel')
+
+# vCenter VSwitch
+api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')
+api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch/<int:vswiter_id>', methods=['DELETE', 'PUT'], endpoint='VSwitch_id')
+
