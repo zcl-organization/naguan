@@ -429,12 +429,12 @@ class VCenterHost(db.Model):
     __tablename__ = 'vcenter_host'
     id = db.Column(db.Integer, primary_key=True)  # id
     name = db.Column(db.String(32))  # 主机名称
-    ip = db.Column(db.String(32))
+    mor_name = db.Column(db.String(32))
     port = db.Column(db.Integer)
     power_state = db.Column(db.String(32))  # 连接状态
-    maintenance_mode = db.Column(db.String(32))  # 维护模式
+    maintenance_mode = db.Column(db.Boolean)  # 维护模式
     platform_id = db.Column(db.Integer)  # 平台id
-    uuid = db.Column(db.String(100))  # uuid
+    uuid = db.Column(db.String(128))  # uuid
     cpu = db.Column(db.String(128))  # cpu(GHz)
     ram = db.Column(db.String(128))  # 内存(容量)
     used_ram = db.Column(db.String(128))
@@ -444,11 +444,20 @@ class VCenterHost(db.Model):
     version = db.Column(db.String(32))  # 版本
     image = db.Column(db.String(32))  # 映像 （VMware ESXI）
     build = db.Column(db.String(32))  # 内部版本
-    fullName = db.Column(db.String(32))  # image + version + build
+    full_name = db.Column(db.String(64))  # image + version + build
     boot_time = db.Column(db.String(32))  # 添加时间
     uptime = db.Column(db.String(32))  # 正常运行时间
     # logic_processor_nums = db.Column(db.Integer)  # 逻辑处理器数
     # network_nums = db.Column(db.Integer)  # 网卡数
     # vm_nums = db.Column(db.Integer)  # 虚拟机数
 
+
+class Licenses(db.Model):
+    __tablename__ = 'licenses'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    name = db.Column(db.String(32))  # 许可证名称
+    licenseKey = db.Column(db.String(128))  # 许可证号
+    editionKey = db.Column(db.String(128))  #
+    used = db.Column(db.Integer)  #
+    total = db.Column(db.Integer)  #
 

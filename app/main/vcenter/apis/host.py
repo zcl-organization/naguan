@@ -6,7 +6,16 @@ from app.main.vcenter.control.host import Host
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')  # 平台ID
-parser.add_argument('new_host_name')  # hostsystem 名称
+parser.add_argument('host_name')  # host名称
+parser.add_argument('esxi_username')  # 用户名
+parser.add_argument('esxi_password')  # 密码
+
+parser.add_argument('folder_name')  # 存储文件夹
+parser.add_argument('cluster_id')  # 集群ID
+parser.add_argument('resource_pool')  # 资源池ID
+parser.add_argument('license_id')  # 许可证id
+parser.add_argument('fetch_ssl_thumbprint')  # ssl???
+parser.add_argument('esxi_ssl_thumbprint')  # ssl???
 
 
 class ResourceHostManage(Resource):
@@ -103,7 +112,6 @@ class ResourceHostManage(Resource):
             # TODO 功能未做
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
-
         return set_return_val(True, [], 'Get Info Success!', 3000)
 
     # @basic_auth.login_required
@@ -125,10 +133,8 @@ class ResourceHostManage(Resource):
               required:
               - platform_id
               - host_name
-              - switch_name
-              - mtu
-              - num_port
-              - nics
+              - esxi_username
+              - esxi_password
               properties:
                 platform_id:
                   type: integer
@@ -140,29 +146,40 @@ class ResourceHostManage(Resource):
                   default: 192.168.12.203
                   description: 主机名称
                   example: 192.168.12.203
-                switch_name:
+                esxi_username:
                   type: string
-                  default: test_vs
-                  description: vswitch交换机名称
-                  example: test_vs
-                mtu:
+                  default: root
+                  description: 用户名
+                  example: root
+                esxi_password:
+                  type: string
+                  default: kpy2019
+                  description: 密码
+                  example: kpy2019
+                folder_name:
+                  type: string
+                  default: kpy2019
+                  description: 存储文件夹
+                  example: kpy2019
+                cluster_id:
                   type: integer
-                  default: 1500
-                  description: 交换机mtu设置
-                  example: 1500
-                num_port:
+                  default: 1
+                  description: 集群id
+                  example: 1
+                esxi_license:
+                  type: string
+                  default: HV4WC-01087-1ZJ48-031XP-9A843
+                  description: 许可证
+                  example: HV4WC-01087-1ZJ48-031XP-9A843
+                resource_pool:
                   type: integer
-                  default: 128
-                  description: 交换机端口数量
-                  example: 128
-                nics:
-                  type: list
-                  default: ["vmnic3",]
-                  description: 上行链路组
-                  example: ["vmnic3",]
+                  default: 1
+                  description: 资源池
+                  example: 1
+
        responses:
           200:
-            description: vCenter vSwitch 创建状态信息
+            description: vCenter Host 创建
             schema:
               properties:
                 ok:
@@ -197,20 +214,27 @@ class ResourceHostManage(Resource):
         try:
             args = parser.parse_args()
 
-            if not all([args['platform_id'], args['new_host_name']]):
-                raise RuntimeError('Parameter Error!!!')
-
+            if not all([args['platform_id'], args['host_name'],
+                        args['esxi_username'], args['esxi_password']]):
+                raise ValueError('Parameter Error!')
+            if not args['folder_name'] and not args['cluster_id']:
+                raise ValueError('Parameter Error!')
             host = Host(args['platform_id'])
-            host.add_host(args['new_host_name'])
+            host.add_host(host_name=args['host_name'], esxi_username=args['esxi_username'],
+                          esxi_password=args['esxi_password'], folder_name=args['folder_name'],
+                          cluster_id=args['cluster_id'],
+                          license_id=args['license_id'], resource_pool=args['resource_pool'],
+                          fetch_ssl_thumbprint=args['fetch_ssl_thumbprint'],
+                          esxi_ssl_thumbprint=args['esxi_ssl_thumbprint'])
         except Exception as e:
             return set_return_val(False, [], str(e), 3001), 400
 
         return set_return_val(True, [], 'Create Host Success!!!', 3000)
 
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def delete(self):
         """
-         删除vSwitch
+         删除Host
         ---
        tags:
           - vCenter vSwitch
@@ -266,13 +290,20 @@ class ResourceHostManage(Resource):
         """
         try:
             args = parser.parse_args()
-            if not args['platform_id']:
+            if not all([args['platform_id'], args['host_name']]):
                 raise RuntimeError('Parameter Error!!!')
+            host = Host(args['platform_id'])
+            host.remove_host(args['host_name'])
         except Exception as e:
             return set_return_val(False, [], str(e), 3001), 400
 
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
-    @basic_auth.login_required
+    # @basic_auth.login_required
     def put(self):
-        pass
+        args = parser.parse_args()
+        host = Host(args['platform_id'])
+        host.sync_licenses()
+        print 'success.'
+
+

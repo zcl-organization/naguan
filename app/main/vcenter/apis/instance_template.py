@@ -200,14 +200,11 @@ class InstanceTemplateManage(Resource):
               required:
               - platform_id
               - template_uuid
-              - vm_name
-              - ds_id
-              - dc_id
+              - action
               properties:
                 action:
                   default: create
                   type: string
-                  required: true
                   example: create,transform
                 platform_id:
                   type: integer
@@ -299,14 +296,14 @@ class InstanceTemplateManage(Resource):
                 if not all([args['vm_name'], args['ds_id'], args['dc_id']]):
                     raise Exception('Parameter error')
                 instance_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
-                                                        dc_id=args['dc_id'], resource_pool_id=
-                                                        args.get('resource_pool_id'), host_id=args.get('host_id'))
+                                                     dc_id=args['dc_id'], resource_pool_id=
+                                                     args['resource_pool_id'], host_id=args['host_id'])
             elif args['action'] == 'transform':
                 data['event'] = unicode('模板转换虚拟机')
                 if not args['resource_pool_id']:
                     raise Exception('Parameter error')
-                instance_template.template_transform_vm(resource_pool_id=args.get('resource_pool_id'),
-                                                        host_id=args.get('host_id'))
+                instance_template.template_transform_vm(resource_pool_id=args['resource_pool_id'],
+                                                        host_id=args['host_id'])
             else:
                 data['result'] = False
                 raise Exception('Parameter error')
