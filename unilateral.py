@@ -73,11 +73,11 @@ class TestIntance(unittest.TestCase):
     def tearDown(self):
         pass
 
-    # def test_01_boot(self):
-    #     with app.test_request_context():
-    #         self._uti.vm = None
-    #         self._uti.boot(**create_info)
-    #         self.assertIsNotNone(self._uti.vm)
+    def test_01_boot(self):
+        with app.test_request_context():
+            self._uti.vm = None
+            self._uti.boot(**create_info)
+            self.assertIsNotNone(self._uti.vm)
 
     # def test_02_start(self):
     #     self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])

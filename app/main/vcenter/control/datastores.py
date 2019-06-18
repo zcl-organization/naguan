@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
 import time
 
-from flask_restful.representations import json
-from pyVim import connect
 import atexit
 
 from pyVmomi import vmodl
 from pyVmomi import vim
 
-from app.main.vcenter.control.utils import get_connect, get_mor_name
+from app.main.vcenter.control.utils import get_mor_name
 
 from app.main.vcenter import db
 from app.main.vcenter.control.images import sync_image

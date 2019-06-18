@@ -17,10 +17,13 @@ from app.main.base.apis.task_logs import LogTask
 
 from app.main.base.apis.role import RoleManage
 from app.main.base.apis.roles_users import RolesUsersManage
+
+from app.main.base.apis.roles_menus import RolesMenusManage
+from app.main.base.apis.company import CompanyManage
+from app.main.base.apis.department import DepartmentManage
+
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
-from app.main.base.apis.roles_menus import RolesMenusManage
-
 from app.main.vcenter.apis.instances import InstanceManage
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
@@ -170,3 +173,15 @@ api.add_resource(OvfManage, '/api/v1.0/vCenter/ovf', methods=['GET'],
 api.add_resource(RolesMenusManage, '/api/v1.0/role_menu', methods=['GET', 'POST'], endpoint='RolesMenusMg')
 api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=['PUT', 'DELETE'],
                  endpoint='RolesMenusMgById')
+
+# 单位管理
+api.add_resource(CompanyManage, '/api/v1.0/company', methods=['GET', 'POST'],
+                 endpoint='CompanyMag')
+api.add_resource(CompanyManage, '/api/v1.0/company/<int:company_id>', methods=['PUT', 'DELETE'],
+                 endpoint='CompanyMagById')
+
+# 部门管理
+api.add_resource(DepartmentManage, '/api/v1.0/department', methods=['GET', 'POST'],
+                 endpoint='DepartmentMg')
+api.add_resource(DepartmentManage, '/api/v1.0/department/<int:department_id>', methods=['PUT', 'DELETE'],
+                 endpoint='DepartmentMgById')

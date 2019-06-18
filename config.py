@@ -18,12 +18,12 @@ class BaseConfig(object):
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECRET_KEY = 'cccxdfcccc'
     SESSION_TYPE = 'redis'
-    SESSION_REDIS = redis.Redis(host='118.24.10.85', port='6379', password='123456')
+    SESSION_REDIS = redis.Redis(host='192.168.78.108', port='6379', password='123456')
     SESSION_PERMANENT_SESSION_LIFETIME = 3600
     SESSION_KEY_PREFIX = 'flask'
     # CELERY_IMPORTS = ('tasks.add',)
-    CELERY_BROKER_URL = 'redis://:123456@118.24.10.85:6379/1'
-    CELERY_RESULT_BACKEND = 'redis://:123456@118.24.10.85:6379/1'
+    CELERY_BROKER_URL = 'redis://:123456@192.168.78.108:6379/1'
+    CELERY_RESULT_BACKEND = 'redis://:123456@192.168.78.108:6379/1'
 
     CELERY_ACCEPT_CONTENT = ['json', 'pickle']
     CELERY_TASK_SERIALIZER = 'json'
@@ -109,8 +109,8 @@ class BaseConfig(object):
 
 class DevelopConfig(BaseConfig):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'develop.db')
-    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:aaaaaa@192.168.125.160:3306/Code3?charset=utf8'
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'develop.db')
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan:123456@192.168.78.108:3306/naguan?charset=utf8'
 
 
 class TestingConfig(BaseConfig):

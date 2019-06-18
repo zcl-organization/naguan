@@ -152,7 +152,7 @@ class InstanceManage(Resource):
         data = dict(
             type='instances_vm',
             result=True,
-            resources_id='',
+            resources_id=None,
             event=unicode('虚拟机操作'),
             submitter=g.username,
         )

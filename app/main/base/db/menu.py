@@ -22,26 +22,6 @@ def menu_list(menu_id, url, name, identifier, all):
     # result = query.items
     data = query.all()
 
-    # data = []
-    # for menu in result:
-    #     menu_tmp = {
-    #         'id': menu.id,
-    #         'name': menu.name,
-    #         'icon': menu.icon,
-    #         'url': menu.url,
-    #         'identifier': menu.identifier,
-    #     }
-    #     data.append(menu_tmp)
-
-    # pg = {
-    #     'has_next': query.has_next,
-    #     'has_prev': query.has_prev,
-    #     'page': query.page,
-    #     'pages': query.pages,
-    #     'size': options['limit'],
-    #     'total': query.total
-    #
-    # }
     return data
 
 

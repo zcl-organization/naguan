@@ -51,6 +51,7 @@ def wait_for_tasks(s, tasks):
                             # Remove task from taskList
                             task_list.remove(str(task))
                         elif state == vim.TaskInfo.State.error:
+                            print(task.info.error)
                             raise task.info.error
             # Move to next version
             version = update.version

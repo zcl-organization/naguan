@@ -65,7 +65,6 @@ class Instance(object):
             self._vm_snapshot_manager = None
             self._vm_device_info_manager.vm = None
 
-
     def start(self):
         """
         虚拟机实例开机
@@ -116,7 +115,6 @@ class Instance(object):
         else:
             raise Exception('vm delete failed')
 
-
     def add_snapshot(self, snapshot_name, description, dumpMemory=False, quiesce=True):
         """
         添加快照
@@ -162,7 +160,6 @@ class Instance(object):
             g.error_code = 2304
             raise Exception('unable to find snapshot, revert failed')
 
-
     def boot(self, new_cpu, new_memory, dc_id, ds_id, vm_name, networks, disks, image_id):
         """
         创建主机
@@ -193,7 +190,7 @@ class Instance(object):
         else:
             g.error_code = 2005
             raise Exception('Task To Create Failed')
-        
+
         if networks:
             try:
                 self.add_network(networks)
@@ -207,7 +204,7 @@ class Instance(object):
             except Exception as e:
                 g.error_code = 2007
                 raise Exception('vm disk attach failed')
-        
+
         if image_id:
             try:
                 self.add_image(image_id)
@@ -221,7 +218,7 @@ class Instance(object):
         :params networks:
         """
         networks = json.loads(networks) if isinstance(networks, str) else networks
-        
+
         for network in networks:
             local_network_port_group = network_port_group_manage.get_network_by_id(network)
 
@@ -249,7 +246,7 @@ class Instance(object):
             if not self._vm_device_info_manager.remove_network(device.label):
                 g.error_code = 2212
                 raise Exception('vm network delete failed')
-        
+
         sync_network_device(self.platform_id, self.vm)
 
     def update_vcpu(self, new_cpu, old_cpu):
@@ -292,7 +289,7 @@ class Instance(object):
                 raise Exception('The disk information format is incorrect.')
 
             if not self._vm_device_info_manager.add_disk(disk.get('size'), disk.get('type')):
-                raise Exception('The disk information format is incorrect.')                    
+                raise Exception('The disk information format is incorrect.')
 
         sync_disk(self.platform_id, self.vm)
 
@@ -328,7 +325,6 @@ class Instance(object):
 
         if not self._vm_device_info_manager.add_image(image.path, image.ds_name):
             raise Exception('Add Image Failed')
-
 
     # 获取云主机列表
     def list(self, host, vm_name, pgnum, pgsort):
@@ -433,7 +429,6 @@ class Instance(object):
                                            host='192.168.12.203', ip=ip, status=self.vm.summary.runtime.powerState,
                                            resource_pool_name=resource_pool_name, created_at=self.vm.config.createDate)
 
-
     def clone(self, new_vm_name, ds_id, dc_id=None, resourcepool=None):
         """
         克隆虚机
@@ -450,11 +445,11 @@ class Instance(object):
         except Exception as e:
             g.error_code = 2051
             raise Exception('Unable to get DataStore or DataCenter')
-        
+
         clone_status = self._vm_device_info_manager.clone(
-            new_vm_name=new_vm_name, 
-            dc_name=validate_input(dc_info.name) if dc_info else None, 
-            ds_name=validate_input(ds_info.ds_name), 
+            new_vm_name=new_vm_name,
+            dc_name=validate_input(dc_info.name) if dc_info else None,
+            ds_name=validate_input(ds_info.ds_name),
             rp_name=validate_input(resourcepool)
         )
         if not clone_status:
@@ -479,14 +474,14 @@ class Instance(object):
         except Exception as e:
             g.error_code = 2061
             raise Exception('Unable to get DataStore or DataCenter')
-        
+
         if not ds_info:
             raise Exception('Unable to get DataStore')
-        
+
         clone_status = self._vm_device_info_manager.clone(
-            new_vm_name=vm_name_tmp, 
-            dc_name=validate_input(dc_info.name) if dc_info else None, 
-            ds_name=validate_input(ds_info.ds_name), 
+            new_vm_name=vm_name_tmp,
+            dc_name=validate_input(dc_info.name) if dc_info else None,
+            ds_name=validate_input(ds_info.ds_name),
             rp_name=validate_input(resourcepool),
             target_host_name=host_name
         )
@@ -496,13 +491,13 @@ class Instance(object):
             if not self._vm_base_manager.delete():
                 g.error_code = 2063
                 raise Exception("cold migrate failed")
-            
+
             try:
                 vm_conf = vim.vm.ConfigSpec()
                 vm_conf.name = old_name
                 vm_conf.uuid = old_uuid
 
-                cold_migrated_vm = self._vm_device_info_manager._get_device([vim.VirtualMachine], vm_name_tmp) 
+                cold_migrated_vm = self._vm_device_info_manager._get_device([vim.VirtualMachine], vm_name_tmp)
                 WaitForTask(cold_migrated_vm.ReconfigVM_Task(vm_conf))
             except Exception as e:
                 g.error_code = 2063
@@ -511,7 +506,7 @@ class Instance(object):
             self._set_vm(cold_migrated_vm)
         else:
             raise Exception('Perform a clone operation error')
-            
+
     def ip_assignment(self, ip, subnet, gateway, dns, domain=None):
         try:
 
@@ -563,7 +558,6 @@ class Instance(object):
             print "Caught exception: %s" % str(e)
             g.error_code = 2072
             raise Exception('Caught exception fault: %s' % str(e))
-
 
 # def find_snapshot(snapshot, snapshot_name):
 #     for snapshot in snapshot.childSnapshotList:
