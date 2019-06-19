@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 604450050832
-Revises: 4126eab60d78
-Create Date: 2019-06-18 18:34:13.350000
+Revision ID: 237eead2ffac
+Revises: edb26e1bcab0
+Create Date: 2019-06-19 14:11:18.666000
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '604450050832'
-down_revision = '4126eab60d78'
+revision = '237eead2ffac'
+down_revision = 'edb26e1bcab0'
 branch_labels = None
 depends_on = None
 
@@ -33,21 +33,23 @@ def upgrade():
     sa.Column('mor_name', sa.String(length=32), nullable=True),
     sa.Column('port', sa.Integer(), nullable=True),
     sa.Column('power_state', sa.String(length=32), nullable=True),
+    sa.Column('connection_state', sa.String(length=32), nullable=True),
     sa.Column('maintenance_mode', sa.Boolean(), nullable=True),
     sa.Column('platform_id', sa.Integer(), nullable=True),
     sa.Column('uuid', sa.String(length=128), nullable=True),
     sa.Column('cpu', sa.String(length=128), nullable=True),
-    sa.Column('ram', sa.String(length=128), nullable=True),
-    sa.Column('used_ram', sa.String(length=128), nullable=True),
-    sa.Column('rom', sa.String(length=128), nullable=True),
-    sa.Column('used_rom', sa.String(length=128), nullable=True),
-    sa.Column('cpu_model', sa.String(length=32), nullable=True),
+    sa.Column('cpu_mhz', sa.Integer(), nullable=True),
+    sa.Column('ram', sa.BigInteger(), nullable=True),
+    sa.Column('used_ram', sa.BigInteger(), nullable=True),
+    sa.Column('rom', sa.BigInteger(), nullable=True),
+    sa.Column('used_rom', sa.BigInteger(), nullable=True),
+    sa.Column('cpu_model', sa.String(length=64), nullable=True),
     sa.Column('version', sa.String(length=32), nullable=True),
     sa.Column('image', sa.String(length=32), nullable=True),
     sa.Column('build', sa.String(length=32), nullable=True),
-    sa.Column('full_name', sa.String(length=64), nullable=True),
-    sa.Column('boot_time', sa.String(length=32), nullable=True),
-    sa.Column('uptime', sa.String(length=32), nullable=True),
+    sa.Column('full_name', sa.String(length=128), nullable=True),
+    sa.Column('boot_time', sa.DateTime(), nullable=True),
+    sa.Column('uptime', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('vcenter_vswitch',

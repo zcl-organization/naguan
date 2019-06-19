@@ -114,7 +114,7 @@ class ResourceHostManage(Resource):
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, [], 'Get Info Success!', 3000)
 
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def post(self):
         """
           创建Host
@@ -231,7 +231,7 @@ class ResourceHostManage(Resource):
 
         return set_return_val(True, [], 'Create Host Success!!!', 3000)
 
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def delete(self):
         """
          删除Host
@@ -300,7 +300,7 @@ class ResourceHostManage(Resource):
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
     # @basic_auth.login_required
-    def put(self):
+    def put(self):  # TODO   license的创建，vCenter同步需要
         args = parser.parse_args()
         host = Host(args['platform_id'])
         host.sync_licenses()

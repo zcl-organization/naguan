@@ -18,6 +18,8 @@ class Host:
                  license_id=None, resource_pool=None,
                  fetch_ssl_thumbprint=None, esxi_ssl_thumbprint=None):
         """Add ESXi host to a cluster of folder in vCenter"""
+        if db.host.get_host(host_name):
+            raise ValueError('The host object already exists.')
         host_connect_spec = self.get_host_connect_spec(esxi_hostname=host_name, esxi_username=esxi_username,
                                                        esxi_password=esxi_password,
                                                        fetch_ssl_thumbprint=fetch_ssl_thumbprint,
@@ -52,10 +54,10 @@ class Host:
                 )
             except Exception as task_error:
                 raise RuntimeError('Error adding host %s task' % task_error)
-        # try:
-        #     WaitForTask(task)
-        # except Exception as task_error:
-        #     raise Exception('Error adding host %s task' % task_error)
+        try:
+            WaitForTask(task)
+        except Exception as task_error:
+            raise Exception('Error adding host %s task' % task_error)
         # 同步
         host = get_obj(self.content, [vim.HostSystem], host_name)
         self.sync_host(host)
@@ -63,14 +65,18 @@ class Host:
     def sync_host(self, host):
         config = host.summary.config
         runtime = host.summary.runtime
+        # print config
         data = dict(name=config.name, mor_mame=get_mor_name(host.summary.host), port=config.port,
-                    power_state=runtime.powerState, maintenance_mode=runtime.inMaintenanceMode,
-                    platform_id=self.platform['id'], uuid=host.summary.hardware.uuid, cpu=None, ram=None, used_ram=None,
-                    rom=None, used_rom=None, cpu_model=host.summary.hardware.cpuModel, version=config.prodect.version,
-                    image=config.prodect.name, build=config.prodect.build, full_name=config.prodect.fullName,
-                    boot_time=runtime.bootTime, uptime=host.summary.quickStats)
-        import pdb
-        pdb.set_trace()
+                    power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
+                    maintenance_mode=runtime.inMaintenanceMode, platform_id=self.platform['id'],
+                    uuid=host.summary.hardware.uuid, cpu=int(host.summary.hardware.numCpuCores),
+                    ram=host.summary.hardware.memorySize, used_ram=None,
+                    rom=None, used_rom=None,
+                    cpu_mhz=host.summary.hardware.cpuMhz, cpu_model=host.summary.hardware.cpuModel,
+                    version=config.product.version, image=config.product.name, build=config.product.build,
+                    full_name=config.product.fullName, boot_time=runtime.bootTime,
+                    uptime=host.summary.quickStats.uptime)
+        db.host.add_host(**data)
 
     # 连接host
     def get_host_connect_spec(self, esxi_hostname, esxi_username, esxi_password,
@@ -142,9 +148,11 @@ class Host:
             raise RuntimeError('Build task error.')
         try:
             WaitForTask(task)
+            db.host.del_host(host_name)
         except Exception as e:
             raise Exception('Error removing host %s task.' % e)
 
+    # 查询父类类型
     def get_parent_type(self, host_object):
         """
             Get the type of the parent object
@@ -159,7 +167,7 @@ class Host:
             object_type = 'folder'
         return object_type
 
-    # 模式更新
+    # （维护）模式更新（暂时未使用）
     def put_host_in_maintenance_mode(self, host_object):
         """Put host in maintenance mode, if not already"""
         if not host_object.runtime.inMaintenanceMode:
@@ -177,6 +185,7 @@ class Host:
             except TaskError as task_err:
                 raise Exception('Error')
 
+    # 同步需要
     def sync_licenses(self):
         licenses = self.si.content.licenseManager.licenses
         for license in licenses:

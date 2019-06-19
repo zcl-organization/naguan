@@ -426,27 +426,29 @@ class VCenterVswitch(db.Model):
 
 
 class VCenterHost(db.Model):
-    __tablename__ = 'vcenter_host'
+    __tablename__ = 'vcenter_host'  # 22个字段
     id = db.Column(db.Integer, primary_key=True)  # id
     name = db.Column(db.String(32))  # 主机名称
     mor_name = db.Column(db.String(32))
     port = db.Column(db.Integer)
-    power_state = db.Column(db.String(32))  # 连接状态
+    power_state = db.Column(db.String(32))  # 电源状态   >????
+    connection_state = db.Column(db.String(32))  # 连接状态  ???
     maintenance_mode = db.Column(db.Boolean)  # 维护模式
     platform_id = db.Column(db.Integer)  # 平台id
     uuid = db.Column(db.String(128))  # uuid
-    cpu = db.Column(db.String(128))  # cpu(GHz)
-    ram = db.Column(db.String(128))  # 内存(容量)
-    used_ram = db.Column(db.String(128))
-    rom = db.Column(db.String(128))  # 存储(容量)
-    used_rom = db.Column(db.String(128))
-    cpu_model = db.Column(db.String(32))  # 处理器类型
+    cpu = db.Column(db.String(128))  # cpu(核心数)     ?????
+    cpu_mhz = db.Column(db.Integer)  # cpuMhz
+    ram = db.Column(db.BigInteger)  # 内存(容量)
+    used_ram = db.Column(db.BigInteger)
+    rom = db.Column(db.BigInteger)  # 存储(容量)
+    used_rom = db.Column(db.BigInteger)
+    cpu_model = db.Column(db.String(64))  # 处理器类型
     version = db.Column(db.String(32))  # 版本
     image = db.Column(db.String(32))  # 映像 （VMware ESXI）
     build = db.Column(db.String(32))  # 内部版本
-    full_name = db.Column(db.String(64))  # image + version + build
-    boot_time = db.Column(db.String(32))  # 添加时间
-    uptime = db.Column(db.String(32))  # 正常运行时间
+    full_name = db.Column(db.String(128))  # image + version + build
+    boot_time = db.Column(db.DateTime)  # 添加时间
+    uptime = db.Column(db.Integer)  # 正常运行时间
     # logic_processor_nums = db.Column(db.Integer)  # 逻辑处理器数
     # network_nums = db.Column(db.Integer)  # 网卡数
     # vm_nums = db.Column(db.Integer)  # 虚拟机数
