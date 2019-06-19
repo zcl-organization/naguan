@@ -149,67 +149,38 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        data = dict(
-            type='instances_vm',
-            result=True,
-            resources_id=None,
-            event=unicode('虚拟机操作'),
-            submitter=g.username,
-        )
+        
         try:
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
             if args['action'] == 'start':
-                data['event'] = unicode('开启虚拟机')
                 instance.start()
-                g.error_code = 2040
             elif args['action'] == 'stop':
-                data['event'] = unicode('关闭虚拟机')
                 instance.stop()
-                g.error_code = 2042
             elif args['action'] == 'suspend':
-                data['event'] = unicode('挂起虚拟机')
                 instance.suspend()
-                g.error_code = 2044
             elif args['action'] == 'restart':
-                data['event'] = unicode('重启虚拟机')
                 instance.restart()
-                g.error_code = 2046
             elif args['action'] == 'create':
-                data['event'] = unicode('创建虚拟机')
                 instance.boot(new_cpu=args['new_cpu'], new_memory=args['new_memory'], dc_id=args['dc_id'],
                               ds_id=args['ds_id'], vm_name=args['vm_name'], networks=args['networks'],
                               disks=args['disks'], image_id=args['image_id'])
-                g.error_code = 2000
-
             elif args['action'] == 'clone':
-                data['event'] = unicode('克隆虚拟机')
                 instance.clone(new_vm_name=args['vm_name'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                resourcepool=args['resourcepool'])
-                g.error_code = 2050
-
             elif args['action'] == 'cold_migrate':
-                data['event'] = unicode('虚拟机冷迁移')
                 instance.cold_migrate(host_name=args['host'], ds_id=args['ds_id'], dc_id=args['dc_id'],
                                       resourcepool=args['resourcepool'])
-                g.error_code = 2060
-
             elif args['action'] == 'ip_assignment':
-                data['event'] = unicode('虚拟机分配ip地址')
                 instance.ip_assignment(ip=args['ip'], subnet=args['subnet'],
                                        gateway=args['gateway'], dns=args['dns'], domain=args.get('domain'))
-                g.error_code = 2070
             elif args['action'] == 'transform':
-                data['event'] = unicode('虚拟机转换模板')
                 instance.vm_transform_template()
-                g.error_code = 2080
             else:
-                data['result'] = False
-                g.error_code = 2009
-                raise Exception('Parameter error')
+                g.error_code = 3990
+                raise Exception('Error in operation parameters')
         except Exception as e:
-
             data['result'] = False
-            return set_return_val(False, [], str(e), 404), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('uuid')
             base_control.event_logs.eventlog_create(**data)
@@ -338,7 +309,6 @@ class InstanceManage(Resource):
                         type: string
                         default: 测试菜单1
                         description: '[datastore1] 测试菜单1/测试菜单1.vmx'
-
           400:
             description: 获取失败
             schema:
@@ -369,8 +339,8 @@ class InstanceManage(Resource):
                                      pgsort=args['pgsort'], template=False)
 
         except Exception as e:
-            return set_return_val(False, [], str(e), 2031), 400
-        return set_return_val(True, data, 'instance gets success.', 2030, pg)
+            return set_return_val(False, [], str(e), g.error_code), 400
+        return set_return_val(True, data, 'instance gets success.', g.error_code, pg)
 
     @basic_auth.login_required
     def delete(self, platform_id, uuid):
@@ -432,25 +402,13 @@ class InstanceManage(Resource):
                   items:
                     properties:
         """
-        # args = parser.parse_args()
-        data = dict(
-            type='instances_vm',
-            result=False,
-            resources_id=None,
-            event=unicode('删除虚拟机'),
-            submitter=g.username,
-        )
         try:
             instance = Instance(platform_id=platform_id, uuid=uuid)
             instance.delete()
-            data['result'] = True
         except Exception as e:
+            return set_return_val(False, [], str(e), g.error_code), 400
 
-            return set_return_val(False, [], str(e), 2011), 400
-        finally:
-            data['resources_id'] = uuid
-            base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'instance delete success.', 2010)
+        return set_return_val(True, [], 'instance delete success.', g.error_code)
 
     @basic_auth.login_required
     def put(self):
@@ -530,23 +488,19 @@ class InstanceManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        data = dict(
-            type='instances_vm',
-            result=False,
-            resources_id=None,
-            event=unicode('更新虚拟机'),
-            submitter=g.username,
-        )
         try:
+            change_mark = False
             instance = Instance(platform_id=args['platform_id'], uuid=args['uuid'])
             if all([args['new_cpu'], args['old_cpu']]):
                 instance.update_vcpu(new_cpu=args['new_cpu'], old_cpu=args['old_cpu'])
-                data['result'] = True
+                change_mark = True
 
             if all([args['new_memory'], args['old_memory']]):
                 instance.update_vmemory(new_memory=args['new_memory'], old_memory=args['old_memory'])
-                data['result'] = True
-            if not data['result']:
+                change_mark = True
+
+            if not change_mark:
+                g.error_code = 3991
                 raise Exception('parameter error')
 
             # # 添加网络
@@ -570,9 +524,6 @@ class InstanceManage(Resource):
             #     instance.delete_snapshot(snapshot_id=args['snapshot_id'])
 
         except Exception as e:
-
             return set_return_val(False, [], str(e), g.error_code), 400
-        finally:
-            data['resources_id'] = args.get('uuid')
-            base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'instance update success.', 2020)
+
+        return set_return_val(True, [], 'instance update success.', g.error_code)
