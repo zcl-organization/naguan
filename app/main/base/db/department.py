@@ -44,11 +44,14 @@ def get_department(department_id, department_name, company_name):
 def update_department_by_id(department_id, department_name, department_remarks, department_status,
                             department_pid):
     department = db.session.query(Department).filter_by(id=department_id).first()
-
-    department.name = department_name
-    department.remarks = department_remarks
-    department.status = department_status
-    department.pid = department_pid
+    if department_name:
+        department.name = department_name
+    if department_remarks:
+        department.remarks = department_remarks
+    if department_status:
+        department.status = department_status
+    if department_pid:
+        department.pid = department_pid
 
     db.session.commit()
 

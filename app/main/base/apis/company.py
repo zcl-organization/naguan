@@ -311,7 +311,7 @@ class CompanyManage(Resource):
            required: true
        responses:
          200:
-            description: 删除用户信息
+            description: 删除单位信息
             schema:
               properties:
                 ok:

@@ -42,11 +42,16 @@ def get_company_by_id(company_id):
 
 def update_company_by_id(company_id, name, mobile, fax, principal_id,remarks):
     company = db.session.query(Company).filter_by(id=company_id).first()
-    company.name = name
-    company.mobile = mobile
-    company.fax = fax
-    company.principal_id = principal_id
-    company.remarks = remarks
+    if name:
+        company.name = name
+    if mobile:
+        company.mobile = mobile
+    if fax:
+        company.fax = fax
+    if principal_id:
+        company.principal_id = principal_id
+    if remarks:
+        company.remarks = remarks
     try:
         db.session.commit()
         return company

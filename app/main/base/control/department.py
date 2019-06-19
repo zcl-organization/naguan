@@ -1,25 +1,28 @@
 # -*- coding:utf-8 -*-
-
+from flask import g
 from app.main.base import db
 
 
-def create_department(department_name, department_remarks, company_id, pid):
+def create_department(department_name, department_remarks, company_id, department_pid):
     """
     创建部门信息
     :param department_name:部门名称
+    :param department_remarks:备注
     :param company_id:单位id
-    :param pid:父级部门
+    :param department_pid:父级部门
     :return:
     """
     # 判断company_id 是否存在
     if not db.company.get_company_by_id(company_id):
+        g.error_code = 4000
         raise Exception('Company information does not exist')
     # 判断pid是否存在
-    if pid:
-        if not db.department.get_department_by_id(pid):
+    if department_pid:
+        if not db.department.get_department_by_id(department_pid):
+            g.error_code = 4000
             raise Exception('The parent department does not exist')
 
-    department = db.department.create_department(department_name, department_remarks, company_id, pid)
+    department = db.department.create_department(department_name, department_remarks, company_id, department_pid)
     department_list = []
     _t = {
         'department_id': department.id,
@@ -56,20 +59,34 @@ def get_department(department_id, department_name, company_name):
 
 
 def update_department_by_id(department_id, department_name, department_remarks, department_status, department_pid):
+    """
+    根据部门id更新部门信息
+    :param department_id:
+    :param department_name:
+    :param department_remarks:
+    :param department_status:
+    :param department_pid:
+    :return:
+    """
     if not db.department.get_department_by_id(department_id):
+        g.error_code = 4000
         raise Exception('department information does not exist')
+    if not db.department.get_department_by_id(department_pid):
+        g.error_code = 4000
+        raise Exception('parent department information does not exist')
     db.department.update_department_by_id(department_id, department_name, department_remarks, department_status,
                                           department_pid)
 
 
 def delete_department_by_id(department_id):
     """
-
+    删除部门信息
     :param department_id:
     :return:
     """
     company = db.department.get_department_by_id(department_id)
     if not company:
+        g.error_code = 4000
         raise Exception('department information does not exist')
 
     db.department.delete_department_by_id(department_id)

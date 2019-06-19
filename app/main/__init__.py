@@ -21,7 +21,7 @@ from app.main.base.apis.roles_users import RolesUsersManage
 from app.main.base.apis.roles_menus import RolesMenusManage
 from app.main.base.apis.company import CompanyManage
 from app.main.base.apis.department import DepartmentManage
-
+from app.main.base.apis.department_users import DepartmentUsersManage
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
 from app.main.vcenter.apis.instances import InstanceManage
@@ -185,3 +185,8 @@ api.add_resource(DepartmentManage, '/api/v1.0/department', methods=['GET', 'POST
                  endpoint='DepartmentMg')
 api.add_resource(DepartmentManage, '/api/v1.0/department/<int:department_id>', methods=['PUT', 'DELETE'],
                  endpoint='DepartmentMgById')
+
+api.add_resource(DepartmentUsersManage, '/api/v1.0/department_user', methods=['GET', 'POST'],
+                 endpoint='DepartmentUserMg')
+api.add_resource(DepartmentUsersManage, '/api/v1.0/department_user/<int:department_id>', methods=['PUT', 'DELETE'],
+                 endpoint='DepartmentUserMgById')
