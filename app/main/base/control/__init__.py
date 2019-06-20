@@ -11,4 +11,8 @@ from app.main.base.control import request_logs
 from app.main.base.control import event_logs
 from app.main.base.control import task_logs
 from app.main.base.control import roles_menus
+from app.main.base.control import company
+from app.main.base.control import department
+from app.main.base.control import department_users
+
 

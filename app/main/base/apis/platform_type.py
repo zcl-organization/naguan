@@ -19,7 +19,7 @@ class PlatformTypeMg(Resource):
         查询云平台类型信息
         ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -77,7 +77,7 @@ class PlatformTypeMg(Resource):
         创建平台类型
        ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -140,7 +140,7 @@ class PlatformTypeMg(Resource):
         根据id更新云平台类型信息
        ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -199,7 +199,7 @@ class PlatformTypeMg(Resource):
         根据id删除云平台类型信息
        ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
