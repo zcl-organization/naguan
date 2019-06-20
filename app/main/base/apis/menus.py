@@ -115,9 +115,8 @@ class MenuManage(Resource):
 
             data = control.menu.menu_list(menu_id=args['id'], url=args['url'], name=args['name'],
                                           identifier=args['identifier'], all=args['all'])
-
         except Exception, e:
-            return set_return_val(False, [], str(e), 1231), 400
+            return set_return_val(False, [], str(e), 1611), 400
         # event_options = {
         #     'type': 'menu',
         #     'result': ret_status['ok'],
@@ -127,7 +126,7 @@ class MenuManage(Resource):
         # }
         # control.event_logs.eventlog_create(type='menu', result=True, resources_id='menu_id', event=unicode('获取菜单信息'),
         #                                    submitter=g.username)
-        return set_return_val(True, data, 'Get menu success', 1230)
+        return set_return_val(True, data, 'Get menu success', 1610)
 
     @roles_un_permission('unauthorized')
     @roles_accepted('admin')
@@ -217,14 +216,15 @@ class MenuManage(Resource):
         """
         args = parser.parse_args()
         try:
+            g.error_code = 1631
             # 验证is_hide合法性
             if int(args['is_hide']) not in [1, 2]:
-                g.error_code = 1201
+                g.error_code = 1632
                 raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
             # 验证 is_hide_children 合法性
             if int(args['is_hide_children']) not in [1, 2]:
-                g.error_code = 1202
+                g.error_code = 1633
                 raise Exception('is_hide_children information is incorrect, 1 is True, 2 is False')
 
             menu = control.menu.menu_create(icon=args['icon'], url=args['url'], name=args['name'],
@@ -236,9 +236,10 @@ class MenuManage(Resource):
             control.event_logs.eventlog_create(type='menu', result=False, resources_id=None,
                                                event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=menu[0]['id'],
                                            event=unicode('创建菜单:%s' % args['name']), submitter=g.username)
-        return set_return_val(True, [], 'Create menu successfully', 1200)
+        return set_return_val(True, [], 'Create menu successfully', 1630)
 
     @roles_un_permission('unauthorized')
     @basic_auth.login_required
@@ -282,9 +283,10 @@ class MenuManage(Resource):
             control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
                                                event=unicode('删除菜单信息'), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('删除菜单:%s' % name),
                                            submitter=g.username)
-        return set_return_val(False, [], 'Menu deletion successfully', 1210)
+        return set_return_val(False, [], 'Menu deletion successfully', 1650)
 
     @roles_un_permission('unauthorized')
     @basic_auth.login_required
@@ -352,11 +354,11 @@ class MenuManage(Resource):
         try:
             # 验证 is_hide 合法性
             if not args['is_hide']:
-                g.error_code = 1221
+                g.error_code = 1672
                 raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
             else:
                 if int(args['is_hide']) not in [1, 2]:
-                    g.error_code = 1222
+                    g.error_code = 1672
                     raise Exception('is_hide information is incorrect, 1 is True, 2 is False')
 
             name = control.menu.menu_update(id=id, icon=args['icon'], name=args['name'], url=args['url'],
@@ -368,6 +370,7 @@ class MenuManage(Resource):
             control.event_logs.eventlog_create(type='menu', result=False, resources_id=id,
                                                event=unicode('更新菜单信息'), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('更新菜单:%s' % name),
                                            submitter=g.username)
-        return set_return_val(True, [], 'Update menu successfully', 1220)
+        return set_return_val(True, [], 'Update menu successfully', 1670)

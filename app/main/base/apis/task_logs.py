@@ -120,8 +120,9 @@ class LogTask(Resource):
                                                   rely_task_id=args['rely_task_id'], submitter=args['submitter'],
                                                   request_id=args['request_id'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1931), 400
-        return set_return_val(True, data, 'request log list succeeded.', 1930, pg)
+            return set_return_val(False, [], str(e), 1901), 400
+
+        return set_return_val(True, data, 'request log list succeeded.', 1900, pg)
 
     def delete(self, id):
         """
@@ -154,7 +155,9 @@ class LogTask(Resource):
                     properties:
         """
         try:
+            g.error_code = 1921
             control.task_logs.log_delete(id)
         except Exception as e:
             return set_return_val(False, [], str(e), g.error_code), 400
-        return set_return_val(True, [], 'request log deleted succeeded.', 1910)
+
+        return set_return_val(True, [], 'request log deleted succeeded.', 1920)

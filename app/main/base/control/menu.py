@@ -99,17 +99,17 @@ def menu_delete(id=None):
             sub_menu = db.menu.children_menu_list(id)
             # print(children_menu)
             if sub_menu:
-                g.error_code = 1211
+                g.error_code = 1653
                 raise Exception('Menu deletion failed, submenu exists')
             else:
                 # 删除当前菜单 权限相关的角色信息
                 db.roles_menus.delete_by_menu_id(id)
                 return db.menu.menu_delete(id)
         else:
-            g.error_code = 1212
+            g.error_code = 1652
             raise Exception('No current menu exists')
     except Exception as e:
-        g.error_code = 1213
+        g.error_code = 1651
         raise Exception(e)
 
 
@@ -122,5 +122,5 @@ def menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, pare
         # 更新用户信息
         return db.menu.menu_update(id, icon, name, url, identifier, is_hide, is_hide_children, parent_id, important)
     else:
-        g.error_code = 1223
+        g.error_code = 1673
         raise Exception('No current menu exists')

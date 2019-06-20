@@ -37,7 +37,6 @@ def user_list(user_id, email, mobile, name, remarks, next_page, limit):
             }
             userinfo.append(user)
     except Exception as e:
-        g.error_code = 1131
         raise Exception('User information get failed')
     return userinfo, pg
 
@@ -77,10 +76,10 @@ def user_create(username, password, email, first_name, uid, mobile, department, 
             }
             return [user_dict]
         else:
-            g.error_code = 1102
+            g.error_code = 1133
             raise ExistsException('user', email)
     else:
-        g.error_code = 1103
+        g.error_code = 1133
         raise ExistsException('user', username)
 
 
@@ -91,7 +90,7 @@ def user_delete(id=None):
     if user:
         return db.user.user_delete(id)
     else:
-        g.error_code = 1111
+        g.error_code = 1172
         raise Exception('no user')
 
 
@@ -105,7 +104,7 @@ def user_update(id, active, username, password, mobile, company, department, rem
         # 更新用户信息
         return db.user.user_update(id, active, username, password, mobile, company, department, remarks)
     else:
-        g.error_code = 1123
+        g.error_code = 1153
         raise Exception('no user')
 
 

@@ -22,7 +22,7 @@ def role_list(name, pgnum):
 # 创建角色信息
 def role_create(name, description):
     if db.role.role_exist(name):
-        g.error_code = 1302
+        g.error_code = 1233
         raise Exception('Role information already exists')
     data = db.role.role_create(name, description)
     role_dict = {
@@ -38,12 +38,12 @@ def role_update(role_id, name, description):
 
     role = db.role.list_by_id(role_id)
     if not role:
-        g.error_code = 1321
+        g.error_code = 1252
         raise Exception('Role information not exists')
     if role.name == 'admin' or role.name == 'user':
         raise Exception('Unable to update super administrator role or normal user role')
     if db.role.role_exist(name) and role.name != name:
-        g.error_code = 1322
+        g.error_code = 1253
 
         raise Exception('Role name already exists')
     return db.role.role_update(role_id, name, description)
@@ -53,11 +53,11 @@ def role_update(role_id, name, description):
 def role_delete(role_id):
     role = db.role.list_by_id(role_id)
     if not role:
-        g.error_code = 1311
+        g.error_code = 1272
         raise Exception('Role information not exists')
 
     if role.name == 'admin' or role.name == 'user':
-        g.error_code = 1312
+        g.error_code = 1273
 
         raise Exception('Unable to delete super administrator role or normal user role')
 
