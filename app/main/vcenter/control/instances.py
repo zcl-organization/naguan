@@ -480,6 +480,7 @@ class Instance(object):
 
         clone_status = self._vm_device_info_manager.clone(
             new_vm_name=vm_name_tmp,
+
             dc_name=validate_input(dc_info.dc_oc_name) if dc_info else None,
             ds_name=validate_input(ds_info.ds_name),
             rp_name=validate_input(resourcepool),
@@ -571,6 +572,7 @@ class Instance(object):
                 raise Exception('Object are not vm')
         else:
             raise ValueError('The vm does not exist.')
+
 # def find_snapshot(snapshot, snapshot_name):
 #     for snapshot in snapshot.childSnapshotList:
 #         if snapshot.name == snapshot_name:

@@ -87,9 +87,10 @@ class RolesMenusManage(Resource):
                               type: string
         """
         args = parser.parse_args()
-        if not args['role_id']:
-            raise Exception('Parameter error')
         try:
+            if not args['role_id']:
+                raise Exception('Parameter error')
+
             data = control.roles_menus.get_menu_by_role_id(args['role_id'])
         except Exception as e:
             return set_return_val(False, [], str(e), 2451), 400

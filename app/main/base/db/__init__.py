@@ -11,3 +11,6 @@ from app.main.base.db import event_logs
 from app.main.base.db import task_logs
 from app.main.base.db import user
 from app.main.base.db import roles_menus
+from app.main.base.db import company
+from app.main.base.db import department
+from app.main.base.db import department_users
