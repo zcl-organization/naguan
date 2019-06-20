@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
+from flask import g
 from flask_restful import Resource, reqparse
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
-from app.main.vcenter.control.host import Host
+from app.main.vcenter.control.host import Host, get_host_all
+from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')  # 平台ID
@@ -38,7 +40,7 @@ class ResourceHostManage(Resource):
             required: true
        responses:
           200:
-            description: vCenter vSwitch 信息
+            description: vCenter Host 信息
             schema:
               properties:
                 ok:
@@ -53,38 +55,55 @@ class ResourceHostManage(Resource):
                   type: array
                   items:
                     properties:
-                      nics:
-                        type: list
-                        default: ['vemic0',]
-                        description: nics
-                      num_of_port:
-                        type: string
-                        default: 128
-                        description: numPorts
-                      mtu:
-                        type: integer
-                        default: 1500
-                        description: mtu
-                      host_name:
-                        type: string
-                        default: 192.168.12.203
-                        description: host_name
-                      host_mor_name:
-                        type: string
-                        default: 'hostsystem-890'
-                        description: host_mor_name
                       name:
+                        type: str
+                        default: 192.168.78.203
+                        description: 192.168.78.203
+                      mor_mame:
                         type: string
-                        default: mu_test
-                        description: name
+                      port:
+                        type: integer
+                        default: 443
+                        description: 443
+                      power_state:
+                        type: string
+                      connection_state:
+                        type: string
                       platform_id:
-                        type: interger
+                        type: integer
                         default: 1
                         description: platform_id
-                      id:
+                      platform_id:
+                        type: integer
+                      uuid:
                         type: string
-                        default: 1
-                        description: id
+                      cpu_cores:
+                        type: integer
+                      ram:
+                        type: integer
+                      used_ram:
+                        type: integer
+                      capacity:
+                        type: integer
+                      free_capacity:
+                        type: integer
+                      used_cpu:
+                        type: integer
+                      cpu_mhz:
+                        type: integer
+                      cpu_model:
+                        type: string
+                      version:
+                        type: string
+                      image:
+                        type: string
+                      full_name:
+                        type: string
+                      boot_time:
+                        type: datetime
+                      uptime:
+                        type: integer
+
           400:
             description: 获取失败
             schema:
@@ -109,10 +128,10 @@ class ResourceHostManage(Resource):
             args = parser.parse_args()
             if not args['platform_id']:
                 raise RuntimeError('Parameter Error!')
-            # TODO 功能未做
+            data = get_host_all(args['platform_id'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
-        return set_return_val(True, [], 'Get Info Success!', 3000)
+        return set_return_val(True, data, 'Host info get Success!', 3000)
 
     @basic_auth.login_required
     def post(self):
@@ -176,7 +195,6 @@ class ResourceHostManage(Resource):
                   default: 1
                   description: 资源池
                   example: 1
-
        responses:
           200:
             description: vCenter Host 创建
@@ -211,33 +229,40 @@ class ResourceHostManage(Resource):
                   items:
                     properties:
         """
+        data = dict(
+            type='Host',
+            result=True,
+            resources_id=None,
+            event=unicode('创建host'),
+            submitter=g.username,
+        )
         try:
             args = parser.parse_args()
-
             if not all([args['platform_id'], args['host_name'],
                         args['esxi_username'], args['esxi_password']]):
                 raise ValueError('Parameter Error!')
             if not args['folder_name'] and not args['cluster_id']:
                 raise ValueError('Parameter Error!')
             host = Host(args['platform_id'])
-            host.add_host(host_name=args['host_name'], esxi_username=args['esxi_username'],
-                          esxi_password=args['esxi_password'], folder_name=args['folder_name'],
-                          cluster_id=args['cluster_id'],
-                          license_id=args['license_id'], resource_pool=args['resource_pool'],
-                          fetch_ssl_thumbprint=args['fetch_ssl_thumbprint'],
-                          esxi_ssl_thumbprint=args['esxi_ssl_thumbprint'])
+            new_host_id = host.add_host(host_name=args['host_name'], esxi_username=args['esxi_username'],
+                                        esxi_password=args['esxi_password'], folder_name=args['folder_name'],
+                                        cluster_id=args['cluster_id'], license_id=args['license_id'],
+                                        resource_pool=args['resource_pool'])
+            data['resources_id'] = new_host_id
         except Exception as e:
+            data['result'] = False
             return set_return_val(False, [], str(e), 3001), 400
-
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Create Host Success!!!', 3000)
 
     @basic_auth.login_required
-    def delete(self):
+    def delete(self, host_id):
         """
          删除Host
         ---
        tags:
-          - vCenter vSwitch
+          - vCenter Host
        security:
        - basicAuth:
           type: http
@@ -249,10 +274,10 @@ class ResourceHostManage(Resource):
             required: true
             description: '1 -- platform_id'
           - in: path
-            name: vswiter_id
+            name: host_id
             type: integer
             required: true
-            description: '8 -- vswiter_id'
+            description: '1 -- host_id'
        responses:
           200:
             description: vCenter vSwitch 信息
@@ -288,15 +313,24 @@ class ResourceHostManage(Resource):
                   items:
                     properties:
         """
+        data = dict(
+            type='Host',
+            result=True,
+            resources_id=host_id,
+            event=unicode('删除host'),
+            submitter=g.username,
+        )
         try:
             args = parser.parse_args()
-            if not all([args['platform_id'], args['host_name']]):
+            if not all([args['platform_id'], host_id]):
                 raise RuntimeError('Parameter Error!!!')
             host = Host(args['platform_id'])
-            host.remove_host(args['host_name'])
+            host.remove_host(host_id)
         except Exception as e:
+            data['result'] = False
             return set_return_val(False, [], str(e), 3001), 400
-
+        finally:
+            base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
     # @basic_auth.login_required

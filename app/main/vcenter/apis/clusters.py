@@ -17,6 +17,16 @@ parser.add_argument('cluster_name')
 class ClustersManage(Resource):
 
     @basic_auth.login_required
+    def get(self):
+        try:
+            args = parser.parse_args()
+            if not args['platform_id']:
+                raise Exception('Parameter error')
+        except Exception as e:
+            return set_return_val(False, {}, str(e), 3001), 400
+        return set_return_val(True, [], 'Clusters info get success.', 3000)
+
+    @basic_auth.login_required
     def post(self):
         """
          创建Cluster信息

@@ -146,11 +146,11 @@ api.add_resource(NetworkDVSPortGroupManage, '/api/v1.0/vCenter/dvs_network_port_
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
                  endpoint='DataStoreMg')
 # vCenter DataCenter
-api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST'],
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['GET', 'POST'],
                  endpoint='DataCenterMg')
 api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter/<int:id>', methods=['DELETE'],
                  endpoint='DataCenterMgDel')
-api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST'],
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['GET', 'POST'],
                  endpoint='ClustersManage')
 api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters/<int:id>', methods=['DELETE'],
                  endpoint='ClustersManageDel')
@@ -184,7 +184,7 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=
 # vCenter host
 api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST', 'PUT'],
                  endpoint='ResourceHostMg')
-api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['DELETE'],
+api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host/<int:host_id>', methods=['DELETE'],
                  endpoint='ResourceHostMgDel')
 
 # vCenter VSwitch

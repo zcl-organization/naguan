@@ -1,7 +1,7 @@
 # -*- coding=utf-8 -*-
 from pyVim.task import WaitForTask
 from pyVmomi import vim
-from app.main.vcenter.control.utils import get_mor_name, get_connect
+from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
 from app.main.vcenter import db
 from app.main.vcenter.control.vcenter import sync_vcenter_tree
 
@@ -12,7 +12,7 @@ def create_datacenter(platform_id, dc_name, folder=None):
     if len(dc_name) > 80:
         raise ValueError("The name of the datacenter must be under "
                          "80 characters.")
-    dc = db.datacenters.get_dc_name(dc_name)  # 根据是否存在同名dc
+    dc = db.datacenters.get_dc_name(dc_name)  # 判断是否存在同名dc
     if dc:
         raise ValueError('The datacenter name already exists')
     if folder is None:
@@ -25,13 +25,21 @@ def create_datacenter(platform_id, dc_name, folder=None):
                 dc_mor_name = get_mor_name(new_datacenter)
                 dc_host_moc = get_mor_name(new_datacenter.hostFolder)
                 dc_vm_moc = get_mor_name(new_datacenter.vmFolder)
+                # vcenter_tree同步
                 vcenter_id = db.vcenter.vcenter_tree_create(tree_type=2, platform_id=platform_id,
                                                             name=new_datacenter.name,
                                                             dc_host_folder_mor_name=dc_host_moc,
                                                             dc_mor_name=dc_mor_name, dc_oc_name=new_datacenter.name,
                                                             dc_vm_folder_mor_name=dc_vm_moc, mor_name=dc_mor_name,
                                                             cluster_mor_name=None, cluster_oc_name=None, pid=vCenter_pid)
-                return vcenter_id
+                data = dict(
+                    name=new_datacenter.name, mor_name=dc_mor_name, platform_id=platform_id,
+                    host_nums=0, vm_nums=0, cluster_nums=0, network_nums=0, datastore_nums=0,
+                    cpu_capacity=0, used_cpu=0, memory=0, used_memory=0, capacity=0, used_capacity=0,
+                )
+                # datacenter同步
+                dc_id = db.datacenters.create_datacenter(**data)
+                return dc_id
             except Exception as e:
                 raise Exception('sync datacenters fail. %s' % str(e))
     except Exception as e:
@@ -39,8 +47,8 @@ def create_datacenter(platform_id, dc_name, folder=None):
 
 
 # 根据id获取datacenter
-def get_dc(platform_id, dc_id, content):
-    local_dc = db.datacenters.get_datacenter_by_id(dc_id)
+def get_dc_obj(platform_id, dc_id, content):
+    local_dc = db.vcenter.get_datacenter_by_id(dc_id)
     datacenters = content.rootFolder.childEntity
     for dc in datacenters:
         dc_mor = get_mor_name(dc)
@@ -50,13 +58,14 @@ def get_dc(platform_id, dc_id, content):
 
 def del_datacenter(platform_id, dc_id):
     si, content, platform = get_connect(platform_id)
-
+    dc = db.datacenters.get_dc_by_id(dc_id)
+    vcenter_tree_dc = db.vcenter.get_dc_id_by_mor_name(platform_id, dc.mor_name)
     # 判断本地datacenter下是否存在资源
-    clusters_obj = db.datacenters.get_clusters_from_dc(platform_id, dc_id)
+    clusters_obj = db.vcenter.get_clusters_from_dc(platform_id, vcenter_tree_dc.id)
     if clusters_obj:
         raise Exception('Resources exist under the local datacenter, unable to delete')
     # 判断平台datacenter下是否存在资源
-    instance_dc = get_dc(platform_id, dc_id, content)
+    instance_dc = get_obj(content, [vim.Datacenter], dc.name)
     clusters = instance_dc.hostFolder.childEntity
     if clusters:
         # 同步数据至本地
@@ -68,21 +77,25 @@ def del_datacenter(platform_id, dc_id):
     task = instance_dc.Destroy_Task()
     WaitForTask(task)
     # 删除本地数据库
-    db.datacenters.del_datacenter(platform_id, dc_mor)
+    db.vcenter.vcenter_tree_del_datacenter(platform_id, dc_mor)
+    db.datacenters.del_datacenter(dc_id)
 
 
-# def sync_the_datacenter(platform_id, dc_id, instance_dc):
-#     dc = db.datacenters.get_datacenter_by_id(dc_id)
-#     dc_mor_name = dc.dc_mor_name
-#
-#     dc_and_child = db.datacenters.get_dc_and_child(platform_id, dc_mor_name)  #dc及其子资源
-#     vcenter_list = []  # 待更新列表
-#     for child in dc_and_child:
-#         vcenter_list.append(child.id)
-#     si, content, platform = get_connect(platform_id)
-#
-#     vCenter_pid = get_vCenter_pid(platform)
-#     sync_datacenter([instance_dc], si, content, platform, vcenter_list, vCenter_pid)  # 同步datacenter
+def get_datacenters(platform_id):
+    datacenters = db.datacenters.get_datacenters(platform_id)
+    dc_list = []
+    for dc in datacenters:
+        data = dict(
+            id=dc.id, name=dc.name, mor_name=dc.mor_name, platform_id=dc.platform_id,
+            host_nums=dc.host_nums, vm_nums=dc.vm_nums, cluster_nums=dc.cluster_nums,
+            network_nums=dc.network_nums, datastore_nums=dc.datastore_nums,
+            cpu_capacity=dc.cpu_capacity, used_cpu=dc.used_cpu, memory=dc.memory,
+            used_memory=dc.used_memory, capacity=dc.capacity, used_capacity=dc.used_capacity,
+        )
+        dc_list.append(data)
+    return dc_list
+
+    # return db.datacenters.get_datacenters(platform_id)
 
 
 # 获取Vcenter id

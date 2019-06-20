@@ -1,9 +1,9 @@
 # -*- coding=utf-8 -*-
 from pyVmomi import vim
 from pyVim.task import WaitForTask
-from app.main.vcenter.control.datacenters import get_dc
+from app.main.vcenter.control.datacenters import get_dc_obj
 from app.main.vcenter import db
-from app.main.vcenter.control.utils import get_mor_name, get_connect
+from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
 from app.main.vcenter.control.vcenter import sync_vcenter_tree
 
 
@@ -14,14 +14,18 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
     :return: Cluster MORef
     """
     si, content, platform = get_connect(platform_id)
-    instance_dc = get_dc(platform_id, dc_id, content)
+    # 本地dc
+    dc = db.datacenters.get_dc_by_id(dc_id)
+    # dc对象
+    instance_dc = get_obj(content, [vim.Datacenter], dc.name)
     if instance_dc is None:
         raise ValueError("Missing value for datacenter.")
     if cluster_name is None:
         raise ValueError("Missing value for name.")
     if cluster_spec is None:
         cluster_spec = vim.cluster.ConfigSpecEx()
-    local_cluster = db.clusters.get_cluster_by_name(platform_id, dc_id, cluster_name)
+    # 判断dc下是否存在同名cluster
+    local_cluster = db.clusters.get_cluster_by_name(platform_id, dc.name, cluster_name)
     if local_cluster:
         raise ValueError('The cluster name already exists')
 
@@ -31,16 +35,23 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
     # 同步至本地
     try:
         cluster_mor_name = get_mor_name(cluster)
-        # 获取datacenter对象
-        dc_obj = db.datacenters.get_datacenter_by_id(dc_id)
-        # 创建本地cluster
+        # 获取本地datacenter对象
+        vcenter_tree_dc = db.vcenter.get_dc_id_by_mor_name(platform_id, dc.mor_name)
+        dc_obj = db.vcenter.get_datacenter_by_id(vcenter_tree_dc.id)
+        # 本地vcenter_tree同步
         cluster_id = db.vcenter.vcenter_tree_create(tree_type=3, platform_id=platform_id, name=cluster_name,
                                                     dc_host_folder_mor_name=dc_obj.dc_host_folder_mor_name,
-                                                    dc_mor_name=dc_obj.dc_mor_name, dc_oc_name=dc_obj.name,
+                                                    dc_mor_name=dc_obj.mor_name, dc_oc_name=dc_obj.name,
                                                     dc_vm_folder_mor_name=dc_obj.dc_vm_folder_mor_name,
                                                     mor_name=cluster_mor_name, cluster_mor_name=cluster_mor_name,
                                                     cluster_oc_name=cluster_name, pid=dc_id)
-
+        # 本地clusters同步
+        data = dict(
+            name=cluster_name, mor_name=cluster_mor_name, platform_id=platform_id, dc_name=dc_obj.name,
+            dc_mor_name=dc_obj.mor_name, cpu_nums=0, cpu_capacity=0, used_cpu=0, memory=0, used_memory=0,
+            capacity=0, used_capacity=0, host_nums=0, vm_nums=0
+        )
+        db.clusters.create_cluster(**data)
         rp_obj = content.viewManager.CreateContainerView(cluster, [vim.ResourcePool], True)
         rps = rp_obj.view
         for rp in rps:
@@ -58,10 +69,10 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
 
 
 def del_cluster(platform_id, cluster_id):
-    # 判断本地cluster下是否存在资源
     cluster_obj = db.clusters.get_cluster_mor_name(platform_id, cluster_id)
     if not cluster_obj:
         raise Exception('Cluster_id error, please confirm before deleting')
+    # 判断本地cluster下是否存在资源
     cluster_mor_name = cluster_obj.mor_name
     cluster_resource = db.clusters.get_cluster_cluster_resource(platform_id, cluster_mor_name)  # 集群及其下的资源
     if len(cluster_resource) > 2:  # 本地校验
@@ -70,7 +81,8 @@ def del_cluster(platform_id, cluster_id):
     dc_id = cluster_obj.pid
     si, content, platform = get_connect(platform_id)
 
-    instance_dc = get_dc(platform_id, dc_id, content)
+    dc = db.datacenters.get_dc_by_id(dc_id)
+    instance_dc = get_obj(content, [vim.Datacenter], dc.name)
 
     obj = content.viewManager.CreateContainerView(instance_dc, [vim.ResourcePool], True)
     resourcepools = obj.view
@@ -97,4 +109,5 @@ def del_cluster(platform_id, cluster_id):
         raise Exception('No exist cluster.')
 
 
-
+def get_clusters(platform_id):
+    pass

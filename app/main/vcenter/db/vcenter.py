@@ -116,3 +116,26 @@ def vcenter_tree_del_cluster(id):
     db.session.commit()
 
 
+def vcenter_tree_del_datacenter(platform_id, dc_mor):
+    datacenter = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
+        filter_by(type=2).filter_by(mor_name=dc_mor).first()
+    db.session.delete(datacenter)
+    db.session.commit()
+
+
+# 判断datacenter下是否存在资源（根据其pid=dc_id)
+def get_clusters_from_dc(platform_id, dc_id):
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(pid=dc_id).all()
+
+
+# 根据id获取datacenter
+def get_datacenter_by_id(dc_id):
+    dc = db.session.query(VCenterTree).get(dc_id)
+    if dc.type == 2:
+        return dc
+    else:
+        return None
+
+
+def get_dc_id_by_mor_name(platform_id, mor_name):
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(mor_name=mor_name).first()

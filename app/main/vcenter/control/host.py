@@ -2,6 +2,8 @@
 import hashlib
 import socket
 import ssl
+import time
+
 from pyVim.task import WaitForTask
 from pyVmomi import vim
 from app.main.vcenter.control.utils import get_connect, get_obj_by_mor_name, get_obj, get_mor_name
@@ -18,7 +20,7 @@ class Host:
                  license_id=None, resource_pool=None,
                  fetch_ssl_thumbprint=None, esxi_ssl_thumbprint=None):
         """Add ESXi host to a cluster of folder in vCenter"""
-        if db.host.get_host(host_name):
+        if db.host.get_host_by_name(host_name):
             raise ValueError('The host object already exists.')
         host_connect_spec = self.get_host_connect_spec(esxi_hostname=host_name, esxi_username=esxi_username,
                                                        esxi_password=esxi_password,
@@ -59,24 +61,37 @@ class Host:
         except Exception as task_error:
             raise Exception('Error adding host %s task' % task_error)
         # 同步
-        host = get_obj(self.content, [vim.HostSystem], host_name)
-        self.sync_host(host)
+        new_host_id = self.sync_host(host_name)
+        return new_host_id
 
-    def sync_host(self, host):
+    def sync_host(self, host_name):
+        """
+        TODO host.summary.quickStats数据不能直接获取，，全为0或-1，需要重新获取一次
+        :param host_name:
+        :return:
+        """
+        host = get_obj(self.content, [vim.HostSystem], host_name)
+        capacity = 0
+        free_capacity = 0
+        for ds in host.datastore:
+            capacity += ds.summary.capacity
+            free_capacity += ds.summary.freeSpace
+        used_capacity = capacity - free_capacity
         config = host.summary.config
         runtime = host.summary.runtime
         # print config
         data = dict(name=config.name, mor_mame=get_mor_name(host.summary.host), port=config.port,
                     power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
                     maintenance_mode=runtime.inMaintenanceMode, platform_id=self.platform['id'],
-                    uuid=host.summary.hardware.uuid, cpu=int(host.summary.hardware.numCpuCores),
-                    ram=host.summary.hardware.memorySize, used_ram=None,
-                    rom=None, used_rom=None,
+                    uuid=host.summary.hardware.uuid, cpu_cores=int(host.summary.hardware.numCpuCores),
+                    memory=host.summary.hardware.memorySize, used_memory=host.summary.quickStats.overallMemoryUsage,
+                    capacity=capacity, used_capacity=used_capacity, used_cpu=host.summary.quickStats.overallCpuUsage,
                     cpu_mhz=host.summary.hardware.cpuMhz, cpu_model=host.summary.hardware.cpuModel,
                     version=config.product.version, image=config.product.name, build=config.product.build,
                     full_name=config.product.fullName, boot_time=runtime.bootTime,
-                    uptime=host.summary.quickStats.uptime)
-        db.host.add_host(**data)
+                    uptime=host.summary.quickStats.uptime, vm_nums=len(host.vm), network_nums=len(host.network))
+        new_host_id = db.host.add_host(**data)
+        return new_host_id
 
     # 连接host
     def get_host_connect_spec(self, esxi_hostname, esxi_username, esxi_password,
@@ -131,10 +146,11 @@ class Host:
         return folder_obj
 
     # 移除host
-    def remove_host(self, host_name):
+    def remove_host(self, host_id):
         """Remove host from vCenter"""
+        host = db.host.get_host_by_id(host_id)
         task = None
-        host_object = get_obj(self.content, [vim.HostSystem], host_name)
+        host_object = get_obj(self.content, [vim.HostSystem], host.name)
         # Check parent type
         parent_type = self.get_parent_type(host_object)
         try:
@@ -148,7 +164,7 @@ class Host:
             raise RuntimeError('Build task error.')
         try:
             WaitForTask(task)
-            db.host.del_host(host_name)
+            db.host.del_host(host.name)
         except Exception as e:
             raise Exception('Error removing host %s task.' % e)
 
@@ -181,7 +197,7 @@ class Host:
 
                 except vim.fault.Timedout as timed_out:
                     raise Exception('Error')
-                wait_for_task(maintenance_mode_task)
+                WaitForTask(maintenance_mode_task)
             except TaskError as task_err:
                 raise Exception('Error')
 
@@ -197,3 +213,21 @@ class Host:
                 total=license.total,
             )
             db.host.create_license(**data)
+
+
+def get_host_all(platform_id):
+    hosts = db.host.get_host_all(platform_id)
+    host_list = []
+    for host in hosts:
+        data = dict(
+            id=host.id, name=host.name, mor_mame=host.mor_name, port=host.port,
+            power_state=host.power_state, connection_state=host.connection_state,
+            maintenance_mode=host.maintenance_mode, platform_id=platform_id,
+            uuid=host.uuid, cpu_cores=host.cpu_cores,  ram=host.ram, used_ram=host.used_ram,
+            capacity=host.capacity, free_capacity=host.free_capacity, used_cpu=host.used_cpu,
+            cpu_mhz=host.cpu_mhz, cpu_model=host.cpu_model,
+            version=host.version, image=host.image, build=host.build,
+            full_name=host.full_name, boot_time=str(host.boot_time), uptime=host.uptime
+        )
+        host_list.append(data)
+    return host_list
