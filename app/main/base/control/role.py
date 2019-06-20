@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask import g
-from app.main.base.db import role as role_db
+# from app.main.base.db import role as role_db
 from app.main.base import db
 
 
@@ -72,6 +72,6 @@ def role_delete(role_id):
 
 def role_list_by_id(role_id):
     try:
-        return role_db.list_by_id(role_id)
+        return db.role.list_by_id(role_id)
     except Exception as e:
         raise Exception('search user failed')

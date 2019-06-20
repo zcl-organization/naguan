@@ -1,15 +1,13 @@
 # -*- coding:utf-8 -*-
-from exts import db
-from flask_security import Security, UserMixin, RoleMixin, login_required
-from passlib.apps import custom_app_context as pwd_context
-from config import config, UPLOAD_DIR, BASE_DIR
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import create_engine
-from flask import current_app
-from config import config
-import os
 import datetime
+
+from flask import current_app
+from flask_security import UserMixin, RoleMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
+from passlib.apps import custom_app_context as pwd_context
+
+from config import UPLOAD_DIR, BASE_DIR
+from exts import db
 
 
 # roles_users = db.Table('roles_users',
@@ -423,3 +421,31 @@ class VCenterVswitch(db.Model):
     mtu = db.Column(db.Integer)   # 交换机mtu设置
     num_of_port = db.Column(db.Integer)  # 交换机端口数量
     nics = db.Column(db.String(255))  # 交换机上行链路
+
+
+class Company(db.Model):
+    __tablename__ = 'company'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    principal_id = db.Column(db.Integer)
+    mobile = db.Column(db.String(32))
+    fax = db.Column(db.String(32))
+    remarks = db.Column(db.String(255))
+
+
+class Department(db.Model):
+    __tablename__ = 'department'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer)
+    name = db.Column(db.String(255))
+    pid = db.Column(db.Integer, default=None)
+    status = db.Column(db.Integer, default=True)
+    remarks = db.Column(db.String(255))
+
+
+class DepartmentUsers(db.Model):
+    __tablename__ = 'department_users'
+    id = db.Column(db.Integer, primary_key=True)
+    department_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
+
