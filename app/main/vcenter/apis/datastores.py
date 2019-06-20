@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
+from flask import g
 
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val

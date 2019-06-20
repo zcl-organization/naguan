@@ -179,11 +179,8 @@ class InstanceManage(Resource):
                 g.error_code = 3990
                 raise Exception('Error in operation parameters')
         except Exception as e:
-            data['result'] = False
             return set_return_val(False, [], str(e), g.error_code), 400
-        finally:
-            data['resources_id'] = args.get('uuid')
-            base_control.event_logs.eventlog_create(**data)
+
         return set_return_val(True, [], 'instance action success.', g.error_code)
 
     # 获取 instance 列表

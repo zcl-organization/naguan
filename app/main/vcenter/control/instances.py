@@ -296,7 +296,7 @@ class Instance(object):
             self.update_vm_local()  # 同步
             self.local_vm = db.instances.list_by_uuid(self.platform_id, self.vm.config.uuid)  # 更新local_vm对象数据
             build_data['result'] = True
-            build_data['resource_id'] = self.local_vm.id
+            build_data['resources_id'] = self.local_vm.id
             base_control.event_logs.eventlog_create(**build_data)
         else:
             g.error_code = 3291
