@@ -98,18 +98,20 @@ class ClustersManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 4101
             args = parser.parse_args()
             if not all([args['platform_id'], args['dc_id'], args['cluster_name']]):
+                g.error_code = 4102
                 raise Exception('Parameter error')
             vcenter_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
                                                          dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
             data['resources_id'] = vcenter_id
         except Exception as e:
             data['result'] = False
-            return set_return_val(False, data, str(e), 3001)
+            return set_return_val(False, data, str(e), g.error_code)
         finally:
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, data, 'clusters create success.', 3000)
+        return set_return_val(True, data, 'clusters create success.', 4100)
 
     def put(self):
         pass
@@ -191,13 +193,15 @@ class ClustersManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 4151
             args = parser.parse_args()
             if not all([args['platform_id'], id]):
+                g.error_code = 4152
                 raise Exception('Parameter error')
             control.clusters.del_cluster(args.get('platform_id'), cluster_id=id)
         except Exception as e:
             data['result'] = False
-            return set_return_val(False, data, str(e), 3001)
+            return set_return_val(False, data, str(e), g.error_code), 400
         finally:
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, data, 'cluster delete success.', 3000)
+        return set_return_val(True, data, 'cluster delete success.', 4150)

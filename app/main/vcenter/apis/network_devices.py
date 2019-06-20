@@ -107,13 +107,15 @@ class NetWorkManage(Resource):
         """
         args = parser.parse_args()
         try:
+            g.error_code = 4901
             if not all([args['platform_id'], args['vm_uuid']]):
+                g.error_code = 4902
                 raise Exception('Parameter error')
             data = control.network_devices.get_network_by_vm_uuid(platform_id=args['platform_id'],
                                                                   vm_uuid=args['vm_uuid'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 2231), 400
-        return set_return_val(True, data, 'network device gets success.', 2230)
+            return set_return_val(False, [], str(e), g.error_code), 400
+        return set_return_val(True, data, 'network device gets success.', 4900)
 
     @basic_auth.login_required
     def post(self):
@@ -194,7 +196,9 @@ class NetWorkManage(Resource):
         args = parser.parse_args()
         datas = []
         try:
+            g.error_code = 4951
             if not args['networks']:
+                g.error_code = 4952
                 raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             instance.add_network(networks=args['networks'])
@@ -207,10 +211,10 @@ class NetWorkManage(Resource):
                 type='vm_network', result=False, resources_id=args.get('vm_uuid'),
                 event=unicode('添加网络,类型：%s' % args.get('networks')), submitter=g.username
             ))
-            return set_return_val(False, [], str(e), 2201), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             [base_control.event_logs.eventlog_create(**item) for item in datas]
-        return set_return_val(True, [], 'network update success.', 2200)
+        return set_return_val(True, [], 'network update success.', 4950)
 
     @basic_auth.login_required
     def delete(self):
@@ -286,7 +290,9 @@ class NetWorkManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 5001
             if not args['networks']:
+                g.error_code = 5002
                 raise Exception('Parameter error')
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             instance.del_network(networks=args['networks'])
@@ -298,4 +304,4 @@ class NetWorkManage(Resource):
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'network delete success.', 2210)
+        return set_return_val(True, [], 'network delete success.', 5000)
