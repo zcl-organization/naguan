@@ -31,6 +31,7 @@ def create_datacenter(platform_id, dc_name, folder=None):
                                                             dc_mor_name=dc_mor_name, dc_oc_name=new_datacenter.name,
                                                             dc_vm_folder_mor_name=dc_vm_moc, mor_name=dc_mor_name,
                                                             cluster_mor_name=None, cluster_oc_name=None, pid=vCenter_pid)
+
                 return vcenter_id
             except Exception as e:
                 raise Exception('sync datacenters fail. %s' % str(e))

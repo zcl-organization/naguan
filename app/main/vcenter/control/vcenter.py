@@ -44,7 +44,6 @@ def sync_vcenter_vm(si, content, host, platform):
 
     # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
     # 查询平台内所有的云主机列表
-    # platform_vm_list = db_vm.vcenter_get_vm_by_platform_id(platform['id'], host.name)
     platform_vm_list = db.instances.vcenter_get_vm_by_platform_id(platform['id'], host.name)
 
     # instance = Instance(platform_id=platform['id'], si=si, content=content)
@@ -52,13 +51,9 @@ def sync_vcenter_vm(si, content, host, platform):
     vm_list = []
     for vm in platform_vm_list:
         vm_list.append(vm.uuid)
-    # print(vm_list)
-    for vm in vms:
-        # print(dir(vm.config))
 
-        # print(vm.summary.config.name)
-        # print(vm.config.createDate)
-        # return 'ccc'
+    for vm in vms:
+
         if vm.resourcePool:
             resource_pool_name = vm.resourcePool.name
             # db.instances.update_vm_rp_name_by_vm_mor_name(platform['id'], get_mor_name(vm), vm.resourcePool.name)
@@ -72,10 +67,6 @@ def sync_vcenter_vm(si, content, host, platform):
         else:
             ip = ''
         #
-        # # 判断为模板 非云主机
-        # if vm.summary.config.template:
-        #     # pass
-        #     continue
 
         if vm.summary.config.uuid in vm_list:
             vm_list.remove(vm.summary.config.uuid)

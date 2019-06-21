@@ -40,6 +40,15 @@ def get_roles_id_by_user_id(user_id):
     return db.session.query(RolesUsers.role_id).filter_by(user_id=user_id).all()
 
 
+def get_roles_by_user_id(user_id):
+    query = db.session.query(Users.id.label('user_id'), Users.first_name.label('user_name'),
+                             Roles.name.label('role_name'), Roles.id.label('role_id')).filter(
+        Users.id == RolesUsers.user_id).filter(Roles.id == RolesUsers.role_id)
+    if user_id:
+        query = query.filter(RolesUsers.user_id == user_id)
+    return query.all()
+
+
 def create_user_role(user_id, role_id):
     new_role = RolesUsers()
     new_role.user_id = user_id
@@ -53,4 +62,3 @@ def delete_role_by_role_id(role_id):
     query = db.session.query(RolesUsers)
     query.filter_by(role_id=role_id).delete(synchronize_session=False)
     db.session.commit()
-

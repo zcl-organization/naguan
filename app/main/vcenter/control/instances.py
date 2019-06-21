@@ -19,6 +19,7 @@ import atexit
 import json
 
 from app.main.vcenter import db
+from app.main.base import db as base_db
 from app.main.vcenter.utils.vm_manager import VMMaintainBaseManager
 from app.main.vcenter.utils.vm_manager import VMMaintainSnapshotManager
 from app.main.vcenter.utils.vm_manager import VMDeviceInfoManager
@@ -172,9 +173,11 @@ class Instance(object):
         :params disks:
         :params image_id:
         """
+
         if disks:
-            disk_data = json.loads(disks) if isinstance(disks, str) else disks
-            for disk in disks:
+            # disk_data = json.loads(disks) if isinstance(disks, str) else disks
+            disk_data = json.loads(disks)
+            for disk in disk_data:
                 if not disk.get('type') or not disk.get('size'):
                     g.error_code = 2001
                     raise Exception('The disk information format is incorrect.')
@@ -184,9 +187,13 @@ class Instance(object):
         if not dc_info:
             g.error_code = 2002
             raise Exception('The dc_id error')
-        if self._vm_device_info_manager.build_without_device_info(vm_name, dc_info.dc_oc_name, int(new_cpu), int(new_memory)):
+        if self._vm_device_info_manager.build_without_device_info(vm_name, dc_info.dc_oc_name, int(new_cpu),
+                                                                  int(new_memory)):
             self._set_vm(self._vm_device_info_manager.vm)
+            # TODO 分配用户给当前用户
+
             self.update_vm_local()
+            db.user_instance.assignment_vm_to_user(g.uid, self.vm.summary.config.uuid, self.platform_id)
         else:
             g.error_code = 2005
             raise Exception('Task To Create Failed')
@@ -329,6 +336,39 @@ class Instance(object):
     # 获取云主机列表
     def list(self, host, vm_name, pgnum, pgsort, template=None):
         try:
+            is_admin = None
+            role_list = base_db.roles_users.get_roles_by_user_id(g.uid)
+
+            for role in role_list:
+                if role.role_name == 'admin':
+                    is_admin = True
+                    break
+            import pdb
+            pdb.set_trace()
+            # if not is_admin:
+            if not is_admin:
+
+                # TODO 查询是否是单位负责人，查询本单位所有云主机
+                company_info = base_db.company.get_company_by_principal_id(g.uid)
+                if company_info:
+                    # 根据单位id 获取本单位所有用户id
+                    user_list = base_db.department_users.get_department_users_by_company_id(company_info.id)
+                    user_id = [user.user_id for user in user_list]
+
+                    # 根据用户信息 获取所有的云主机信息
+
+                    vms, pg = db.user_instance.get_vm_list_by_user_ids(self.platform_id, host, vm_name, pgnum, pgsort,
+                                                                       template=template, user_id=user_id)
+                # TODO 查询是否是部门负责人，是否有下级部门，本部门及下级部门所有云主机
+                else:
+                    pass
+
+                # TODO 获取用户部门信息，及能够管理的用户信息
+                department_info = base_db.department_users.get_department_users_by_user_id(g.uid)
+                for department in department_info:
+                    pass
+            else:
+                pass
             vms, pg = db.instances.vm_list(self.platform_id, host, vm_name, pgnum, pgsort, template=template)
             vm_list = []
             if vms:
@@ -589,4 +629,3 @@ class Instance(object):
 #         'Chinese': u'硬盘 '
 #     }
 #     return language_prefix_label_mapper.get(language)
-
