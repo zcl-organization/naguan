@@ -5,6 +5,9 @@ import unittest
 from mock import Mock
 from pyVmomi import vim
 from pyVim.task import WaitForTask, WaitForTasks
+from flask import g   # TODO 不能有的
+from app.main.base import control as base_control
+from app.main.vcenter import db
 
 from app.main.vcenter.control.instances import Instance
 from manage import app
@@ -15,14 +18,14 @@ from app.main.vcenter.control import network_devices as network_device_manage
 create_info = {
     'new_cpu': '1',
     'new_memory': '512',
-    'dc_id': 2,
+    'dc_id': 25,
     'ds_id': '', 
-    'vm_name': ' 12312312',
+    'vm_name': 'unit_test',
     'networks': '',
     'disks': '', 
     'image_id': ''
 }
-network_str = json.dumps([2,])
+network_str = json.dumps([6,])
 disk_str = json.dumps([{'type': 'thin', 'size': 16}, ])
 
 snapshot_info = {
@@ -31,9 +34,9 @@ snapshot_info = {
 }
 
 ip_info  = {
-    'ip': '192.168.12.123',
+    'ip': '192.168.78.123',
     'subnet': '255.255.255.0',
-    'gateway': '192.168.12.1',
+    'gateway': '192.168.78.1',
     'dns': '8.8.8.8'
 }
 clone_name = "unit_test2"
@@ -43,6 +46,10 @@ class disk_info:
 
 class network_info:
     label = 'Network adapter 1'
+
+class local_vm_data:
+    id = 1
+
 
 
 def get_obj(content, vimtype, name):
@@ -68,77 +75,101 @@ class TestIntance(unittest.TestCase):
             'platform_id': 1,
             # 'vm_uuid': '42016f82-0f85-9b36-1f90-d6580b264691'
         }
-        platforms = [{'ip': '192.168.12.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'},]
+        platforms = [{'ip': '192.168.78.205', 'name': 'administrator@vsphere.local', 'password': 'Aiya@2018', 'port': '443'},]
         cloud_platform.platform_list = Mock(return_value=platforms)
+        base_control.event_logs.eventlog_create = Mock(return_value='')
+        db.instances.list_by_uuid = Mock(return_value=local_vm_data())
         
         with app.test_request_context():
             self._uti = Instance(platform_id=self.collect_data['platform_id'])  # , uuid=self.collect_data['vm_uuid'])
-            self._uti.update_vm_local = Mock(return_value=2)
+            self._uti.local_vm = local_vm_data()
+            self._uti.update_vm_local = Mock(return_value=2)         
     
     def tearDown(self):
         pass
 
     def test_010_boot(self):
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.vm = None
             self._uti.boot(**create_info)
             self.assertIsNotNone(self._uti.vm)
 
     def test_011_start(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti._set_vm(self._uti.vm)
 
-        self._uti.start()
-        self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOn')
-        WaitForTask(self._uti.vm.PowerOff())
+            self._uti.start()
+            self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOn')
+            WaitForTask(self._uti.vm.PowerOff())
 
     def test_014_stop(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti.local_vm = Mock(return_value=local_vm_data())
+            self._uti._set_vm(self._uti.vm)
 
-        if self._uti.vm.runtime.powerState == 'poweredOff':
-            WaitForTask(self._uti.vm.PowerOn())
-        
-        self._uti.stop()
-        self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOff')
+            if self._uti.vm.runtime.powerState == 'poweredOff':
+                WaitForTask(self._uti.vm.PowerOn())
+            
+            self._uti.stop()
+            self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOff')
 
     def test_012_suspend(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti._set_vm(self._uti.vm)
 
-        if self._uti.vm.runtime.powerState == 'poweredOff':
-            WaitForTask(self._uti.vm.PowerOn())
-        
-        self._uti.suspend()
-        self.assertEqual(self._uti.vm.runtime.powerState, 'suspended')
-        WaitForTask(self._uti.vm.PowerOff())
+            if self._uti.vm.runtime.powerState == 'poweredOff':
+                WaitForTask(self._uti.vm.PowerOn())
+            
+            self._uti.suspend()
+            self.assertEqual(self._uti.vm.runtime.powerState, 'suspended')
+            WaitForTask(self._uti.vm.PowerOff())
  
     def test_013_restart(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
-        
-        if self._uti.vm.runtime.powerState not in ['poweredOn',]:
-            WaitForTask(self._uti.vm.PowerOn())
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti._set_vm(self._uti.vm)
+            
+            if self._uti.vm.runtime.powerState not in ['poweredOn',]:
+                WaitForTask(self._uti.vm.PowerOn())
 
-        self._uti.restart()
-        self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOn')
-        WaitForTask(self._uti.vm.PowerOff())
+            self._uti.restart()
+            self.assertEqual(self._uti.vm.runtime.powerState, 'poweredOn')
+            WaitForTask(self._uti.vm.PowerOff())
     
     def test_015_update_vcpu(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti._set_vm(self._uti.vm)
 
-        new_cpu = int(self._uti.vm.config.hardware.numCPU) + 1
-        self._uti.update_vcpu(new_cpu, self._uti.vm.config.hardware.numCPU)
-        self.assertEqual(int(self._uti.vm.config.hardware.numCPU), new_cpu)
+            new_cpu = int(self._uti.vm.config.hardware.numCPU) + 1
+            self._uti.update_vcpu(new_cpu, self._uti.vm.config.hardware.numCPU)
+            self.assertEqual(int(self._uti.vm.config.hardware.numCPU), new_cpu)
     
     def test_016_update_vmemory(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti._set_vm(self._uti.vm)
 
-        new_mem = int(self._uti.vm.config.hardware.memoryMB) + 512
-        self._uti.update_vmemory(new_mem, self._uti.vm.config.hardware.memoryMB)
-        self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem)
+            new_mem = int(self._uti.vm.config.hardware.memoryMB) + 512
+            self._uti.update_vmemory(new_mem, self._uti.vm.config.hardware.memoryMB)
+            self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem)
 
     def test_017_add_network(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
@@ -150,6 +181,8 @@ class TestIntance(unittest.TestCase):
                 old_network_info = item
         
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.add_network(network_str)
         
         for item in self._uti.vm.config.hardware.device:
@@ -169,6 +202,8 @@ class TestIntance(unittest.TestCase):
                 old_network_info = item
         
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.del_network(network_str)
         
         for item in self._uti.vm.config.hardware.device:
@@ -187,6 +222,8 @@ class TestIntance(unittest.TestCase):
                 old_disk_info = item
         
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.add_disk(disk_str)
         
         for item in self._uti.vm.config.hardware.device:
@@ -206,6 +243,8 @@ class TestIntance(unittest.TestCase):
                 old_disk_info = item
         
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.delete_disk([1,])
         
         for item in self._uti.vm.config.hardware.device:
@@ -224,6 +263,8 @@ class TestIntance(unittest.TestCase):
                 old_image_info = item
         
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.add_image(1)
         
         for item in self._uti.vm.config.hardware.device:
@@ -237,24 +278,28 @@ class TestIntance(unittest.TestCase):
         self._uti._set_vm(get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name']))
 
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.add_snapshot(**snapshot_info)
         
         self.assertEqual(self._uti.vm.snapshot.rootSnapshotList[0].name, snapshot_info["snapshot_name"])
         self.assertEqual(self._uti.vm.snapshot.rootSnapshotList[0].description, snapshot_info["description"])
 
     def test_023_revert_snapshot(self):
-        # self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name']))
-
-        new_mem = int(self._uti.vm.config.hardware.memoryMB) + 512
-        self._uti.update_vmemory(new_mem, self._uti.vm.config.hardware.memoryMB)
-        self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem)
-        
-        revert_id = 1
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            # self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti._set_vm(get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name']))
+
+            new_mem = int(self._uti.vm.config.hardware.memoryMB) + 512
+            self._uti.update_vmemory(new_mem, self._uti.vm.config.hardware.memoryMB)
+            self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem)
+            
+            revert_id = 1
             self._uti.snapshot_revert(revert_id)
-        
-        self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem-512)
+            
+            self.assertEqual(int(self._uti.vm.config.hardware.memoryMB), new_mem-512)
 
     def test_024_delete_snapshot(self):
         self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
@@ -262,6 +307,8 @@ class TestIntance(unittest.TestCase):
 
         delete_id = 1
         with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
             self._uti.delete_snapshot(delete_id)
         
         self.assertIsNone(self._uti.vm.snapshot)
@@ -271,7 +318,9 @@ class TestIntance(unittest.TestCase):
         self._uti._set_vm(self._uti.vm)
 
         with app.test_request_context():
-            self._uti.clone(clone_name, 2, 2)
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.clone(clone_name, 2, 25)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], clone_name)
         self.assertEqual(dd.summary.config.name, clone_name)
@@ -285,7 +334,9 @@ class TestIntance(unittest.TestCase):
         old_instance_uuid = self._uti.vm.summary.config.instanceUuid
 
         with app.test_request_context():
-            self._uti.cold_migrate('192.168.12.203', 2, 2)
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.cold_migrate('192.168.78.203', 2, 25)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], old_vm_name)
         self.assertEqual(dd.summary.config.name, old_vm_name)
@@ -309,9 +360,13 @@ class TestIntance(unittest.TestCase):
     #     print self._uti.vm.summary
 
     def test_100_delete(self):
-        self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
-        self._uti._set_vm(self._uti.vm)
-        self._uti.delete()
+        with app.test_request_context():
+            g.username = 'test'
+            g.request_id = 0
+            self._uti.vm = get_obj(self._uti.content, [vim.VirtualMachine], create_info['vm_name'])
+            self._uti.local_vm = Mock(return_value=local_vm_data())   # TODO
+            self._uti._set_vm(self._uti.vm)
+            self._uti.delete()
     
 
 

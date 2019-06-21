@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask_restful import Resource, reqparse
+from flask import g
 
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
@@ -126,12 +127,14 @@ class DataStoreManage(Resource):
         args = parser.parse_args()
         # test_get_ds(args['platform_id'])
         try:
+            g.error_code = 4651
             if not args['platform_id']:
+                g.error_code = 4652
                 raise Exception('Parameter error')
             data = control.datastores.get_datastore_by_platform_id(args['platform_id'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 2441), 400
-        return set_return_val(True, data, 'Datastore gets success.', 2440)
+            return set_return_val(False, [], str(e), g.error_code), 400
+        return set_return_val(True, data, 'Datastore gets success.', 4650)
 
     def post(self):
         pass

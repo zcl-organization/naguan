@@ -170,7 +170,9 @@ class InstanceTemplateManage(Resource):
         """
         args = parser.parse_args()
         try:
+            g.error_code = 6301
             if not args['platform_id']:
+                g.error_code = 6302
                 raise Exception('Parameter error')
             instance = control.instances.Instance(platform_id=args['platform_id'])
 
@@ -179,8 +181,8 @@ class InstanceTemplateManage(Resource):
             data, pg = instance.list(host=args['host'], vm_name=args['vm_name'], pgnum=pgnum,
                                      pgsort=args['pgsort'], template=True)
         except Exception as e:
-            return set_return_val(False, [], str(e), 2031), 400
-        return set_return_val(True, data, 'instance gets success.', 2030, pg), 200
+            return set_return_val(False, [], str(e), g.error_code), 400
+        return set_return_val(True, data, 'instance gets success.', 6300, pg), 200
 
     @basic_auth.login_required
     def post(self):
@@ -287,13 +289,16 @@ class InstanceTemplateManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 6351
             if not all([args['action'], args['platform_id'], args['template_uuid']]):
+                g.error_code = 6352
                 raise Exception('Parameter error')
             instance_template = control.instance_template.InstanceTemplate(
                 platform_id=args['platform_id'], uuid=args['template_uuid'])
             if args['action'] == 'create':
                 data['event'] = unicode('模板创建虚拟机')
                 if not all([args['vm_name'], args['ds_id'], args['dc_id']]):
+                    g.error_code = 6352
                     raise Exception('Parameter error')
                 instance_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
                                                      dc_id=args['dc_id'], resource_pool_id=
@@ -301,19 +306,21 @@ class InstanceTemplateManage(Resource):
             elif args['action'] == 'transform':
                 data['event'] = unicode('模板转换虚拟机')
                 if not args['resource_pool_id']:
+                    g.error_code = 6352
                     raise Exception('Parameter error')
                 instance_template.template_transform_vm(resource_pool_id=args['resource_pool_id'],
                                                         host_id=args['host_id'])
             else:
                 data['result'] = False
+                g.error_code = 6352
                 raise Exception('Parameter error')
         except Exception as e:
             data['result'] = False
-            return set_return_val(False, [], str(e), 2031), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('template_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'Template action success.', 2030), 200
+        return set_return_val(True, [], 'Template action success.', 6350), 200
 
     @basic_auth.login_required
     def delete(self, template_uuid):
@@ -384,15 +391,17 @@ class InstanceTemplateManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 6401
             if not args['platform_id']:
+                g.error_code = 6402
                 raise Exception('Parameter error')
             instance_template = control.instance_template.InstanceTemplate(
                 platform_id=args['platform_id'], uuid=template_uuid)
             instance_template.del_template()
         except Exception as e:
             data['result'] = False
-            return set_return_val(False, [], str(e), 2031), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             data['resources_id'] = args.get('template_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'Template del success.', 2030), 200
+        return set_return_val(True, [], 'Template del success.', 6400), 200

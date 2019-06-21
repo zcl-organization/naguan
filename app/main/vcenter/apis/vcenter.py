@@ -91,12 +91,15 @@ class VCenterManage(Resource):
         # parser.add_argument('id')
         args = parser.parse_args()
         try:
+            g.error_code = 4001
             if not args['platform_id']:
+                g.error_code = 4002
                 raise Exception('Parameter error')
             data = control.vcenter.vcenter_tree_list(int(args['platform_id']))
         except Exception as e:
-            return set_return_val(False, {}, 'Failed to get vcneter tree', 2431), 400
-        return set_return_val(True, data, 'Get vcneter tree success', 2430)
+            return set_return_val(False, {}, 'Failed to get vcneter tree', g.error_code), 400
+
+        return set_return_val(True, data, 'Get vcneter tree success', 4000)
 
     @basic_auth.login_required
     def post(self):
@@ -168,7 +171,9 @@ class VCenterManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 4051
             if not args['platform_id']:
+                g.error_code = 4052
                 raise Exception('Parameter error')
             control.vcenter.sync_tree(args['platform_id'])
             data['result'] = True
@@ -178,8 +183,8 @@ class VCenterManage(Resource):
             # request_id = g.request_id
             # base_control.task_logs.create_log(request_id, task.task_id, 'wait', 'vsphere', 'sync_tree')
         except Exception as e:
-            return set_return_val(False, {}, str(e), 2401), 400
+            return set_return_val(False, {}, str(e), g.error_code), 400
         finally:
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, {}, 'Sync vcneter tree success', 2400)
+        return set_return_val(True, {}, 'Sync vcneter tree success', 4050)
         # return set_return_val(True, data, 'Sync vcneter tree success', 1239)

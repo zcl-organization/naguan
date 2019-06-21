@@ -51,15 +51,17 @@ class SystemLogo(Resource):
         """
         args = parser.parse_args()
         try:
+            g.error_code = 1711
             logo = args['logo']
             control.system.system_config_update_logo(logo)
         except Exception as e:
             control.event_logs.eventlog_create(type='system', result=False, resources_id=None, event=unicode('更新系统logo'),
                                                submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统logo'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'System logo upload succeeded', 1620)
+        return set_return_val(True, [], 'System logo upload succeeded', 1710)
         # system = SystemConfig.query.get(1)
         # if system:
         #     args = parser.parse_args()

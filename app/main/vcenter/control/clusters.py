@@ -1,4 +1,5 @@
 # -*- coding=utf-8 -*-
+from flask import g
 from pyVmomi import vim
 from pyVim.task import WaitForTask
 from app.main.vcenter import db
@@ -15,16 +16,20 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
     # 本地dc
     dc = db.datacenters.get_dc_by_id(dc_id)
     # dc对象
+
     dc_obj = get_obj(content, [vim.Datacenter], dc.name)
     if dc_obj is None:
+        g.error_code = 4103
         raise ValueError("Missing value for datacenter.")
     if cluster_name is None:
+        g.error_code = 4104
         raise ValueError("Missing value for name.")
     if cluster_spec is None:
         cluster_spec = vim.cluster.ConfigSpecEx()
     # 判断dc下是否存在同名cluster
     local_cluster = db.clusters.get_cluster_by_name(platform_id, dc.name, cluster_name)
     if local_cluster:
+        g.error_code = 4105
         raise ValueError('The cluster name already exists')
 
     host_folder = dc_obj.hostFolder
@@ -68,11 +73,13 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
 def del_cluster(platform_id, cluster_id):
     cluster = db.clusters.get_cluster(platform_id, cluster_id)
     if not cluster:
+        g.error_code = 4154
         raise Exception('Cluster_id error, please confirm before deleting')
     # 判断本地cluster下是否存在资源
     cluster_mor_name = cluster.mor_name
     cluster_resource = db.vcenter.get_cluster_and_cluster_resource(platform_id, cluster_mor_name)  # 集群及其下的资源
     if len(cluster_resource) > 2:  # 本地校验
+        g.error_code = 4155
         raise Exception('Resources exist under the local datacenter, unable to delete')
 
     cluster_obj = db.vcenter.get_vcenter_obj_by_mor_name(platform_id, cluster_mor_name)
@@ -87,7 +94,8 @@ def del_cluster(platform_id, cluster_id):
     for rp in resourcepools:
         if rp.parent.parent.name == cluster_obj.name:  # 当cluster下存在资源池时
             # sync_vcenter_tree(si, content, platform)
-            raise Exception('Resources exist under the vCenter cluster, unable to delete')
+            g.error_code = 4156
+            raise Exception('Resources exist under the vCenter datacenter, unable to delete')
 
     clusters = dc_obj.hostFolder.childEntity
     cluster_name = cluster_obj.name
@@ -96,7 +104,8 @@ def del_cluster(platform_id, cluster_id):
             hosts = cluster.host
             if hosts:  # 当cluster下存在host时
                 # sync_vcenter_tree(si, content, platform)
-                raise Exception('Resources exist under the vCenter cluster, unable to delete')
+                g.error_code = 4156
+                raise Exception('Resources exist under the vCenter datacenter, unable to delete')
             else:
                 task = cluster.Destroy_Task()
                 WaitForTask(task)

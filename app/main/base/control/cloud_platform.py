@@ -9,7 +9,7 @@ def platform_create(platform_type_id, platform_name, admin_name, admin_password,
     platform = db.cloud_platform.get_platform_by_name(platform_name)
 
     if platform:
-        g.error_code = 1502
+        g.error_code = 1023
         raise Exception('platform name already exist.')
     data = db.cloud_platform.platform_create(platform_type_id, platform_name, admin_name, admin_password, port, ip,
                                              remarks)
@@ -58,7 +58,7 @@ def platform_update(id, ip, admin_name, admin_password, port, remarks):
     if platform:
         return db.cloud_platform.platform_update(id, ip, admin_name, admin_password, port, remarks)
     else:
-        g.error_code = 1521
+        g.error_code = 1032
         raise Exception('No current platform information exists')
 
 
@@ -67,5 +67,5 @@ def platform_delete(id):
     if platform:
         return db.cloud_platform.platform_delete(id)
     else:
-        g.error_code = 1511
+        g.error_code = 1042
         raise Exception('No current platform information exists')

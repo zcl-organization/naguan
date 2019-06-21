@@ -19,7 +19,7 @@ class PlatformTypeMg(Resource):
         查询云平台类型信息
         ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -61,13 +61,15 @@ class PlatformTypeMg(Resource):
 
         """
         args = parser.parse_args()
+        g.error_code = 1061
         try:
 
             data = control.platform_type.type_list(id=args['id'], name=args['name'])
         except Exception, e:
-            return set_return_val(False, [], str(e), 1531), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
 
-        return set_return_val(True, data, 'Platform type query succeeded.', 1530)
+        g.error_code = 1060
+        return set_return_val(True, data, 'Platform type query succeeded.', g.error_code)
 
     @basic_auth.login_required
     def post(self):
@@ -75,7 +77,7 @@ class PlatformTypeMg(Resource):
         创建平台类型
        ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -114,24 +116,23 @@ class PlatformTypeMg(Resource):
                     properties:
         """
         args = parser.parse_args()
-
-        if not args['name']:
-            g.error_code = 1501
-            raise Exception('Please pass in the platform type name.')
-
+        g.error_code = 1071
         try:
+            if not args['name']:
+                g.error_code = 1072
+                raise Exception('Please pass in the platform type name.')
+
             platform_type = control.platform_type.type_create(name=args['name'])
 
         except Exception as e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=None,
                                                event=unicode('增加平台类型'), submitter=g.username)
-
             return set_return_val(False, [], str(e), g.error_code), 400
 
+        g.error_code = 1070
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=platform_type[0]['id'],
                                            event=unicode('增加平台类型'), submitter=g.username)
-
-        return set_return_val(True, [], 'Platform type create succeeded.', 1500)
+        return set_return_val(True, [], 'Platform type create succeeded.', g.error_code)
 
     @basic_auth.login_required
     def put(self, id):
@@ -139,7 +140,7 @@ class PlatformTypeMg(Resource):
         根据id更新云平台类型信息
        ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -174,21 +175,23 @@ class PlatformTypeMg(Resource):
         """
 
         args = parser.parse_args()
-        if not args['name']:
-            g.error_code = 1523
-            raise Exception('Please pass in the platform type name.')
+        g.error_code = 1081  # TODO
         try:
+            if not args['name']:
+                g.error_code = 1082
+                raise Exception('Please pass in the platform type name.')
             control.platform_type.type_update(id, args['name'])
 
         except Exception, e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('更新平台类型信息'), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+            
+        g.error_code = 1080
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id,
                                            event=unicode('更新平台类型信息'),
-
                                            submitter=g.username)
-        return set_return_val(True, [], 'Platform type update succeeded.', 1520)
+        return set_return_val(True, [], 'Platform type update succeeded.', g.error_code)
 
     @basic_auth.login_required
     def delete(self, id):
@@ -196,7 +199,7 @@ class PlatformTypeMg(Resource):
         根据id删除云平台类型信息
        ---
        tags:
-          - cloudplatformtype
+          - cloud platform type
        security:
        - basicAuth:
           type: http
@@ -226,13 +229,16 @@ class PlatformTypeMg(Resource):
                     properties:
         """
         try:
+            g.error_code = 1091
             control.platform_type.type_delete(id)
         except Exception as e:
             control.event_logs.eventlog_create(type='platform_type', result=False, resources_id=id,
                                                event=unicode('删除平台类型信息'), submitter=g.username)
 
             return set_return_val(False, [], str(e), g.error_code), 400
+        
+        g.error_code = 1090
         control.event_logs.eventlog_create(type='platform_type', result=True, resources_id=id,
                                            event=unicode('删除平台类型信息'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'Platform type delete succeeded.', 1510)
+        return set_return_val(True, [], 'Platform type delete succeeded.', g.error_code)

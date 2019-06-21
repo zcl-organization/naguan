@@ -92,20 +92,21 @@ class LoginManage(Resource):
                         default: kpy
         """
         args = parser.parse_args()
+        g.error_code = 1001 # 登录出现的未知错误
         try:
             if not all([args['username'], args['password']]):
-                g.error_code = 1001
+                g.error_code = 1002
                 raise Exception('Incorrect username or password.')
 
             user = control.user.list_by_name(username=args['username'])
 
             if not user:
-                g.error_code = 1002
+                g.error_code = 1003
                 raise Exception('Incorrect username or password.')
 
             else:
                 if not user.verify_password(args['password']):
-                    g.error_code = 1003
+                    g.error_code = 1004
                     raise Exception('Incorrect username or password.')
                 else:
                     login_user(user, True)
@@ -134,6 +135,7 @@ class LoginManage(Resource):
 
             return set_return_val(False, {}, str(e), g.error_code), 400
 
+        g.error_code = 1000  # 成功状态码
         control.event_logs.eventlog_create(type='login', result=True, resources_id=user.id, event=unicode('登陆'),
                                            submitter=g.username)
-        return set_return_val(True, data, 'login successful', 1000)
+        return set_return_val(True, data, 'login successful', g.error_code)

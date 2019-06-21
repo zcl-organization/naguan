@@ -140,11 +140,11 @@ class System(Resource):
         """
         args = parser.parse_args()
 
-        if int(args['debug']) not in [1, 2]:
-            g.error_code = 1601
-            raise Exception('The debug parameter is wrong, 1 is True and 2 is False')
         try:
-
+            g.error_code = 1721
+            if int(args['debug']) not in [1, 2]:
+                g.error_code = 1722
+                raise Exception('The debug parameter is wrong, 1 is True and 2 is False')
             control.system.system_config_create(platform_name=args['platform_name'],
                                                 version_information=args['version_information'],
                                                 copyright=args['copyright'],
@@ -154,9 +154,10 @@ class System(Resource):
             control.event_logs.eventlog_create(type='system', result=False, resources_id=None, event=unicode('创建系统配置'),
                                                submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('创建系统配置'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'System config created successfully', 1600)
+        return set_return_val(True, [], 'System config created successfully', 1720)
 
     # @basic_auth.login_required
     def get(self):
@@ -209,10 +210,12 @@ class System(Resource):
             """
 
         try:
+            g.error_code = 1751
             data = control.system.system_config_list()
         except Exception as e:
             return set_return_val(False, [], str(e), g.error_code), 400
-        return set_return_val(True, data, 'System configuration succeeded', 1630)
+
+        return set_return_val(True, data, 'System configuration succeeded', 1750)
 
     # @basic_auth.login_required
     @marshal_with(result_fields2)
@@ -264,17 +267,18 @@ class System(Resource):
         args = parser.parse_args()
 
         try:
+            g.error_code = 1781
             control.system.system_config_update(platform_name=args['platform_name'],
                                                 version_information=args['version_information'],
                                                 copyright=args['copyright'],
                                                 user_authentication_mode=args['user_authentication_mode'],
                                                 debug=args['debug'])
-
         except Exception as e:
             control.event_logs.eventlog_create(type='system', result=False, resources_id=None, event=unicode('更新系统配置'),
                                                submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+
         control.event_logs.eventlog_create(type='system', result=True, resources_id=1, event=unicode('更新系统配置'),
                                            submitter=g.username)
-        return set_return_val(True, [], 'System configuration updated succeeded', 1610)
+        return set_return_val(True, [], 'System configuration updated succeeded', 1780)
 

@@ -74,9 +74,9 @@ class RoleManage(Resource):
             data, pg = control.role.role_list(name=args['name'], pgnum=pgnum)
 
         except Exception as e:
-            return set_return_val(False, [], str(e), 1331), 400
+            return set_return_val(False, [], str(e), 1211), 400
 
-        return set_return_val(True, data, 'Get the role information successfully', 1330, pg)
+        return set_return_val(True, data, 'Get the role information successfully', 1210, pg)
 
     @basic_auth.login_required
     def post(self):
@@ -127,10 +127,12 @@ class RoleManage(Resource):
          """
         args = parser.parse_args()
 
-        if not all([args['name'], args['description']]):
-            g.error_code = 1301
-            raise Exception('Parameter error')
+        g.error_code = 1231
         try:
+            if not all([args['name'], args['description']]):
+                g.error_code = 1232
+                raise Exception('Parameter error')
+
             role = control.role.role_create(name=args['name'], description=args['description'])
             # id = role[0]['id']
         except Exception as e:
@@ -139,9 +141,10 @@ class RoleManage(Resource):
 
             return set_return_val(False, [], str(e), g.error_code), 400
 
+        g.error_code = 1230
         control.event_logs.eventlog_create(type='role', result=True, resources_id=role[0]['id'],
                                            event=unicode('创建新角色:%s' % args['name']), submitter=g.username)
-        return set_return_val(True, [], 'The role information is created successfully.', 1300)
+        return set_return_val(True, [], 'The role information is created successfully.', g.error_code)
 
     @basic_auth.login_required
     def put(self, id):
@@ -188,14 +191,16 @@ class RoleManage(Resource):
          """
         args = parser.parse_args()
         try:
+            g.error_code = 1251
             name = control.role.role_update(role_id=int(id), name=args['name'], description=args['description'])
         except Exception as e:
             control.event_logs.eventlog_create(type='role', result=False, resources_id=id,
                                                event=unicode('更新角色信息'), submitter=g.username)
             return set_return_val(False, [], str(e), g.error_code), 400
+        g.error_code = 1250
         control.event_logs.eventlog_create(type='role', result=True, resources_id=id, event=unicode('更新角色:%s' % name),
                                            submitter=g.username)
-        return set_return_val(True, [], 'Role information updated successfully', 1320)
+        return set_return_val(True, [], 'Role information updated successfully', g.error_code)
 
     @basic_auth.login_required
     def delete(self, id):
@@ -233,6 +238,7 @@ class RoleManage(Resource):
                     properties:
           """
         try:
+            g.error_code = 1271
             role = control.role.role_delete(id)
         except Exception as e:
             control.event_logs.eventlog_create(type='role', result=False, resources_id=id,
@@ -242,4 +248,4 @@ class RoleManage(Resource):
         control.event_logs.eventlog_create(type='role', result=True, resources_id=id,
                                            event=unicode('删除角色:%s' % role.name),
                                            submitter=g.username)
-        return set_return_val(True, [], 'The role information was deleted successfully.', 1310)
+        return set_return_val(True, [], 'The role information was deleted successfully.', 1270)

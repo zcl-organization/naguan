@@ -190,7 +190,7 @@ class UserManage(Resource):
         """
 
         args = parser.parse_args()
-
+        g.error_code = 1111
         if not args['pgnum']:
             pgnum = 1
         else:
@@ -205,7 +205,8 @@ class UserManage(Resource):
         except Exception as e:
             return set_return_val(True, [], 'Failed to get user information', g.error_code), 400
 
-        return set_return_val(True, data, 'Successfully obtained user information', 1130, pg)
+        g.error_code = 1110
+        return set_return_val(True, data, 'Successfully obtained user information', g.error_code, pg)
 
     # @basic_auth.login_required
     def post(self):
@@ -304,13 +305,15 @@ class UserManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 1131
             args = parser.parse_args()
             parser.add_argument('username')
             parser.add_argument('password')
             parser.add_argument('email')
 
             if not all([args['username'], args['password'], args['email'], args['department'], args['company']]):
-                return set_return_val(False, [], str('Parameter error.'), 1101), 400
+                g.error_code = 1132
+                raise Exception('Parameter error.')
 
             active = 1
             is_superuser = 1
@@ -337,9 +340,10 @@ class UserManage(Resource):
 
             return set_return_val(False, [], str(e), g.error_code), 400
 
+        g.error_code = 1130
         control.event_logs.eventlog_create(type='user', result=True, resources_id=user[0]['id'],
                                            event=unicode('创建新用户:%s' % args['username']), submitter=g.username)
-        return set_return_val(True, [], 'User created successfully', 1100)
+        return set_return_val(True, [], 'User created successfully', g.error_code)
 
     @basic_auth.login_required
     def put(self, id):
@@ -404,12 +408,12 @@ class UserManage(Resource):
         if args['active']:
             if int(args['active']) not in [1, 2]:
                 return set_return_val(False, [], str('Please pass in the correct parameters. 1 is True and 2 is False'),
-                                      1121), 400
+                                      1152), 400
         if args['active'] or args['password']:
             pass
         else:
             return set_return_val(False, [], str('Please pass in the field that needs to be modified'),
-                                  1122), 400
+                                  1152), 400
 
         try:
 
@@ -424,7 +428,7 @@ class UserManage(Resource):
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('更新用户:%s' % username), submitter=g.username)
-        return set_return_val(True, [], 'User update successfully', 1120)
+        return set_return_val(True, [], 'User update successfully', 1150)
 
     @basic_auth.login_required
     def delete(self, id):
@@ -470,4 +474,4 @@ class UserManage(Resource):
             return set_return_val(False, [], str(e), g.error_code), 400
         control.event_logs.eventlog_create(type='user', result=True, resources_id=id,
                                            event=unicode('删除用户:%s' % username), submitter=g.username)
-        return set_return_val(True, [], 'User delete successfully', 1110)
+        return set_return_val(True, [], 'User delete successfully', 1170)

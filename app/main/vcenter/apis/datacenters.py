@@ -213,17 +213,20 @@ class DataCenterManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 4301
             if not all([args['platform_id'], args['dc_name']]):
+                g.error_code =  4302
                 raise Exception('Parameter error')
             dc_id = control.datacenters.create_datacenter(
                 platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
             data['resources_id'] = dc_id
         except Exception as e:
             data['result'] = False
-            return set_return_val(False, data, str(e), 3001)
+            return set_return_val(False, data, str(e), g.error_code)
         finally:
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, data, 'Datastore create success.', 3000)
+
+        return set_return_val(True, data, 'Datastore create success.', 4300)
 
     def put(self):
         pass
@@ -305,15 +308,17 @@ class DataCenterManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 4351
             args = parser.parse_args()
             if not all([args['platform_id'], id]):
+                g.error_code = 4352
                 raise Exception('Parameter error')
             control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=id)
         except Exception as e:
             data['result'] = False
-            return set_return_val(False, data, str(e), 3001)
+            return set_return_val(False, data, str(e), g.error_code)
         finally:
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, data, 'Datastore delete success.', 3000)
+        return set_return_val(True, data, 'Datastore delete success.', 4350)
 
 

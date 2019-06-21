@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import json   # TODO 序列化方式变更不用json
+
+from flask import g
+
 from app.main.vcenter import db
 from app.main.vcenter.utils.base import VCenter
 from app.main.vcenter.utils.vm_vswitch import VMVswitchManager
@@ -86,6 +89,7 @@ class VSwitch:
         """
         if check_if_vswitch_exists(
             platform_id=args['platform_id'], host_name=args['host_name'], switch_name=args['switch_name']):
+            g.error_code = 4753
             raise RuntimeError("Project Already Exists!!!")
 
         mtu=int(args['mtu']) if args['mtu'] else 1500
@@ -132,6 +136,7 @@ class VSwitch:
         """
         data = db.vswitch.find_vswitch_by_id(vswitch_id)
         if not data:
+            g.error_code = 4803
             raise RuntimeError("Project Does Not Exists!!!")
 
         self.delete_vswitch_by_name(data.host_name, data.name)
@@ -144,6 +149,7 @@ class VSwitch:
         """
         data = db.vswitch.find_vswitch_by_id(switch_id)
         if not data:
+            g.error_code = 4853
             raise RuntimeError('Project Does Not Exists!!!')
 
         old_data = dict(

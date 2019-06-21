@@ -6,8 +6,12 @@ from app.main.base import db
 
 def update_role(role_id, menu_id):
     # 获取role_id 角色 有权限的menu_id
-
     menu_id = json.loads(menu_id)
+
+    # 判断角色是否是admin角色，admin拥有所有菜单权限，不允许修改权限
+    role = db.role.list_by_id(role_id)
+    if role.name == 'admin':
+        raise Exception('It is not allowed to modify the menu permissions of the admin role.')
 
     menu_ids = db.roles_menus.get_menu_id_by_role_id(role_id)
     menu_id_list = [m_id.menu_id for m_id in menu_ids]
@@ -80,4 +84,8 @@ def children_menu_list(menu_ids, parent_id=0):
 
 
 def delete_role(role_id):
+    # 判断用户角色是否是admin，admin不允许删除权限
+    role = db.role.list_by_id(role_id)
+    if role.name == 'admin':
+        raise Exception('It is not allowed to delete the menu permission of the admin role.')
     db.roles_menus.delete_by_role_id(role_id)
