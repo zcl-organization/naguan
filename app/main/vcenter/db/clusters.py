@@ -1,6 +1,5 @@
 # -*- coding=utf-8 -*-
 from app.exts import db
-from app.models import VCenterTree
 from app.models import VCenterClusters
 
 
@@ -18,8 +17,17 @@ def get_cluster_by_name(platform_id, dc_name, cluster_name):
         filter_by(dc_name=dc_name).filter_by(name=cluster_name).first()
 
 
-def get_clusters(platform_id):
-    return db.session.query(VCenterClusters).filter_by(platform_id=platform_id).all()
+def find_clusters(platform_id=None, cluster_id=None, cluster_name=None, dc_name=None):
+    query = db.session.query(VCenterClusters)
+    if platform_id:
+        query = query.filter_by(platform_id=platform_id)
+    if cluster_id:
+        query = query.filter_by(id=cluster_id)
+    if cluster_name:
+        query = query.filter_by(name=cluster_name)
+    if dc_name:
+        query = query.filter_by(name=dc_name)
+    return query
 
 
 def del_cluster(cluster_id):

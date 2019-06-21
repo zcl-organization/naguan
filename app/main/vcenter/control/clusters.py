@@ -3,7 +3,6 @@ from pyVmomi import vim
 from pyVim.task import WaitForTask
 from app.main.vcenter import db
 from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
-from app.main.vcenter.control.vcenter import sync_vcenter_tree
 
 
 def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
@@ -16,8 +15,8 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
     # 本地dc
     dc = db.datacenters.get_dc_by_id(dc_id)
     # dc对象
-    instance_dc = get_obj(content, [vim.Datacenter], dc.name)
-    if instance_dc is None:
+    dc_obj = get_obj(content, [vim.Datacenter], dc.name)
+    if dc_obj is None:
         raise ValueError("Missing value for datacenter.")
     if cluster_name is None:
         raise ValueError("Missing value for name.")
@@ -28,7 +27,7 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
     if local_cluster:
         raise ValueError('The cluster name already exists')
 
-    host_folder = instance_dc.hostFolder
+    host_folder = dc_obj.hostFolder
     cluster = host_folder.CreateClusterEx(name=cluster_name, spec=cluster_spec)
 
     # 同步至本地
@@ -81,23 +80,23 @@ def del_cluster(platform_id, cluster_id):
     si, content, platform = get_connect(platform_id)
 
     dc = db.vcenter.get_datacenter_by_id(dc_id)
-    instance_dc = get_obj(content, [vim.Datacenter], dc.name)
+    dc_obj = get_obj(content, [vim.Datacenter], dc.name)
 
-    obj = content.viewManager.CreateContainerView(instance_dc, [vim.ResourcePool], True)
+    obj = content.viewManager.CreateContainerView(dc_obj, [vim.ResourcePool], True)
     resourcepools = obj.view
     for rp in resourcepools:
         if rp.parent.parent.name == cluster_obj.name:  # 当cluster下存在资源池时
-            sync_vcenter_tree(si, content, platform)
-            raise Exception('Resources exist under the vCenter datacenter, unable to delete')
+            # sync_vcenter_tree(si, content, platform)
+            raise Exception('Resources exist under the vCenter cluster, unable to delete')
 
-    clusters = instance_dc.hostFolder.childEntity
+    clusters = dc_obj.hostFolder.childEntity
     cluster_name = cluster_obj.name
     for cluster in clusters:
         if cluster.name == cluster_name:
             hosts = cluster.host
             if hosts:  # 当cluster下存在host时
-                sync_vcenter_tree(si, content, platform)
-                raise Exception('Resources exist under the vCenter datacenter, unable to delete')
+                # sync_vcenter_tree(si, content, platform)
+                raise Exception('Resources exist under the vCenter cluster, unable to delete')
             else:
                 task = cluster.Destroy_Task()
                 WaitForTask(task)
@@ -111,8 +110,8 @@ def del_cluster(platform_id, cluster_id):
         raise Exception('No exist cluster.')
 
 
-def get_clusters(platform_id):
-    clusters = db.clusters.get_clusters(platform_id)
+def find_clusters(platform_id=None, cluster_id=None, cluster_name=None, dc_name=None):
+    clusters = db.clusters.find_clusters(platform_id, cluster_id, cluster_name, dc_name)
     cluster_list = []
     for cluster in clusters:
         data = dict(

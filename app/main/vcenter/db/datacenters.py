@@ -1,12 +1,18 @@
 # -*- coding=utf-8 -*-
-from app.models import VCenterTree
 from app.exts import db
 from app.models import VCenterDatacenter
 
 
 # 获取datacenters
-def get_datacenters(platform_id):
-    return db.session.query(VCenterDatacenter).filter_by(platform_id=platform_id).all()
+def find_datacenters(platform_id=None, dc_id=None, dc_name=None):
+    query = db.session.query(VCenterDatacenter)
+    if platform_id:
+        query = query.filter_by(platform_id=platform_id)
+    if dc_id:
+        query = query.filter_by(id=dc_id)
+    if dc_name:
+        query = query.filter_by(name=dc_name)
+    return query
 
 
 # 获取datacenters
@@ -15,7 +21,7 @@ def get_dc_by_id(id):
 
 
 # 判断是否存在datacenter名
-def get_dc_name(dc_name):
+def get_dc_by_name(dc_name):
     return db.session.query(VCenterDatacenter).filter_by(name=dc_name).first()
 
 

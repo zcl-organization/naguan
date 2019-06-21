@@ -430,6 +430,10 @@ class VCenterHost(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # id
     name = db.Column(db.String(32))  # 主机名称
     mor_name = db.Column(db.String(32))
+    dc_name = db.Column(db.String(128))
+    dc_mor_name = db.Column(db.String(128))
+    cluster_name = db.Column(db.String(128))
+    cluster_mor_name = db.Column(db.String(128))
     port = db.Column(db.Integer)
     power_state = db.Column(db.String(32))  # 电源状态
     connection_state = db.Column(db.String(32))  # 连接状态
@@ -457,6 +461,7 @@ class VCenterHost(db.Model):
 class Licenses(db.Model):
     __tablename__ = 'licenses'
     id = db.Column(db.Integer, primary_key=True)  # id
+    platform_id = db.Column(db.Integer)
     name = db.Column(db.String(32))  # 许可证名称
     licenseKey = db.Column(db.String(128))  # 许可证号
     editionKey = db.Column(db.String(128))  #

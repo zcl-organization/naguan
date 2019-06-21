@@ -29,7 +29,15 @@ class DataCenterManage(Resource):
           - in: query
             name: platform_id
             type: integer
-            required: true
+            required: false
+          - in: query
+            name: dc_name
+            type: string
+            required: false
+          - in: query
+            name: dc_id
+            type: integer
+            required: false
        responses:
           200:
             description: vCenter DataCenter 信息
@@ -121,9 +129,8 @@ class DataCenterManage(Resource):
         """
         try:
             args = parser.parse_args()
-            if not args['platform_id']:
-                raise Exception('Parameter error')
-            data = control.datacenters.get_datacenters(platform_id=args['platform_id'])
+            data = control.datacenters.find_datacenters(platform_id=args['platform_id'],
+                                                        dc_id=args['dc_id'], dc_name=args['dc_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Datastore info get success.', 3000)

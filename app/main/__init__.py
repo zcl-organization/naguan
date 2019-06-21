@@ -20,10 +20,11 @@ from app.main.base.apis.roles_users import RolesUsersManage
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
 from app.main.base.apis.roles_menus import RolesMenusManage
-from app.main.vcenter.apis.host import ResourceHostManage
+from app.main.vcenter.apis.host import HostManage
 
 from app.main.vcenter.apis.instances import InstanceManage
 from app.main.vcenter.apis.instance_template import InstanceTemplateManage
+from app.main.vcenter.apis.license import LicenseManage
 
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
@@ -182,10 +183,13 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=
                  endpoint='RolesMenusMgById')
 
 # vCenter host
-api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST', 'PUT'],
-                 endpoint='ResourceHostMg')
-api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host/<int:host_id>', methods=['DELETE'],
-                 endpoint='ResourceHostMgDel')
+api.add_resource(HostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
+                 endpoint='HostMg')
+api.add_resource(HostManage, '/api/v1.0/vCenter/host/<int:host_id>', methods=['DELETE'],
+                 endpoint='HostMgDel')
+
+api.add_resource(LicenseManage, '/api/v1.0/vCenter/license', methods=['GET', 'POST'],
+                 endpoint='LicenseManage')
 
 # vCenter VSwitch
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')

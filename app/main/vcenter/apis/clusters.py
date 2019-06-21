@@ -12,6 +12,7 @@ parser.add_argument('platform_id')
 parser.add_argument('cluster_id')  # cluster_id 群集id
 parser.add_argument('dc_id')
 parser.add_argument('cluster_name')
+parser.add_argument('dc_name')
 
 
 class ClustersManage(Resource):
@@ -28,10 +29,22 @@ class ClustersManage(Resource):
           type: http
           scheme: basic
        parameters:
-          - in: query
+           - in: query
             name: platform_id
             type: integer
-            required: true
+            required: false
+          - in: query
+            name: dc_name
+            type: string
+            required: false
+          - in: query
+            name: cluster_id
+            type: integer
+            required: false
+          - in: query
+            name: cluster_name
+            type: string
+            required: false
        responses:
           200:
             description: vCenter Cluster 信息
@@ -125,7 +138,8 @@ class ClustersManage(Resource):
             args = parser.parse_args()
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            data = control.clusters.get_clusters(platform_id=args['platform_id'])
+            data = control.clusters.find_clusters(platform_id=args['platform_id'], cluster_name=args['cluster_name'],
+                                                  cluster_id=args['cluster_id'], dc_name=args['dc_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Clusters info get success.', 3000)

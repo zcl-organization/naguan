@@ -3,7 +3,6 @@ from pyVim.task import WaitForTask
 from pyVmomi import vim
 from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
 from app.main.vcenter import db
-from app.main.vcenter.control.vcenter import sync_vcenter_tree
 
 
 def create_datacenter(platform_id, dc_name, folder=None):
@@ -12,7 +11,7 @@ def create_datacenter(platform_id, dc_name, folder=None):
     if len(dc_name) > 80:
         raise ValueError("The name of the datacenter must be under "
                          "80 characters.")
-    dc = db.datacenters.get_dc_name(dc_name)  # 判断是否存在同名dc
+    dc = db.datacenters.get_dc_by_name(dc_name)  # 判断是否存在同名dc
     if dc:
         raise ValueError('The datacenter name already exists')
     if folder is None:
@@ -47,16 +46,6 @@ def create_datacenter(platform_id, dc_name, folder=None):
         raise Exception('Failed to create datacenter. %s' % str(e))
 
 
-# 根据id获取datacenter
-def get_dc_obj(platform_id, dc_id, content):
-    local_dc = db.vcenter.get_datacenter_by_id(dc_id)
-    datacenters = content.rootFolder.childEntity
-    for dc in datacenters:
-        dc_mor = get_mor_name(dc)
-        if dc_mor == local_dc.mor_name:
-            return dc
-
-
 def del_datacenter(platform_id, dc_id):
     si, content, platform = get_connect(platform_id)
     dc = db.datacenters.get_dc_by_id(dc_id)
@@ -66,24 +55,24 @@ def del_datacenter(platform_id, dc_id):
     if clusters_obj:
         raise Exception('Resources exist under the local datacenter, unable to delete')
     # 判断平台datacenter下是否存在资源
-    instance_dc = get_obj(content, [vim.Datacenter], dc.name)
-    clusters = instance_dc.hostFolder.childEntity
+    dc_obj = get_obj(content, [vim.Datacenter], dc.name)
+    clusters = dc_obj.hostFolder.childEntity
     if clusters:
         # 同步数据至本地
-        sync_vcenter_tree(si, content, platform)
+        # sync_vcenter_tree(si, content, platform)
         raise Exception('Resources exist under the vCenter datacenter, unable to delete')
 
-    dc_mor = get_mor_name(instance_dc)
+    dc_mor = get_mor_name(dc_obj)
     # 任务销毁并等待
-    task = instance_dc.Destroy_Task()
+    task = dc_obj.Destroy_Task()
     WaitForTask(task)
     # 删除本地数据库
     db.vcenter.vcenter_tree_del_by_mor_name(platform_id, dc_mor)
     db.datacenters.del_datacenter(dc_id)
 
 
-def get_datacenters(platform_id):
-    datacenters = db.datacenters.get_datacenters(platform_id)
+def find_datacenters(platform_id=None, dc_id=None, dc_name=None):
+    datacenters = db.datacenters.find_datacenters(platform_id, dc_id, dc_name)
     dc_list = []
     for dc in datacenters:
         data = dict(

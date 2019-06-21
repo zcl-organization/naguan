@@ -15,36 +15,22 @@ class Host:
         self.si, self.content, self.platform = get_connect(platform_id)
 
     # 添加host
-    def add_host(self, host_name, esxi_username, esxi_password, as_connected=True,
-                 folder_name=None, cluster_id=None,
-                 license_id=None, resource_pool=None,
-                 fetch_ssl_thumbprint=None, esxi_ssl_thumbprint=None):
+    def add_host(self, host_name, esxi_username, esxi_password, as_connected=True, cluster_id=None,
+                 license_id=None, resource_pool=None):
         """Add ESXi host to a cluster of folder in vCenter"""
         if db.host.get_host_by_name(host_name):
             raise ValueError('The host object already exists.')
         host_connect_spec = self.get_host_connect_spec(esxi_hostname=host_name, esxi_username=esxi_username,
-                                                       esxi_password=esxi_password,
-                                                       fetch_ssl_thumbprint=fetch_ssl_thumbprint,
-                                                       esxi_ssl_thumbprint=esxi_ssl_thumbprint)
+                                                       esxi_password=esxi_password)
         if license_id:
-            license = db.host.get_license_by_id(license_id)
+            license = db.license.get_license_by_id(license_id)
             if license:
                 license = license.licenseKey
         else:
             license = None
         task = None
         vcenter_tree_cluster = None
-        if folder_name:
-            folder = self.search_folder(folder_name)  # 寻找文件夹
-            try:
-                # 构建任务
-                task = folder.AddStandaloneHost(
-                    spec=host_connect_spec, compResSpec=resource_pool,
-                    addConnected=as_connected, license=license
-                )
-            except Exception as task_error:
-                raise RuntimeError('Error adding host %s task' % task_error)
-        elif cluster_id:
+        if cluster_id:
             cluster = db.clusters.get_cluster(self.platform['id'], cluster_id)
             vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(self.platform['id'], cluster.mor_name)
             if vcenter_tree_cluster.type != 3:
@@ -64,12 +50,12 @@ class Host:
             raise Exception('Error adding host %s task' % task_error)
         # 同步
         host = get_obj(self.content, [vim.HostSystem], host_name)
-        new_host_id = self.sync_host(host)
+        new_host_id = self.sync_host(host, vcenter_tree_cluster)
         self.vcenter_tree_host_sync(host, cluster=vcenter_tree_cluster)
         return new_host_id
 
     # host表同步
-    def sync_host(self, host):
+    def sync_host(self, host, cluster):
         """
         TODO host.summary.quickStats数据不能直接获取，，全为0或-1，需要重新获取一次
         :param host:
@@ -84,7 +70,9 @@ class Host:
         config = host.summary.config
         runtime = host.summary.runtime
         # print config
-        data = dict(name=config.name, mor_mame=get_mor_name(host), port=config.port,
+        data = dict(name=config.name, mor_mame=get_mor_name(host), dc_name=cluster.dc_oc_name,
+                    dc_mor_name=cluster.dc_mor_name, cluster_name=cluster.cluster_oc_name,
+                    cluster_mor_name=cluster.cluster_mor_name, port=config.port,
                     power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
                     maintenance_mode=runtime.inMaintenanceMode, platform_id=self.platform['id'],
                     uuid=host.summary.hardware.uuid, cpu_cores=int(host.summary.hardware.numCpuCores),
@@ -108,7 +96,7 @@ class Host:
 
     # 连接host
     def get_host_connect_spec(self, esxi_hostname, esxi_username, esxi_password,
-                              fetch_ssl_thumbprint=None, esxi_ssl_thumbprint=True,
+                              fetch_ssl_thumbprint=None, esxi_ssl_thumbprint=None,
                               force_connection=True):
         """
         Returns: host connection specification
@@ -146,18 +134,6 @@ class Host:
         string = str(number)
         return ':'.join(a + b for a, b in zip(string[::2], string[1::2]))
 
-    # 寻找存储文件夹
-    def search_folder(self, folder_name):
-        """
-            Search folder in vCenter
-            Returns: folder object
-        """
-        search_index = self.content.searchIndex
-        folder_obj = search_index.FindByInventoryPath(folder_name)
-        if not (folder_obj and isinstance(folder_obj, vim.Folder)):
-            raise ValueError('The specified file was not found')
-        return folder_obj
-
     # 移除host
     def remove_host(self, host_id):
         """Remove host from vCenter"""
@@ -169,7 +145,7 @@ class Host:
         try:
             if parent_type == 'folder':
                 task = host_object.Destroy_Task()
-            elif parent_type == parent_type == 'cluster':
+            elif parent_type == 'cluster':
                 if not host_object.runtime.inMaintenanceMode:
                     raise Exception('Host not in maintenance mode.')
                 task = host_object.Destroy_Task()
@@ -215,26 +191,15 @@ class Host:
             except TaskError as task_err:
                 raise Exception('Error')
 
-    # 同步需要
-    def sync_licenses(self):
-        licenses = self.si.content.licenseManager.licenses
-        for license in licenses:
-            data = dict(
-                name=license.name,
-                license_key=license.licenseKey,
-                edition_key=license.editionKey,
-                used=license.used,
-                total=license.total,
-            )
-            db.host.create_license(**data)
 
-
-def get_host_all(platform_id):
-    hosts = db.host.get_host_all(platform_id)
+def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_name=None):
+    hosts = db.host.find_host(platform_id, id, host_name, dc_name, cluster_name)
     host_list = []
     for host in hosts:
         data = dict(
-            id=host.id, name=host.name, mor_mame=host.mor_name, port=host.port,
+            id=host.id, name=host.name, mor_mame=host.mor_name, dc_name=host.dc_name,
+            dc_mor_name=host.dc_mor_name, cluster_name=host.cluster_name,
+            cluster_mor_name=host.cluster_mor_name, port=host.port,
             power_state=host.power_state, connection_state=host.connection_state,
             maintenance_mode=host.maintenance_mode, platform_id=platform_id,
             uuid=host.uuid, cpu_cores=host.cpu_cores,  cpu_mhz=host.cpu_mhz, used_cpu=host.used_cpu,

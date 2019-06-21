@@ -3,7 +3,7 @@ from flask import g
 from flask_restful import Resource, reqparse
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
-from app.main.vcenter.control.host import Host, get_host_all
+from app.main.vcenter.control.host import Host, find_host
 from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
@@ -12,15 +12,17 @@ parser.add_argument('host_name')  # host名称
 parser.add_argument('esxi_username')  # 用户名
 parser.add_argument('esxi_password')  # 密码
 
-parser.add_argument('folder_name')  # 存储文件夹
+# parser.add_argument('folder_name')  # 存储文件夹
 parser.add_argument('cluster_id')  # 集群ID
-parser.add_argument('resource_pool')  # 资源池ID
+parser.add_argument('resource_pool')  # 资源池
 parser.add_argument('license_id')  # 许可证id
-parser.add_argument('fetch_ssl_thumbprint')  # ssl???
-parser.add_argument('esxi_ssl_thumbprint')  # ssl???
+
+parser.add_argument('host_id')  #
+parser.add_argument('cluster_name')  #
+parser.add_argument('dc_name')  #
 
 
-class ResourceHostManage(Resource):
+class HostManage(Resource):
 
     @basic_auth.login_required
     def get(self):
@@ -37,7 +39,23 @@ class ResourceHostManage(Resource):
           - in: query
             name: platform_id
             type: integer
-            required: true
+            required: false
+          - in: query
+            name: host_id
+            type: integer
+            required: false
+          - in: query
+            name: host_name
+            type: string
+            required: false
+          - in: query
+            name: dc_name
+            type: string
+            required: false
+          - in: query
+            name: cluster_name
+            type: string
+            required: false
        responses:
           200:
             description: vCenter Host 信息
@@ -59,7 +77,15 @@ class ResourceHostManage(Resource):
                         type: str
                         default: 192.168.78.203
                         description: 192.168.78.203
-                      mor_mame:
+                      mor_name:
+                        type: string
+                      dc_name:
+                        type: string
+                      dc_mor_name:
+                        type: string
+                      cluster_name:
+                        type: string
+                      cluster_mor_name:
                         type: string
                       port:
                         type: integer
@@ -126,9 +152,8 @@ class ResourceHostManage(Resource):
         """
         try:
             args = parser.parse_args()
-            if not args['platform_id']:
-                raise RuntimeError('Parameter Error!')
-            data = get_host_all(args['platform_id'])
+            data = find_host(platform_id=args['platform_id'], id=args['host_id'],
+                             host_name=args['host_name'], dc_name=args['dc_name'], cluster_name=args['cluster_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Host info get Success!', 3000)
@@ -239,13 +264,11 @@ class ResourceHostManage(Resource):
         try:
             args = parser.parse_args()
             if not all([args['platform_id'], args['host_name'],
-                        args['esxi_username'], args['esxi_password']]):
-                raise ValueError('Parameter Error!')
-            if not args['folder_name'] and not args['cluster_id']:
+                        args['esxi_username'], args['esxi_password'], args['cluster_id']]):
                 raise ValueError('Parameter Error!')
             host = Host(args['platform_id'])
             new_host_id = host.add_host(host_name=args['host_name'], esxi_username=args['esxi_username'],
-                                        esxi_password=args['esxi_password'], folder_name=args['folder_name'],
+                                        esxi_password=args['esxi_password'],
                                         cluster_id=args['cluster_id'], license_id=args['license_id'],
                                         resource_pool=args['resource_pool'])
             data['resources_id'] = new_host_id
@@ -280,7 +303,7 @@ class ResourceHostManage(Resource):
             description: '1 -- host_id'
        responses:
           200:
-            description: vCenter vSwitch 信息
+            description: vCenter Host 信息
             schema:
               properties:
                 ok:
@@ -334,10 +357,7 @@ class ResourceHostManage(Resource):
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
     # @basic_auth.login_required
-    def put(self):  # TODO   license的创建，vCenter同步需要
-        args = parser.parse_args()
-        host = Host(args['platform_id'])
-        host.sync_licenses()
-        print 'success.'
+    def put(self):
+        pass
 
 

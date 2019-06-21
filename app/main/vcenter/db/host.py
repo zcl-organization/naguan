@@ -1,30 +1,17 @@
 from app.exts import db
-from app.models import Licenses
 from app.models import VCenterHost
 
 
-def create_license(name, license_key, edition_key, used, total):
-    license = Licenses()
-    license.name = name
-    license.licenseKey = license_key
-    license.editionKey = edition_key
-    license.used = used
-    license.total = total
-    db.session.add(license)
-    db.session.commit()
-
-
-def get_license_by_id(license_id):
-    return db.session.query(Licenses).get(license_id)
-
-
-def add_host(name, mor_mame, port, power_state, connection_state, maintenance_mode, platform_id,
-             uuid, cpu_cores, used_cpu, memory, used_memory, capacity, used_capacity, cpu_mhz, cpu_model, version, image, build,
-             full_name, boot_time, uptime, vm_nums, network_nums):
-
+def add_host(name, mor_mame, dc_name, dc_mor_name, cluster_name, cluster_mor_name, port, power_state, connection_state,
+             maintenance_mode, platform_id, uuid, cpu_cores, used_cpu, memory, used_memory, capacity, used_capacity,
+             cpu_mhz, cpu_model, version, image, build, full_name, boot_time, uptime, vm_nums, network_nums):
     new_host = VCenterHost()
     new_host.name = name
     new_host.mor_name = mor_mame
+    new_host.dc_name = dc_name
+    new_host.dc_mor_name = dc_mor_name
+    new_host.cluster_name = cluster_name
+    new_host.cluster_mor_name = cluster_mor_name
     new_host.port = port
     new_host.power_state = power_state
     new_host.connection_state = connection_state
@@ -52,6 +39,7 @@ def add_host(name, mor_mame, port, power_state, connection_state, maintenance_mo
     db.session.commit()
     return new_host.id
 
+
 def get_host_by_name(name):
     return db.session.query(VCenterHost).filter_by(name=name).first()
 
@@ -66,7 +54,18 @@ def del_host(name):
     db.session.commit()
 
 
-def get_host_all(platform_id):
-    return db.session.query(VCenterHost).filter_by(platform_id=platform_id).all()
+def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_name=None):
+    # return db.session.query(VCenterHost).filter_by(platform_id=platform_id).all()
+    query = db.session.query(VCenterHost)
+    if platform_id:
+        query = query.filter_by(platform_id=platform_id)
+    if id:
+        query = query.filter_by(id=id)
+    if host_name:
+        query = query.filter_by(name=host_name)
+    if dc_name:
+        query = query.filter_by(dc_name=dc_name)
+    if cluster_name:
+        query = query.filter_by(cluster_name=cluster_name)
 
-
+    return query
