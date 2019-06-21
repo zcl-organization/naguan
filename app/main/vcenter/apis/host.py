@@ -358,6 +358,9 @@ class HostManage(Resource):
 
     # @basic_auth.login_required
     def put(self):
-        pass
+        args = parser.parse_args()
+        host = Host(args['platform_id'])
+        host.put_host_in_maintenance_mode(args['host_name'])
+
 
 

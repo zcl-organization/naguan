@@ -190,7 +190,7 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=
 
 
 # vCenter host
-api.add_resource(HostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
+api.add_resource(HostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST', 'PUT'],
                  endpoint='HostMg')
 api.add_resource(HostManage, '/api/v1.0/vCenter/host/<int:host_id>', methods=['DELETE'],
                  endpoint='HostMgDel')

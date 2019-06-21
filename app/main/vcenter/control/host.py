@@ -173,15 +173,22 @@ class Host:
             object_type = 'folder'
         return object_type
 
-    # （维护）模式更新（暂时未使用）
-    def put_host_in_maintenance_mode(self, host_object):
+    # （维护）模式更新
+    def put_host_in_maintenance_mode(self, host_name):
         """Put host in maintenance mode, if not already"""
-        if not host_object.runtime.inMaintenanceMode:
+        host_object = get_obj(self.content, [vim.HostSystem], host_name)
+        if not host_object.runtime.inMaintenanceMode:  # ExitMaintenanceMode_Task
             try:
-                maintenance_mode_task = host_object.EnterMaintenanceMode_Task(300, True, None)
+                maintenance_mode_task = host_object.EnterMaintenanceMode_Task(0, True, None)
                 WaitForTask(maintenance_mode_task)
             except Exception as e:
                 raise Exception('Error entering maintenance mode')
+        else:
+            try:
+                maintenance_mode_task = host_object.ExitMaintenanceMode_Task(0)
+                WaitForTask(maintenance_mode_task)
+            except Exception as e:
+                raise Exception('Error exit maintenance mode')
 
 
 def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_name=None):
