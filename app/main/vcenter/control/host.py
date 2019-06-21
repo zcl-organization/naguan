@@ -174,21 +174,28 @@ class Host:
         return object_type
 
     # （维护）模式更新
-    def put_host_in_maintenance_mode(self, host_name):
+    def put_host_in_maintenance_mode(self, host_id):
         """Put host in maintenance mode, if not already"""
-        host_object = get_obj(self.content, [vim.HostSystem], host_name)
+        host = db.host.get_host_by_id(host_id)
+        if not host:
+            raise ValueError('The host id does not exist')
+        host_object = get_obj(self.content, [vim.HostSystem], host.name)
         if not host_object.runtime.inMaintenanceMode:  # ExitMaintenanceMode_Task
             try:
                 maintenance_mode_task = host_object.EnterMaintenanceMode_Task(0, True, None)
                 WaitForTask(maintenance_mode_task)
+                mode = True
             except Exception as e:
                 raise Exception('Error entering maintenance mode')
         else:
             try:
                 maintenance_mode_task = host_object.ExitMaintenanceMode_Task(0)
                 WaitForTask(maintenance_mode_task)
+                mode = False
             except Exception as e:
                 raise Exception('Error exit maintenance mode')
+        db.host.put_host_maintenance_mode(host_id, mode)
+        return mode
 
 
 def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_name=None):

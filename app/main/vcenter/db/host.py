@@ -69,3 +69,9 @@ def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_n
         query = query.filter_by(cluster_name=cluster_name)
 
     return query
+
+
+def put_host_maintenance_mode(host_id, maintenance_mode):
+    host = db.session.query(VCenterHost).get(host_id)
+    host.maintenance_mode = maintenance_mode
+    db.session.commit()

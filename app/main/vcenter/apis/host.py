@@ -357,10 +357,30 @@ class HostManage(Resource):
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
     # @basic_auth.login_required
-    def put(self):
+    def put(self, host_id):
+        data = dict(
+            type='Host',
+            result=True,
+            resources_id=host_id,
+            event='',
+            submitter=g.username,
+        )
         args = parser.parse_args()
-        host = Host(args['platform_id'])
-        host.put_host_in_maintenance_mode(args['host_name'])
+        if not all([args['platform_id'], host_id]):
+            raise RuntimeError('Parameter Error!!!')
+        try:
+            host = Host(args['platform_id'])
+            mode = host.put_host_in_maintenance_mode(host_id)
+            if mode:
+                data['event'] = unicode('Host进入维护模式')
+            else:
+                data['event'] = unicode('Host退出维护模式')
+        except Exception as e:
+            data['result'] = False
+            return set_return_val(False, [], str(e), 3001), 400
+        finally:
+            base_control.event_logs.eventlog_create(**data)
+        return set_return_val(True, [], 'Put host maintenance mode Success!', 3000)
 
 
 
