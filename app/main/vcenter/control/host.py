@@ -182,7 +182,7 @@ class Host:
         host_object = get_obj(self.content, [vim.HostSystem], host.name)
         if not host_object.runtime.inMaintenanceMode:  # ExitMaintenanceMode_Task
             try:
-                maintenance_mode_task = host_object.EnterMaintenanceMode_Task(0, True, None)
+                maintenance_mode_task = host_object.EnterMaintenanceMode_Task(300, True, None)
                 WaitForTask(maintenance_mode_task)
                 mode = True
             except Exception as e:
