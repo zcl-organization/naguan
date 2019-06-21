@@ -106,8 +106,8 @@ class LogEvent(Resource):
                                                    task_request_id=args['task_request_id'], submitter=args['submitter'],
                                                    operation_resources_id=args['operation_resources_id'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1831), 400
-        return set_return_val(True, data, 'request log list succeeded.', 1830, pg)
+            return set_return_val(False, [], str(e), 1821), 400
+        return set_return_val(True, data, 'request log list succeeded.', 1820, pg)
 
     def delete(self, id):
         """
@@ -140,7 +140,8 @@ class LogEvent(Resource):
                    properties:
         """
         try:
+            g.error_code = 1841
             result = control.event_logs.log_delete(log_id=id)
         except Exception as e:
             return set_return_val(False, [], str(e), g.error_code), 400
-        return set_return_val(True, [], 'request log deleted succeeded.', 1810)
+        return set_return_val(True, [], 'request log deleted succeeded.', 1840)

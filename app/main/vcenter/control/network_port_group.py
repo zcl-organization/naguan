@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from pyVmomi import vim
 
+from flask import g
+
 from app.main.vcenter.control.utils import get_obj, get_mor_name, get_connect
 # from app.main.vcenter.control.vcenter import get_connect as pg_get_connect
 from app.main.vcenter import db
@@ -223,6 +225,7 @@ class PortGroup:
         删除vswitch端口组项
         """
         if not all([host_name, portgroup_name]):
+            g.error_code = 5803
             raise Exception('Parameter Error!!!')
 
         _host_system = get_obj(self._content, [vim.HostSystem], host_name)
@@ -268,6 +271,7 @@ class DVSPortGroup:
         创建Dvswitch端口组项
         """
         if not all([switch_name, portgroup_name, port_num]):
+            g.error_code = 5952
             raise Exception('Parameter Error!!!')
         
         _dv_switch = get_obj(self._content, [vim.DistributedVirtualSwitch], switch_name)
@@ -283,6 +287,7 @@ class DVSPortGroup:
         删除Dvswitch端口组项
         """
         if not all([switch_name, portgroup_name]):
+            g.error_code = 6002
             raise Exception('Parameter Error!!!')
         
         _dv_switch = get_obj(self._content, [vim.DistributedVirtualSwitch], switch_name)

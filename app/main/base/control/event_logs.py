@@ -31,7 +31,7 @@ def log_list(pgnum, event_request_id, task_request_id, submitter, operation_reso
 def log_delete(log_id):
     log = db.event_logs.log_list_by_id(log_id)
     if not log:
-        g.error_code = 1811
+        g.error_code = 1842
         raise Exception('No current log information exists')
     return db.event_logs.log_delete(log_id)
 

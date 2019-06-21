@@ -10,10 +10,12 @@ def create_datacenter(platform_id, dc_name, folder=None):
     si, content, platform = get_connect(platform_id)
 
     if len(dc_name) > 80:
+        g.error_code = 4303
         raise ValueError("The name of the datacenter must be under "
                          "80 characters.")
     dc = db.datacenters.get_dc_name(dc_name)  # 根据是否存在同名dc
     if dc:
+        g.error_code = 4304
         raise ValueError('The datacenter name already exists')
     if folder is None:
         folder = si.content.rootFolder
@@ -32,7 +34,8 @@ def create_datacenter(platform_id, dc_name, folder=None):
                                                             dc_vm_folder_mor_name=dc_vm_moc, mor_name=dc_mor_name,
                                                             cluster_mor_name=None, cluster_oc_name=None, pid=vCenter_pid)
                 return vcenter_id
-            except Exception as e:
+            except Exception as e:   # ???? 这个异常丢出的意义是什么
+                g.error_code = 4305
                 raise Exception('sync datacenters fail. %s' % str(e))
     except Exception as e:
         raise Exception('Failed to create datacenter. %s' % str(e))
@@ -54,6 +57,7 @@ def del_datacenter(platform_id, dc_id):
     # 判断本地datacenter下是否存在资源
     clusters_obj = db.datacenters.get_clusters_from_dc(platform_id, dc_id)
     if clusters_obj:
+        g.error_code = 4353
         raise Exception('Resources exist under the local datacenter, unable to delete')
     # 判断平台datacenter下是否存在资源
     instance_dc = get_dc(platform_id, dc_id, content)
@@ -61,6 +65,7 @@ def del_datacenter(platform_id, dc_id):
     if clusters:
         # 同步数据至本地
         sync_vcenter_tree(si, content, platform)
+        g.error_code = 4354
         raise Exception('Resources exist under the vCenter datacenter, unable to delete')
 
     dc_mor = get_mor_name(instance_dc)

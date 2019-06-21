@@ -103,8 +103,8 @@ class NetworkPortGroupManage(Resource):
             data = network_manage.get_network_port_group_all(args['platform_id'])
         except Exception as e:
             # print(e)
-            return set_return_val(False, {}, 'Failed to get network group', 2461), 400
-        return set_return_val(True, data, 'Get network group success', 2460)
+            return set_return_val(False, {}, 'Failed to get network group', 5701), 400
+        return set_return_val(True, data, 'Get network group success', 5700)
 
     @basic_auth.login_required
     def post(self):
@@ -186,18 +186,20 @@ class NetworkPortGroupManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 5751
             args = parser.parse_args()
 
             if network_manage.check_if_portgroup_exists(
                 portgroup_name=args['portgroup_name'], host_name=args['host_name']):
-                raise Exception
+                g.error_code = 5752
+                raise Exception("vSwitch network port group already exists")
             
             pg = PortGroup(args['platform_id'])
             pg.create_vswitch_portgroup(args['host_name'], args['switch_name'], args['portgroup_name'])
         except Exception as e:
-            return set_return_val(False, [], 'Failed to Create network group', 2463), 400
+            return set_return_val(False, [], 'Failed to Create network group', g.error_code), 400
 
-        return set_return_val(True, [], "Create Network Group Success", 2462)
+        return set_return_val(True, [], "Create Network Group Success", 5750)
 
     @basic_auth.login_required
     def delete(self):
@@ -257,17 +259,19 @@ class NetworkPortGroupManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 5801
             args = parser.parse_args()
 
             if not network_manage.check_if_portgroup_exists(portgroup_id=args['portgroup_id']):
-                raise Exception
+                g.error_code = 5802
+                raise Exception("vSwitch network port group does not exist")
 
             pg = PortGroup(args['platform_id'])
             pg.delete_vswitch_portgroup_by_id(args['portgroup_id'])
         except Exception as e:
-            return set_return_val(False, [], 'Failed to Delete network group', 2465), 400
+            return set_return_val(False, [], 'Failed to Delete network group', g.error_code), 400
 
-        return set_return_val(True, [], 'Delete Network Group Success', 2464)
+        return set_return_val(True, [], 'Delete Network Group Success', 5800)
 
     @basic_auth.login_required
     def put(self):
@@ -360,9 +364,9 @@ class NetworkDVSPortGroupManage(Resource):
             args = parser.parse_args()
             data = network_manage.get_dvs_network_port_group_all(args['platform_id'])
         except Exception as e:
-            return set_return_val(False, {}, 'Failed to get network group', 2501), 400
+            return set_return_val(False, {}, 'Failed to get network group', 5901), 400
 
-        return set_return_val(True, data, 'Get network group success', 2500)
+        return set_return_val(True, data, 'Get network group success', 5900)
 
     @basic_auth.login_required
     def post(self):
@@ -444,18 +448,20 @@ class NetworkDVSPortGroupManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 5951
             args = parser.parse_args()
 
             if network_manage.check_if_dvs_portgroup_exists(
                 portgroup_name=args['portgroup_name'], switch_name=args['switch_name']):
-                raise Exception
+                g.error_code = 5953
+                raise Exception("dSwitch network port group already exists")
 
             pg = DVSPortGroup(args['platform_id'])
             pg.create_dvswitch_portgroup(args['switch_name'], args['portgroup_name'], int(args['port_num']))
         except Exception as e:
-            return set_return_val(False, [], 'Failed to Create Dvswitch network group', 2501), 400
+            return set_return_val(False, [], 'Failed to Create Dvswitch network group', g.error_code), 400
         
-        return set_return_val(True, [], 'Create Dvswitch Network Group Success', 2500)
+        return set_return_val(True, [], 'Create Dvswitch Network Group Success', 5950)
 
     @basic_auth.login_required
     def delete(self):
@@ -515,17 +521,19 @@ class NetworkDVSPortGroupManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 6001
             args = parser.parse_args()
 
             if not network_manage.check_if_dvs_portgroup_exists(portgroup_id=args['portgroup_id']):
-                raise Exception
+                g.error_code = 6003
+                raise Exception("dSwitch network port group already exists")
 
             pg = DVSPortGroup(args['platform_id'])
             pg.delete_dvswitch_portgroup_by_id(args['portgroup_id'])
         except Exception as e:
-            return set_return_val(False, [], 'Failed to Delete Dvswitch network group', 2503), 400
+            return set_return_val(False, [], 'Failed to Delete Dvswitch network group', g.error_code), 400
 
-        return set_return_val(True, [], 'Delete Dvswitch Network Group Success', 2502)
+        return set_return_val(True, [], 'Delete Dvswitch Network Group Success', 6000)
 
     @basic_auth.login_required
     def put(self):

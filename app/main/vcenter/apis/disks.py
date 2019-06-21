@@ -142,7 +142,9 @@ class DiskManage(Resource):
         # platform_id = args.get('platform_id')
         # vm_uuid = args.get('vm_uuid')
         try:
+            g.error_code = 5501
             if not all([args['platform_id'], args['vm_uuid']]):
+                g.error_code = 5502
                 raise Exception('Parameter error')
 
             pgnum = args['pgnum'] if args['pgnum'] else 1
@@ -150,8 +152,8 @@ class DiskManage(Resource):
                                                          pgnum=pgnum)
         except Exception as e:
 
-            return set_return_val(False, [], str(e), 2131), 400
-        return set_return_val(True, data, 'Datastore gets success.', 2130)
+            return set_return_val(False, [], str(e), g.error_code), 400
+        return set_return_val(True, data, 'Datastore gets success.', 5500)
 
 
     @basic_auth.login_required
@@ -231,8 +233,9 @@ class DiskManage(Resource):
         args = parser.parse_args()
         datas = []
         try:
+            g.error_code = 5551
             if not args['disks']:
-                g.error_code = 2101
+                g.error_code = 5552
                 raise Exception('Parameter error')
 
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
@@ -250,7 +253,7 @@ class DiskManage(Resource):
             return set_return_val(False, [], str(e), g.error_code), 400
         finally:
             [base_control.event_logs.eventlog_create(**item) for item in datas]
-        return set_return_val(True, [], 'Instance attack disk successfully.', 2100)
+        return set_return_val(True, [], 'Instance attack disk successfully.', 5550)
 
     @basic_auth.login_required
     def delete(self):
@@ -323,8 +326,9 @@ class DiskManage(Resource):
             submitter=g.username,
         )
         try:
+            g.error_code = 5601
             if not args['disks']:
-                g.error_code = 2111
+                g.error_code = 5602
                 raise Exception('Parameter error')
 
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
@@ -336,5 +340,5 @@ class DiskManage(Resource):
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'Instance deattach disk successfully', 2110)
+        return set_return_val(True, [], 'Instance deattach disk successfully', 5600)
 
