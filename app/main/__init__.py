@@ -24,8 +24,13 @@ from app.main.base.apis.department import DepartmentManage
 from app.main.base.apis.department_users import DepartmentUsersManage
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
+
+from app.main.base.apis.roles_menus import RolesMenusManage
+from app.main.vcenter.apis.host import HostManage
+
 from app.main.vcenter.apis.instances import InstanceManage
 from app.main.vcenter.apis.instance_template import InstanceTemplateManage
+from app.main.vcenter.apis.license import LicenseManage
 
 from app.main.vcenter.apis.vcenter import VCenterManage
 from app.main.vcenter.apis.images import ImageManage
@@ -148,11 +153,11 @@ api.add_resource(NetworkDVSPortGroupManage, '/api/v1.0/vCenter/dvs_network_port_
 api.add_resource(DataStoreManage, '/api/v1.0/vCenter/DataStore', methods=['GET'],
                  endpoint='DataStoreMg')
 # vCenter DataCenter
-api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['POST'],
+api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter', methods=['GET', 'POST'],
                  endpoint='DataCenterMg')
 api.add_resource(DataCenterManage, '/api/v1.0/vCenter/datacenter/<int:id>', methods=['DELETE'],
                  endpoint='DataCenterMgDel')
-api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['POST'],
+api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters', methods=['GET', 'POST'],
                  endpoint='ClustersManage')
 api.add_resource(ClustersManage, '/api/v1.0/vCenter/clusters/<int:id>', methods=['DELETE'],
                  endpoint='ClustersManageDel')
@@ -185,10 +190,13 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=
 
 
 # vCenter host
-# api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
-#                  endpoint='ResourcePoolMg')
-# api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['DELETE'],
-#                  endpoint='ResourceHostMgDel')
+api.add_resource(HostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST'],
+                 endpoint='HostMg')
+api.add_resource(HostManage, '/api/v1.0/vCenter/host/<int:host_id>', methods=['DELETE', 'PUT'],
+                 endpoint='HostMgDel')
+
+api.add_resource(LicenseManage, '/api/v1.0/vCenter/license', methods=['GET', 'POST'],
+                 endpoint='LicenseManage')
 
 # vCenter VSwitch
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')

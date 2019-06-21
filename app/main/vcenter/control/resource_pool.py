@@ -148,7 +148,7 @@ def check_if_resource_pool_exists(resouce_pool_id=None, dc_name=None, cluster_na
 
 class ResourcePool:
     def __init__(self, platform_id):
-        self._platform_id =  platform_id
+        self._platform_id = platform_id
         self._vcenter = VCenter(platform_id)
 
     def create_pool(self, cluster_name, data_center_name, rp_name, root_rp_id, **kw_args):

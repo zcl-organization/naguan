@@ -14,9 +14,9 @@ parser.add_argument('pgsort')
 parser.add_argument('host')
 parser.add_argument('vm_name')
 
-parser.add_argument('action')
+parser.add_argument('action')  # 功能
 
-parser.add_argument('template_uuid')
+parser.add_argument('template_uuid')  # 模板uuid
 parser.add_argument('dc_id')  # 数据中心
 parser.add_argument('ds_id')  # 数据存储
 parser.add_argument('resource_pool_id')  # 资源中心
@@ -202,14 +202,11 @@ class InstanceTemplateManage(Resource):
               required:
               - platform_id
               - template_uuid
-              - vm_name
-              - ds_id
-              - dc_id
+              - action
               properties:
                 action:
                   default: create
                   type: string
-                  required: true
                   example: create,transform
                 platform_id:
                   type: integer
@@ -304,15 +301,15 @@ class InstanceTemplateManage(Resource):
                     g.error_code = 6352
                     raise Exception('Parameter error')
                 instance_template.template_create_vm(new_vm_name=args['vm_name'], ds_id=args['ds_id'],
-                                                        dc_id=args['dc_id'], resource_pool_id=
-                                                        args.get('resource_pool_id'), host_id=args.get('host_id'))
+                                                     dc_id=args['dc_id'], resource_pool_id=
+                                                     args['resource_pool_id'], host_id=args['host_id'])
             elif args['action'] == 'transform':
                 data['event'] = unicode('模板转换虚拟机')
                 if not args['resource_pool_id']:
                     g.error_code = 6352
                     raise Exception('Parameter error')
-                instance_template.template_transform_vm(resource_pool_id=args.get('resource_pool_id'),
-                                                        host_id=args.get('host_id'))
+                instance_template.template_transform_vm(resource_pool_id=args['resource_pool_id'],
+                                                        host_id=args['host_id'])
             else:
                 data['result'] = False
                 g.error_code = 6352
