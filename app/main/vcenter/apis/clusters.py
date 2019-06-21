@@ -18,13 +18,117 @@ class ClustersManage(Resource):
 
     @basic_auth.login_required
     def get(self):
+        """
+         获取vCenter DataCenter 信息
+        ---
+       tags:
+          - vCenter Cluster
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+       responses:
+          200:
+            description: vCenter Cluster 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: status
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+                      name:
+                        type: string
+                        default: Cluster
+                        description: Cluster
+                      mor_name:
+                        type: string
+                        default: Cluster_mor_name
+                        description: Cluster_mor_name
+                      platform_id:
+                        type: integer
+                        default: 1
+                        description: platform_id
+                      dc_name:
+                        type: string
+                        default: DataCenter
+                        description: DataCenter
+                      dc_mor_name:
+                        type: string
+                        default: datacenter-365
+                        description: mor_name
+                      vm_nums:
+                        type: integer
+                        default: 1
+                        description: vm_nums
+                      host_nums:
+                        type: integer
+                        default: 1
+                        description: host_nums
+                      cpu_capacity:
+                        type: integer
+                        default: 0
+                        description: cpu_capacity
+                      used_cpu:
+                        type: integer
+                        default: 0
+                        description: used_cpu
+                      memory:
+                        type: integer
+                        default: 0
+                        description: memory
+                      used_memory:
+                        type: integer
+                        default: 0
+                        description: used_memory
+                      capacity:
+                        type: integer
+                        default: 1
+                        description: capacity
+                      used_capacity:
+                        type: integer
+                        default: 1
+                        description: used_capacity
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                  default: 1302
+                msg:
+                  type: string
+                  default: "Clusters not found"
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         try:
             args = parser.parse_args()
             if not args['platform_id']:
                 raise Exception('Parameter error')
+            data = control.clusters.get_clusters(platform_id=args['platform_id'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
-        return set_return_val(True, [], 'Clusters info get success.', 3000)
+        return set_return_val(True, data, 'Clusters info get success.', 3000)
 
     @basic_auth.login_required
     def post(self):
@@ -111,9 +215,9 @@ class ClustersManage(Resource):
             args = parser.parse_args()
             if not all([args['platform_id'], args['dc_id'], args['cluster_name']]):
                 raise Exception('Parameter error')
-            vcenter_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
+            cluster_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
                                                          dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
-            data['resources_id'] = vcenter_id
+            data['resources_id'] = cluster_id
         except Exception as e:
             data['result'] = False
             return set_return_val(False, data, str(e), 3001)

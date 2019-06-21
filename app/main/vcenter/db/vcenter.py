@@ -91,7 +91,7 @@ def vcenter_tree_update(tree_type, platform_id, mor_name, name=None, dc_host_fol
     db.session.commit()
 
 
-# 根据获取所有
+# 根据platform_id获取所有
 def vcenter_tree_get_all_id(platform_id):
     return db.session.query(VCenterTree.id).filter_by(platform_id=platform_id).all()
 
@@ -110,16 +110,10 @@ def vcenter_tree_by_id(id):
     return db.session.query(VCenterTree).filter_by(id=id).first()
 
 
-def vcenter_tree_del_cluster(id):
-    cluster = db.session.query(VCenterTree).get(id)
-    db.session.delete(cluster)
-    db.session.commit()
-
-
-def vcenter_tree_del_datacenter(platform_id, dc_mor):
-    datacenter = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
-        filter_by(type=2).filter_by(mor_name=dc_mor).first()
-    db.session.delete(datacenter)
+def vcenter_tree_del_by_mor_name(platform_id, mor_name):
+    query = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
+        filter_by(mor_name=mor_name).first()
+    db.session.delete(query)
     db.session.commit()
 
 
@@ -137,5 +131,11 @@ def get_datacenter_by_id(dc_id):
         return None
 
 
-def get_dc_id_by_mor_name(platform_id, mor_name):
+def get_vcenter_obj_by_mor_name(platform_id, mor_name):
     return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(mor_name=mor_name).first()
+
+
+# 集群及其下的资源
+def get_cluster_and_cluster_resource(platform_id, cluster_mor_name):
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
+        filter_by(cluster_mor_name=cluster_mor_name).all()

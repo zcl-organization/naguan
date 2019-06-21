@@ -4,9 +4,9 @@ from app.models import VCenterTree
 from app.models import VCenterClusters
 
 
-def get_cluster_mor_name(platform_id, cluster_id):
-    cluster = db.session.query(VCenterTree).get(cluster_id)
-    if cluster.platform_id == int(platform_id) and cluster.type == 3:
+def get_cluster(platform_id, cluster_id):
+    cluster = db.session.query(VCenterClusters).get(cluster_id)
+    if cluster.platform_id == int(platform_id):
         return cluster
     else:
         return None
@@ -18,13 +18,14 @@ def get_cluster_by_name(platform_id, dc_name, cluster_name):
         filter_by(dc_name=dc_name).filter_by(name=cluster_name).first()
 
 
-def get_cluster_cluster_resource(platform_id, cluster_mor_name):
-    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
-        filter_by(cluster_mor_name=cluster_mor_name).all()
-
-
 def get_clusters(platform_id):
-    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).all()
+    return db.session.query(VCenterClusters).filter_by(platform_id=platform_id).all()
+
+
+def del_cluster(cluster_id):
+    cluster = db.session.query(VCenterClusters).get(cluster_id)
+    db.session.delete(cluster)
+    db.session.commit()
 
 
 def create_cluster(name, mor_name, platform_id, dc_name, dc_mor_name, cpu_nums, cpu_capacity,

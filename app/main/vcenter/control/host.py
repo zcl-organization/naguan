@@ -33,6 +33,7 @@ class Host:
         else:
             license = None
         task = None
+        vcenter_tree_cluster = None
         if folder_name:
             folder = self.search_folder(folder_name)  # 寻找文件夹
             try:
@@ -44,13 +45,14 @@ class Host:
             except Exception as task_error:
                 raise RuntimeError('Error adding host %s task' % task_error)
         elif cluster_id:
-            cluster = db.vcenter.vcenter_tree_by_id(cluster_id)
-            if cluster.type != 3:
+            cluster = db.clusters.get_cluster(self.platform['id'], cluster_id)
+            vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(self.platform['id'], cluster.mor_name)
+            if vcenter_tree_cluster.type != 3:
                 raise ValueError('The selected object is not a cluster')
             mor_name = cluster.mor_name
-            cluster = get_obj_by_mor_name(self.content, [vim.ClusterComputeResource], mor_name)
+            cluster_obj = get_obj_by_mor_name(self.content, [vim.ClusterComputeResource], mor_name)
             try:
-                task = cluster.AddHost_Task(
+                task = cluster_obj.AddHost_Task(
                     spec=host_connect_spec, asConnected=as_connected,
                     resourcePool=resource_pool, license=license
                 )
@@ -61,16 +63,18 @@ class Host:
         except Exception as task_error:
             raise Exception('Error adding host %s task' % task_error)
         # 同步
-        new_host_id = self.sync_host(host_name)
+        host = get_obj(self.content, [vim.HostSystem], host_name)
+        new_host_id = self.sync_host(host)
+        self.vcenter_tree_host_sync(host, cluster=vcenter_tree_cluster)
         return new_host_id
 
-    def sync_host(self, host_name):
+    # host表同步
+    def sync_host(self, host):
         """
         TODO host.summary.quickStats数据不能直接获取，，全为0或-1，需要重新获取一次
-        :param host_name:
+        :param host:
         :return:
         """
-        host = get_obj(self.content, [vim.HostSystem], host_name)
         capacity = 0
         free_capacity = 0
         for ds in host.datastore:
@@ -80,7 +84,7 @@ class Host:
         config = host.summary.config
         runtime = host.summary.runtime
         # print config
-        data = dict(name=config.name, mor_mame=get_mor_name(host.summary.host), port=config.port,
+        data = dict(name=config.name, mor_mame=get_mor_name(host), port=config.port,
                     power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
                     maintenance_mode=runtime.inMaintenanceMode, platform_id=self.platform['id'],
                     uuid=host.summary.hardware.uuid, cpu_cores=int(host.summary.hardware.numCpuCores),
@@ -92,6 +96,15 @@ class Host:
                     uptime=host.summary.quickStats.uptime, vm_nums=len(host.vm), network_nums=len(host.network))
         new_host_id = db.host.add_host(**data)
         return new_host_id
+
+    def vcenter_tree_host_sync(self, host, cluster):
+        db.vcenter.vcenter_tree_create(tree_type=4, platform_id=self.platform['id'],
+                                       dc_host_folder_mor_name=cluster.dc_host_folder_mor_name,
+                                       dc_mor_name=cluster.dc_mor_name, dc_oc_name=cluster.dc_oc_name,
+                                       dc_vm_folder_mor_name=cluster.dc_vm_folder_mor_name,
+                                       mor_name=get_mor_name(host), name=host.name,
+                                       cluster_mor_name=cluster.cluster_mor_name,
+                                       cluster_oc_name=cluster.cluster_oc_name, pid=cluster.id)
 
     # 连接host
     def get_host_connect_spec(self, esxi_hostname, esxi_username, esxi_password,
@@ -165,6 +178,7 @@ class Host:
         try:
             WaitForTask(task)
             db.host.del_host(host.name)
+            db.vcenter.vcenter_tree_del_by_mor_name(self.platform['id'], host.mor_name)
         except Exception as e:
             raise Exception('Error removing host %s task.' % e)
 
@@ -223,11 +237,12 @@ def get_host_all(platform_id):
             id=host.id, name=host.name, mor_mame=host.mor_name, port=host.port,
             power_state=host.power_state, connection_state=host.connection_state,
             maintenance_mode=host.maintenance_mode, platform_id=platform_id,
-            uuid=host.uuid, cpu_cores=host.cpu_cores,  ram=host.ram, used_ram=host.used_ram,
-            capacity=host.capacity, free_capacity=host.free_capacity, used_cpu=host.used_cpu,
-            cpu_mhz=host.cpu_mhz, cpu_model=host.cpu_model,
+            uuid=host.uuid, cpu_cores=host.cpu_cores,  cpu_mhz=host.cpu_mhz, used_cpu=host.used_cpu,
+            memory=host.memory, used_memory=host.used_memory, capacity=host.capacity,
+            used_capacity=host.used_capacity, cpu_model=host.cpu_model,
             version=host.version, image=host.image, build=host.build,
-            full_name=host.full_name, boot_time=str(host.boot_time), uptime=host.uptime
+            full_name=host.full_name, boot_time=str(host.boot_time), uptime=host.uptime,
+            vm_nums=host.vm_nums, network_nums=host.network_nums,
         )
         host_list.append(data)
     return host_list

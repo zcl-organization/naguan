@@ -31,7 +31,8 @@ def create_datacenter(platform_id, dc_name, folder=None):
                                                             dc_host_folder_mor_name=dc_host_moc,
                                                             dc_mor_name=dc_mor_name, dc_oc_name=new_datacenter.name,
                                                             dc_vm_folder_mor_name=dc_vm_moc, mor_name=dc_mor_name,
-                                                            cluster_mor_name=None, cluster_oc_name=None, pid=vCenter_pid)
+                                                            cluster_mor_name=None, cluster_oc_name=None,
+                                                            pid=vCenter_pid)
                 data = dict(
                     name=new_datacenter.name, mor_name=dc_mor_name, platform_id=platform_id,
                     host_nums=0, vm_nums=0, cluster_nums=0, network_nums=0, datastore_nums=0,
@@ -59,7 +60,7 @@ def get_dc_obj(platform_id, dc_id, content):
 def del_datacenter(platform_id, dc_id):
     si, content, platform = get_connect(platform_id)
     dc = db.datacenters.get_dc_by_id(dc_id)
-    vcenter_tree_dc = db.vcenter.get_dc_id_by_mor_name(platform_id, dc.mor_name)
+    vcenter_tree_dc = db.vcenter.get_vcenter_obj_by_mor_name(platform_id, dc.mor_name)
     # 判断本地datacenter下是否存在资源
     clusters_obj = db.vcenter.get_clusters_from_dc(platform_id, vcenter_tree_dc.id)
     if clusters_obj:
@@ -77,7 +78,7 @@ def del_datacenter(platform_id, dc_id):
     task = instance_dc.Destroy_Task()
     WaitForTask(task)
     # 删除本地数据库
-    db.vcenter.vcenter_tree_del_datacenter(platform_id, dc_mor)
+    db.vcenter.vcenter_tree_del_by_mor_name(platform_id, dc_mor)
     db.datacenters.del_datacenter(dc_id)
 
 
