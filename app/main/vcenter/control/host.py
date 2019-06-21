@@ -94,7 +94,7 @@ class Host:
                                        cluster_mor_name=cluster.cluster_mor_name,
                                        cluster_oc_name=cluster.cluster_oc_name, pid=cluster.id)
 
-    # 连接host
+    # 获取host配置
     def get_host_connect_spec(self, esxi_hostname, esxi_username, esxi_password,
                               fetch_ssl_thumbprint=None, esxi_ssl_thumbprint=None,
                               force_connection=True):
@@ -178,18 +178,10 @@ class Host:
         """Put host in maintenance mode, if not already"""
         if not host_object.runtime.inMaintenanceMode:
             try:
-                try:
-                    maintenance_mode_task = host_object.EnterMaintenanceMode_Task(300, True, None)
-                except vim.fault.InvalidState as invalid_state:
-                    raise Exception('Error')
-                except vim.fault.Timedout as timed_out:
-                    raise Exception('Error')
-
-                except vim.fault.Timedout as timed_out:
-                    raise Exception('Error')
+                maintenance_mode_task = host_object.EnterMaintenanceMode_Task(300, True, None)
                 WaitForTask(maintenance_mode_task)
-            except TaskError as task_err:
-                raise Exception('Error')
+            except Exception as e:
+                raise Exception('Error entering maintenance mode')
 
 
 def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_name=None):

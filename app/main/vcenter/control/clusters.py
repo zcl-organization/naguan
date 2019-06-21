@@ -3,7 +3,7 @@ from flask import g
 from pyVmomi import vim
 from pyVim.task import WaitForTask
 from app.main.vcenter import db
-from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
+from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj, get_obj_by_mor_name
 
 
 def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
@@ -80,22 +80,21 @@ def del_cluster(platform_id, cluster_id):
     cluster_resource = db.vcenter.get_cluster_and_cluster_resource(platform_id, cluster_mor_name)  # 集群及其下的资源
     if len(cluster_resource) > 2:  # 本地校验
         g.error_code = 4155
-        raise Exception('Resources exist under the local datacenter, unable to delete')
+        raise Exception('Resources exist under the local cluster, unable to delete')
 
-    cluster_obj = db.vcenter.get_vcenter_obj_by_mor_name(platform_id, cluster_mor_name)
-    dc_id = cluster_obj.pid
+    vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(platform_id, cluster_mor_name)
+    dc_id = vcenter_tree_cluster.pid
     si, content, platform = get_connect(platform_id)
 
     dc = db.vcenter.get_datacenter_by_id(dc_id)
     dc_obj = get_obj(content, [vim.Datacenter], dc.name)
-
-    obj = content.viewManager.CreateContainerView(dc_obj, [vim.ResourcePool], True)
-    resourcepools = obj.view
-    for rp in resourcepools:
-        if rp.parent.parent.name == cluster_obj.name:  # 当cluster下存在资源池时
-            # sync_vcenter_tree(si, content, platform)
-            g.error_code = 4156
-            raise Exception('Resources exist under the vCenter datacenter, unable to delete')
+    # 平台实例
+    cluster_obj = get_obj_by_mor_name(content, [vim.ClusterComputeResource], cluster.mor_name)
+    rp_obj = content.viewManager.CreateContainerView(cluster_obj, [vim.ResourcePool], True)
+    resourcepools = rp_obj.view
+    if len(resourcepools) > 1:
+        g.error_code = 4156
+        raise Exception('Resources exist under the vCenter cluster, unable to delete')
 
     clusters = dc_obj.hostFolder.childEntity
     cluster_name = cluster_obj.name
