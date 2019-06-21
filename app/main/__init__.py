@@ -17,8 +17,14 @@ from app.main.base.apis.task_logs import LogTask
 
 from app.main.base.apis.role import RoleManage
 from app.main.base.apis.roles_users import RolesUsersManage
+
+from app.main.base.apis.roles_menus import RolesMenusManage
+from app.main.base.apis.company import CompanyManage
+from app.main.base.apis.department import DepartmentManage
+from app.main.base.apis.department_users import DepartmentUsersManage
 from app.main.vcenter.apis.clusters import ClustersManage
 from app.main.vcenter.apis.datacenters import DataCenterManage
+
 from app.main.base.apis.roles_menus import RolesMenusManage
 from app.main.vcenter.apis.host import ResourceHostManage
 
@@ -181,6 +187,7 @@ api.add_resource(RolesMenusManage, '/api/v1.0/role_menu', methods=['GET', 'POST'
 api.add_resource(RolesMenusManage, '/api/v1.0/role_menu/<int:role_id>', methods=['PUT', 'DELETE'],
                  endpoint='RolesMenusMgById')
 
+
 # vCenter host
 api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host', methods=['GET', 'POST', 'PUT'],
                  endpoint='ResourceHostMg')
@@ -190,4 +197,22 @@ api.add_resource(ResourceHostManage, '/api/v1.0/vCenter/host/<int:host_id>', met
 # vCenter VSwitch
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch/<int:vswiter_id>', methods=['DELETE', 'PUT'], endpoint='VSwitch_id')
+
+
+# 单位管理
+api.add_resource(CompanyManage, '/api/v1.0/company', methods=['GET', 'POST'],
+                 endpoint='CompanyMag')
+api.add_resource(CompanyManage, '/api/v1.0/company/<int:company_id>', methods=['PUT', 'DELETE'],
+                 endpoint='CompanyMagById')
+
+# 部门管理
+api.add_resource(DepartmentManage, '/api/v1.0/department', methods=['GET', 'POST'],
+                 endpoint='DepartmentMg')
+api.add_resource(DepartmentManage, '/api/v1.0/department/<int:department_id>', methods=['PUT', 'DELETE'],
+                 endpoint='DepartmentMgById')
+
+api.add_resource(DepartmentUsersManage, '/api/v1.0/department_user', methods=['GET', 'POST'],
+                 endpoint='DepartmentUserMg')
+api.add_resource(DepartmentUsersManage, '/api/v1.0/department_user/<int:department_id>', methods=['PUT', 'DELETE'],
+                 endpoint='DepartmentUserMgById')
 

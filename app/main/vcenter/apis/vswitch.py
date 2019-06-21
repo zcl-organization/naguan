@@ -104,15 +104,17 @@ class VSwitchManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 4701
             args = parser.parse_args()
             if not args['platform_id']:
+                g.error_code = 4702
                 raise RuntimeError('Parameter Error!!!')
 
             data = get_vswitch_infos(args['platform_id'])
         except Exception as e:
-            return set_return_val(False, {}, str(e), 3001), 400
+            return set_return_val(False, {}, str(e), g.error_code), 400
 
-        return set_return_val(True, data, 'Get Vswitch Info Success!!!', 3000)
+        return set_return_val(True, data, 'Get Vswitch Info Success!!!', 4700)
 
     @basic_auth.login_required
     def post(self):
@@ -203,17 +205,19 @@ class VSwitchManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 4751
             args = parser.parse_args()
 
             if not all([args['platform_id'], args['host_name'], args['switch_name']]):
+                g.error_code = 4752
                 raise RuntimeError('Parameter Error!!!')
 
             vsw = VSwitch(args['platform_id'])
             vsw.create_vswitch(args)
         except Exception as e:
-            return set_return_val(False, [], str(e), 3003), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
         
-        return set_return_val(True, [], 'Create Vswitch Success!!!', 3002)
+        return set_return_val(True, [], 'Create Vswitch Success!!!', 4750)
 
     @basic_auth.login_required
     def delete(self, vswitch_id):
@@ -273,17 +277,19 @@ class VSwitchManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 4801
             args = parser.parse_args()
 
             if not args['platform_id']:
+                g.error_code = 4802
                 raise RuntimeError('Parameter Error!!!')
 
             vsw = VSwitch(args['platform_id'])
             vsw.delete_vswitch_by_id(vswitch_id)
         except Exception as e:
-            return set_return_val(False, [], str(e), 3005), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
 
-        return set_return_val(True, [], 'Delete Vswitch Success!!!', 3004)
+        return set_return_val(True, [], 'Delete Vswitch Success!!!', 4800)
 
     @basic_auth.login_required
     def put(self, vswitch_id):
@@ -379,13 +385,15 @@ class VSwitchManage(Resource):
                     properties:
         """
         try:
+            g.error_code = 4851
             args = parser.parse_args()
             if not all([args['host_name'], args['switch_name']]):
+                g.error_code = 4852
                 raise RuntimeError('Parameter Error!!!')
 
             vsw = VSwitch(args['platform_id'])
             vsw.update_vswich(vswitch_id, args)
         except Exception as e:
-            return set_return_val(False, [], str(e), 3007)
+            return set_return_val(False, [], str(e), g.error_code)
 
-        return set_return_val(True, {}, 'Update Vswitch Success!!!', 3006)
+        return set_return_val(True, {}, 'Update Vswitch Success!!!', 4850)

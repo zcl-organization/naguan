@@ -27,6 +27,6 @@ def log_list(pgnum, request_id, status_num):
 def log_delete(id):
     log = db.request_logs.log_list_by_id(id)
     if not log:
-        g.error_code = 1711
+        g.error_code = 1882
         raise Exception('No current log information exists')
     return db.request_logs.log_delete(id)

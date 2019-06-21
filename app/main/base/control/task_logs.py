@@ -34,7 +34,7 @@ def log_list(pgnum, task_id, rely_task_id, submitter, request_id):
 def log_delete(log_id):
     log = db.task_logs.log_list_by_id(log_id)
     if not log:
-        g.error_code = 1911
+        g.error_code = 1922
         raise Exception('No current log information exists')
     return db.task_logs.log_delete(log_id)
 

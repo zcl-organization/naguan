@@ -9,16 +9,16 @@ from app.main.vcenter.control.utils import get_connect, get_obj
 
 platforms = [
     {
-        'ip': '192.168.12.205', 
+        'ip': '192.168.78.205', 
         'name': 'administrator@vsphere.local', 
         'password': 'Aiya@2018', 
         'port': '443'
     },
 ]
-host_name = '192.168.12.203'
+host_name = '192.168.78.203'
 dc_name = 'Datacenter'
 ds_name = 'datastore1'
-cluster_name = 'gaf'
+cluster_name = 'cluster2'
 
 class TestVCenter(unittest.TestCase):
     def setUp(self):        

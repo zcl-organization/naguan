@@ -178,15 +178,17 @@ class ResourcePoolManage(Resource):
         args = parser.parse_args()
 
         try:
+            g.error_code = 5101
             if not args['platform_id']:
+                g.error_code = 5102
                 raise Exception('Parameter error')
 
             data = control.resource_pool.get_resource_pool_list(platform_id=args['platform_id'],
                                                                 dc_mor_name=args['dc_mor_name'],
                                                                 cluster_mor_name=args['cluster_mor_name'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 2471), 400
-        return set_return_val(True, data, 'Datastore gets success.', 2470)
+            return set_return_val(False, [], str(e), g.error_code), 400
+        return set_return_val(True, data, 'Datastore gets success.', 5100)
 
     @basic_auth.login_required
     def post(self):
@@ -268,16 +270,18 @@ class ResourcePoolManage(Resource):
         args = parser.parse_args()
 
         try:
+            g.error_code = 5151
             if not all([args['platform_id'], args['cluster_name'], args['rp_name'], args['dc_name']]):
+                g.error_code = 5152
                 raise RuntimeError('Parameter Error!!!')
 
             rp = ResourcePool(args['platform_id'])
             data_args = {} if not args['data_args'] else args['data_args']
             rp.create_pool(args['cluster_name'], args['dc_name'], args['rp_name'], args['root_rp_id'], **data_args)
         except Exception as e:
-            return set_return_val(False, {}, str(e), 2551), 400
+            return set_return_val(False, {}, str(e), g.error_code), 400
 
-        return set_return_val(True, {}, 'ResourcePool Create Success', 2550)
+        return set_return_val(True, {}, 'ResourcePool Create Success', 5150)
 
     @basic_auth.login_required
     def delete(self, resource_pool_id):
@@ -339,12 +343,14 @@ class ResourcePoolManage(Resource):
         args = parser.parse_args()
 
         try:
+            g.error_code = 5201
             if not args['platform_id']:
+                g.error_code = 5202
                 raise RuntimeError('Parameter Error!!!')
 
             rp = ResourcePool(args['platform_id'])
             rp.delete_pool_by_id(resource_pool_id)
         except Exception as e:
-            return set_return_val(False, {}, str(e), 2553), 400
+            return set_return_val(False, {}, str(e), g.error_code), 400
 
-        return set_return_val(True, {}, 'ResourcePool Delete Success', 2552)
+        return set_return_val(True, {}, 'ResourcePool Delete Success', 5200)

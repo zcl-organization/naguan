@@ -19,9 +19,9 @@ class VMMaintainBaseManager:
             task = self._vm.PowerOn()
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def stop(self, force=True):
         """关机"""
@@ -29,9 +29,9 @@ class VMMaintainBaseManager:
             task = self._vm.ShutdownGuest() if not force else self._vm.PowerOff()
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def suspend(self, force=True):
         """暂停"""
@@ -39,9 +39,9 @@ class VMMaintainBaseManager:
             task = self._vm.StandbyGuest() if not force else self._vm.Suspend()
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def reboot(self):
         """重启"""
@@ -49,9 +49,9 @@ class VMMaintainBaseManager:
             task = self._vm.ResetVM_Task()
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def delete(self):
         """删除"""
@@ -60,9 +60,9 @@ class VMMaintainBaseManager:
             WaitForTask(task)
             self._vm = None
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def rename(self, new_name):
         """重命名"""
@@ -70,9 +70,9 @@ class VMMaintainBaseManager:
             task = self._vm.Rename(new_name)
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
 
     def vm_info(self):
         """获取虚拟机信息"""
@@ -104,23 +104,23 @@ class VMMaintainSnapshotManager:
             task = self._vm.CreateSnapshot(snapshot_name, snapshot_description, dumpMemory, quiesce)
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e
 
-        return True
+        return True, None
 
     def remove_snapshot(self, snapshot_name):
         """删除某个名称快照"""
         try:
             snap_objs = self._get_snapshots_by_name(self._vm.snapshot.rootSnapshotList, snapshot_name)
             if len(snap_objs) != 1:
-                return False
+                return False, ''
             
             task = snap_objs[0].snapshot.RemoveSnapshot_Task(True)
             WaitForTask(task)
         except Exception as e:
-            return False
+            return False, e.msg
         
-        return True
+        return True, None
 
     def revert_snapshot(self, snapshot_name):
         """还原某个名称快照"""
@@ -214,10 +214,9 @@ class VMDeviceInfoManager:
             WaitForTask(build_task)
             self.vm = self._get_device([vim.VirtualMachine], vm_name)
         except Exception as e:
-            print e
-            return False
+            return False, e
         
-        return True
+        return True, None
 
     def add_disk(self, d_size, d_type):
         try:
@@ -263,9 +262,9 @@ class VMDeviceInfoManager:
 
             WaitForTask(self.vm.ReconfigVM_Task(spec=config_spec))
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
 
     def add_network(self, network_name):
         try:
@@ -297,9 +296,9 @@ class VMDeviceInfoManager:
 
             WaitForTask(self.vm.ReconfigVM_Task(spec=network_config_spec))
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
 
     def add_image(self, image_path, image_ds_name):
         try:
@@ -336,9 +335,9 @@ class VMDeviceInfoManager:
 
             WaitForTask(self.vm.ReconfigVM_Task(spec=vm_conf))
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def update_vcpu(self, new_num_cpus, new_num_cores_per_socket=1):
         try:
@@ -347,9 +346,9 @@ class VMDeviceInfoManager:
             cpu_spec.numCoresPerSocket = new_num_cores_per_socket
             WaitForTask(self.vm.ReconfigVM_Task(cpu_spec))
         except Exception as e:
-            return False
+            return False, e
 
-        return True
+        return True, None
 
     def update_mem(self, new_memory_mb):
         try:
@@ -358,9 +357,9 @@ class VMDeviceInfoManager:
 
             WaitForTask(self.vm.ReconfigVM_Task(mem_spec))
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
 
     def remove_network(self, nic_label):
         try:
@@ -380,9 +379,9 @@ class VMDeviceInfoManager:
             destory_spec.deviceChange = [virtual_nic_destory_spec]
             WaitForTask(self.vm.ReconfigVM_Task(spec=destory_spec))
         except Exception as e:
-            return False
+            return False, e
         
-        return True
+        return True, None
     
     def remove_disk(self, disk_label):
         try:
@@ -435,12 +434,12 @@ class VMDeviceInfoManager:
         """
         if not ds_name:
             # raise Exception('Params Error')
-            return False
+            return False, "DataStore name parameter error failed"
 
         try:
             data_store = self._get_device([vim.Datastore], ds_name)
             if not data_store:
-                raise Exception('Unable To Get DataStore')
+                raise Exception('Failed to get DataStore object')
 
             if dc_name:
                 data_center = self._get_device([vim.Datacenter], dc_name)
@@ -472,9 +471,9 @@ class VMDeviceInfoManager:
 
             WaitForTask(self.vm.Clone(folder=vmfloder, name=new_vm_name, spec=clonespec))
         except Exception as e:
-            return False
+            return False, e.msg if hasattr(e, 'msg') else str(e)
         
-        return True
+        return True, None
 
     def ip_assignment(self):
         # TODO 待测试

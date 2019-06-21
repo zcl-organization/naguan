@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from flask import g
+
 from pyVim.task import WaitForTask
 from pyVmomi import vim
 from app.main.vcenter import db
@@ -12,13 +14,16 @@ class InstanceTemplate:
         template = db.instances.list_by_uuid(platform_id, uuid)  # 数据库模板
         self.platform_id, self.uuid = platform_id, uuid
         self.template_name = template.vm_name
+        ### ???? self.template -> VM
         self.template = get_obj(self.content, [vim.VirtualMachine], self.template_name)  # 模板文件
 
     # host_id 未做
     def template_create_vm(self, new_vm_name, ds_id, dc_id, resource_pool_id=None, host_id=None):
         if not self.template:
+            g.error_code = 6354
             raise ValueError('The template does not exist.')
         if not self.template.summary.config.template:
+            g.error_code = 6355
             raise Exception('Object are not template')
         datastore = self.get_ds(ds_id)
         data_center, vmfloder = self.get_dc_and_vmfloder(dc_id)
@@ -27,6 +32,7 @@ class InstanceTemplate:
         # 判断是否存在同名虚拟机
         for vm in resource_pool.vm:
             if new_vm_name == vm.name:
+                g.error_code = 6353
                 raise ValueError('Existing vm names')
         # RelocateSpec
         relospec = vim.vm.RelocateSpec()
@@ -120,8 +126,10 @@ class InstanceTemplate:
         # MarkAsVirtualMachine
         # data_center = self.template.datastore[0].parent.parent
         if not self.template:
+            g.error_code = 6354
             raise ValueError('The template does not exist.')
         if not self.template.summary.config.template:
+            g.error_code = 6355
             raise Exception('Object are not template')
         resource_pool = self.get_resource_pool(resource_pool_id=resource_pool_id,
                                                host_id=None, data_center=None)
@@ -141,8 +149,10 @@ class InstanceTemplate:
                 # 同步
                 self.sync_del_template()
             else:
+                g.error_code = 6403
                 raise Exception('Object are not template')
         else:
+            g.error_code = 6404
             raise ValueError('Template does not exist.')
 
     def sync_del_template(self):

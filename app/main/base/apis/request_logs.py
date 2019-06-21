@@ -90,8 +90,9 @@ class LogRequest(Resource):
             data, pg = control.request_logs.log_list(pgnum=pgnum, request_id=args['request_id'],
                                                      status_num=args['status'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 1731), 400
-        return set_return_val(True, data, 'request log list succeeded.', 1730, pg)
+            return set_return_val(False, [], str(e), 1861), 400
+
+        return set_return_val(True, data, 'request log list succeeded.', 1860, pg)
 
     def delete(self, id):
         """
@@ -125,7 +126,9 @@ class LogRequest(Resource):
         """
 
         try:
+            g.error_code = 1881
             result = control.request_logs.log_delete(id=id)
         except Exception as e:
             return set_return_val(False, [], str(e), g.error_code), 400
-        return set_return_val(True, [], 'request log deleted succeeded.', 1710)
+
+        return set_return_val(True, [], 'request log deleted succeeded.', 1880)

@@ -87,14 +87,18 @@ class RolesMenusManage(Resource):
                               type: string
         """
         args = parser.parse_args()
-        if not args['role_id']:
-            raise Exception('Parameter error')
+
         try:
+            g.error_code = 1311
+            if not args['role_id']:
+                g.error_code = 1312
+                raise Exception('Parameter error')
+
             data = control.roles_menus.get_menu_by_role_id(args['role_id'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 2451), 400
+            return set_return_val(False, [], str(e), g.error_code), 400
 
-        return set_return_val(True, data, 'get role menu successfully', 1220)
+        return set_return_val(True, data, 'get role menu successfully', 1310)
 
     @basic_auth.login_required
     def post(self):
@@ -145,13 +149,17 @@ class RolesMenusManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        if not all([args['role_id'], args['menu_id']]):
-            raise Exception('Parameter error')
+        
         try:
+            g.error_code = 1341
+            if not all([args['role_id'], args['menu_id']]):
+                g.error_code = 1342
+                raise Exception('Parameter error')
             control.roles_menus.update_role(role_id=args['role_id'], menu_id=args['menu_id'])
         except Exception as e:
-            return set_return_val(False, [], str(e), 2451), 400
-        return set_return_val(True, [], 'post role menu successfully', 1220)
+            return set_return_val(False, [], str(e), g.error_code), 400
+
+        return set_return_val(True, [], 'post role menu successfully', 1340)
 
     @basic_auth.login_required
     def put(self, role_id):
@@ -195,13 +203,16 @@ class RolesMenusManage(Resource):
                     properties:
         """
         args = parser.parse_args()
-        if not args['menu_id']:
-            raise Exception('Parameter error')
+        
         try:
+            g.error_code = 1371
+            if not args['menu_id']:
+                g.error_code = 1372
+                raise Exception('Parameter error')
             control.roles_menus.update_role(role_id=role_id, menu_id=args['menu_id'])
         except Exception as e:
-            return set_return_val(False, [], 'update role menu failed', 1220)
-        return set_return_val(True, [], 'update role menu successfully', 1220)
+            return set_return_val(False, [], 'update role menu failed', g.error_code)
+        return set_return_val(True, [], 'update role menu successfully', 1370)
 
     @basic_auth.login_required
     def delete(self, role_id):
@@ -242,5 +253,5 @@ class RolesMenusManage(Resource):
         try:
             control.roles_menus.delete_role(role_id=role_id)
         except Exception as e:
-            return set_return_val(False, [], str(e), 2451), 400
-        return set_return_val(True, [], 'delete role menu successfully', 1220)
+            return set_return_val(False, [], str(e), 1401), 400
+        return set_return_val(True, [], 'delete role menu successfully', 1400)

@@ -135,9 +135,8 @@ class SnapshotManage(Resource):
                                                            snapshot_id=args['snapshot_id'],
                                                            vm_uuid=args['vm_uuid'], pgnum=pgnum)
         except Exception as e:
-
-            return set_return_val(False, [], str(e), 2331), 400
-        return set_return_val(True, data, 'Snapshot gets success.', 2330, pg)
+            return set_return_val(False, [], str(e), 6101), 400
+        return set_return_val(True, data, 'Snapshot gets success.', 6100, pg)
 
     @basic_auth.login_required
     def post(self):
@@ -236,19 +235,19 @@ class SnapshotManage(Resource):
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             if args['action'] == 'create':
                 if not args['snapshot_name']:
-                    g.error_code = 2301
+                    g.error_code = 6152
                     raise Exception('Parameter error')
                 instance.add_snapshot(snapshot_name=args['snapshot_name'], description=args['description'])
-                g.error_code = 2300
+                g.error_code = 6150
                 data['event'] = unicode('生成快照')
                 data['result'] = True
             elif args['action'] == 'revert':
                 if not args['snapshot_id']:
-                    g.error_code = 2303
+                    g.error_code = 6152
                     raise Exception('Parameter error')
 
                 instance.snapshot_revert(snapshot_id=args['snapshot_id'])
-                g.error_code = 2302
+                g.error_code = 6153
                 data['event'] = unicode('恢复快照')
                 data['result'] = True
             else:
@@ -338,11 +337,9 @@ class SnapshotManage(Resource):
             instance = Instance(platform_id=args['platform_id'], uuid=args['vm_uuid'])
             instance.delete_snapshot(snapshot_id=args['snapshot_id'])
             data['result'] = True
-
         except Exception as e:
-
-            return set_return_val(False, [], str(e), 2311), 400
+            return set_return_val(False, [], str(e), 6201), 400
         finally:
             data['resources_id'] = args.get('vm_uuid')
             base_control.event_logs.eventlog_create(**data)
-        return set_return_val(True, [], 'snapshot delete success.', 2310)
+        return set_return_val(True, [], 'snapshot delete success.', 6200)

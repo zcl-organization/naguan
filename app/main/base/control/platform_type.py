@@ -24,7 +24,7 @@ def type_create(name):
     platform_type = db.platform_type.platform_type_list(name=name)
 
     if platform_type:
-        g.error_code = 1502
+        g.error_code = 1073
         raise Exception('Existing platform type', name)
     menu = db.platform_type.platform_type_create(name)
     data_dict = {
@@ -42,7 +42,7 @@ def type_update(id, name=None):
     if platform:
         return db.platform_type.platform_type_update(id, name)
     else:
-        g.error_code = 1521
+        g.error_code = 1083
         raise Exception('platform type not found', id)
 
 
@@ -51,5 +51,5 @@ def type_delete(type_id):
     if platform:
         return db.platform_type.platform_type_delete(type_id)
     else:
-        g.error_code = 1511
+        g.error_code = 1092
         raise Exception('platform type not found', type_id)
