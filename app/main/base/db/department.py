@@ -59,3 +59,7 @@ def update_department_by_id(department_id, department_name, department_remarks, 
 def delete_department_by_id(department_id):
     db.session.query(Department).filter_by(id=department_id).delete(synchronize_session=False)
     db.session.commit()
+
+
+def get_children_department_by_pid(pid):
+    return db.session.query(Department).filter_by(pid=pid).all()

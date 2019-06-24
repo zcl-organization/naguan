@@ -36,8 +36,8 @@ class Instance(object):
         if not si:
             try:
                 self.si, self.content, self.platform = get_connect(platform_id)
-            except Exception as e:
-                raise Exception('connect vcenter failed')
+            except Exception:
+                raise Exception('connect vCenter failed')
         else:
             self.platform = None
 
@@ -343,33 +343,48 @@ class Instance(object):
                 if role.role_name == 'admin':
                     is_admin = True
                     break
-            import pdb
-            pdb.set_trace()
-            # if not is_admin:
-            if not is_admin:
 
-                # TODO 查询是否是单位负责人，查询本单位所有云主机
+            if not is_admin:
                 company_info = base_db.company.get_company_by_principal_id(g.uid)
                 if company_info:
                     # 根据单位id 获取本单位所有用户id
                     user_list = base_db.department_users.get_department_users_by_company_id(company_info.id)
-                    user_id = [user.user_id for user in user_list]
+                    user_id_list = [user.user_id for user in user_list]
 
                     # 根据用户信息 获取所有的云主机信息
-
                     vms, pg = db.user_instance.get_vm_list_by_user_ids(self.platform_id, host, vm_name, pgnum, pgsort,
-                                                                       template=template, user_id=user_id)
-                # TODO 查询是否是部门负责人，是否有下级部门，本部门及下级部门所有云主机
-                else:
-                    pass
+                                                                       template=template, user_id=user_id_list)
 
-                # TODO 获取用户部门信息，及能够管理的用户信息
-                department_info = base_db.department_users.get_department_users_by_user_id(g.uid)
-                for department in department_info:
-                    pass
+                else:
+                    # 获取所在部门信息
+                    import pdb
+                    pdb.set_trace()
+                    department_user_info = base_db.department_users.get_department_users_by_user_id(g.uid)
+                    manageable_uid_list = [g.uid]
+                    for department_user in department_user_info:
+                        if department_user.is_principal:
+                            # 获取当前部门所有用户
+                            current_dept_users = base_db.department_users.get_department_users_by_department_id(
+                                department_user.department_id)
+                            current_dept_uid_list = [current_dept_user.user_id for current_dept_user in
+                                                     current_dept_users]
+                            # 获取下级部门用户信息
+                            children_dept_uid_list = get_children_department_user(
+                                department_user.department_id)
+
+                            manageable_uid_list = list(
+                                set(manageable_uid_list + current_dept_uid_list + children_dept_uid_list))
+
+                        else:
+                            # 不是部门负责人，判断下级
+                            children_dept_uid_list = get_children_department_user(
+                                department_user.department_id)
+                            manageable_uid_list = list(
+                                set(manageable_uid_list + children_dept_uid_list))
+                    vms, pg = db.user_instance.get_vm_list_by_user_ids(self.platform_id, host, vm_name, pgnum, pgsort,
+                                                                       template=template, user_id=manageable_uid_list)
             else:
-                pass
-            vms, pg = db.instances.vm_list(self.platform_id, host, vm_name, pgnum, pgsort, template=template)
+                vms, pg = db.instances.vm_list(self.platform_id, host, vm_name, pgnum, pgsort, template=template)
             vm_list = []
             if vms:
                 for vm in vms:
@@ -395,7 +410,7 @@ class Instance(object):
 
                     vm_temp['created_at'] = vm.created_at.strftime('%Y-%m-%d %H:%M:%S')
                     vm_list.append(vm_temp)
-        except Exception as e:
+        except Exception:
             raise Exception('vm list get failed')
         return vm_list, pg
 
@@ -613,6 +628,7 @@ class Instance(object):
         else:
             raise ValueError('The vm does not exist.')
 
+
 # def find_snapshot(snapshot, snapshot_name):
 #     for snapshot in snapshot.childSnapshotList:
 #         if snapshot.name == snapshot_name:
@@ -629,3 +645,19 @@ class Instance(object):
 #         'Chinese': u'硬盘 '
 #     }
 #     return language_prefix_label_mapper.get(language)
+
+def get_children_department_user(department_id):
+    # 获取下级部门信息
+    departments = base_db.department.get_children_department_by_pid(department_id)
+    if not departments:
+        return None
+    children_department_user = []
+    for department in departments:
+        # 根据部门id获取部门用户
+        department_users = base_db.department_users.get_department_users_by_department_id(department.id)
+        user_list = [department_user.user_id for department_user in department_users]
+        children_department_user_list = get_children_department_user(department.id)
+        if children_department_user_list:
+            user_list = list(set(user_list + children_department_user_list))
+        children_department_user = list(set(children_department_user + user_list))
+    return children_department_user

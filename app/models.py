@@ -215,7 +215,7 @@ class VCenterVm(db.Model):
     guest_id = db.Column(db.String(255), nullable=False)  # 镜像id
     guest_full_name = db.Column(db.String(255), nullable=False)
     host = db.Column(db.String(40), nullable=False)  # 所属HOST
-    ip = db.Column(db.String(20))  # ip
+    ip = db.Column(db.String(32))  # ip
     status = db.Column(db.String(40))
     resource_pool_name = db.Column(db.String(32))
     created_at = db.Column(db.DateTime)  # 创建时间
