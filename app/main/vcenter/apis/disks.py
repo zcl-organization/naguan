@@ -155,7 +155,6 @@ class DiskManage(Resource):
             return set_return_val(False, [], str(e), g.error_code), 400
         return set_return_val(True, data, 'Datastore gets success.', 5500)
 
-
     @basic_auth.login_required
     def post(self):
         """

@@ -182,7 +182,7 @@ class EventLog(db.Model):
     __tablename__ = 'event_log'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     resource_type = db.Column(db.String(32), nullable=False)  # 操作资源类型
-    result = db.Column(db.String(10))  # 操作结果
+    result = db.Column(db.Boolean)  # 操作结果
     operation_resources_id = db.Column(db.String(100))  # 操作资源ID
     operation_event = db.Column(db.String(255))  # 操作事件
     submitter = db.Column(db.String(32), nullable=False)  # 提交者
@@ -422,6 +422,88 @@ class VCenterVswitch(db.Model):
     num_of_port = db.Column(db.Integer)  # 交换机端口数量
     nics = db.Column(db.String(255))  # 交换机上行链路
 
+    
+class VCenterHost(db.Model):
+    __tablename__ = 'vcenter_host'  # 22个字段
+    id = db.Column(db.Integer, primary_key=True)  # id
+    name = db.Column(db.String(32))  # 主机名称
+    mor_name = db.Column(db.String(32))
+    dc_name = db.Column(db.String(128))
+    dc_mor_name = db.Column(db.String(128))
+    cluster_name = db.Column(db.String(128))
+    cluster_mor_name = db.Column(db.String(128))
+    port = db.Column(db.Integer)
+    power_state = db.Column(db.String(32))  # 电源状态
+    connection_state = db.Column(db.String(32))  # 连接状态
+    maintenance_mode = db.Column(db.Boolean)  # 维护模式
+    platform_id = db.Column(db.Integer)  # 平台id
+    uuid = db.Column(db.String(128))  # uuid
+    cpu_cores = db.Column(db.Integer)  # cpu(核心数)
+    cpu_mhz = db.Column(db.Integer)  # cpuMhz
+    used_cpu = db.Column(db.Integer)
+    memory = db.Column(db.BigInteger)  # 内存(容量)
+    used_memory = db.Column(db.BigInteger)
+    capacity = db.Column(db.BigInteger)  # 存储(容量)
+    used_capacity = db.Column(db.BigInteger)
+    cpu_model = db.Column(db.String(64))  # 处理器类型
+    version = db.Column(db.String(32))  # 版本
+    image = db.Column(db.String(32))  # 映像 （VMware ESXI）
+    build = db.Column(db.String(32))  # 内部版本
+    full_name = db.Column(db.String(128))  # image + version + build
+    boot_time = db.Column(db.DateTime)  # 添加时间
+    uptime = db.Column(db.Integer)  # 正常运行时间
+    vm_nums = db.Column(db.Integer)
+    network_nums = db.Column(db.Integer)
+
+
+class Licenses(db.Model):
+    __tablename__ = 'licenses'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    platform_id = db.Column(db.Integer)
+    name = db.Column(db.String(32))  # 许可证名称
+    licenseKey = db.Column(db.String(128))  # 许可证号
+    editionKey = db.Column(db.String(128))  #
+    used = db.Column(db.Integer)  #
+    total = db.Column(db.Integer)  #
+
+
+class VCenterDatacenter(db.Model):
+    __tablename__ = 'vcenter_datacenter'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    name = db.Column(db.String(128))  # name
+    mor_name = db.Column(db.String(128))
+    platform_id = db.Column(db.Integer)  # 平台id
+    host_nums = db.Column(db.Integer)  # hosts=dc.hostFolder.childEntity.host
+    vm_nums = db.Column(db.Integer)  # vms=dc.datastore.vm
+    cluster_nums = db.Column(db.Integer)  # clusters=dc.hostFolder.childEntity
+    network_nums = db.Column(db.Integer)  # networks=dc.network
+    datastore_nums = db.Column(db.Integer)  # datastores=dc.datastore
+    # TODO 以下获取参考host
+    cpu_capacity = db.Column(db.Integer)  # cpu(容量)
+    used_cpu = db.Column(db.Integer)
+    memory = db.Column(db.BigInteger)  # 内存(容量)
+    used_memory = db.Column(db.BigInteger)
+    capacity = db.Column(db.BigInteger)  # 存储(容量)
+    used_capacity = db.Column(db.BigInteger)
+
+
+class VCenterClusters(db.Model):
+    __tablename__ = 'vcenter_clusters'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    name = db.Column(db.String(128))  # name
+    mor_name = db.Column(db.String(128))
+    platform_id = db.Column(db.Integer)  # 平台id
+    dc_name = db.Column(db.String(128))
+    dc_mor_name = db.Column(db.String(128))
+    cpu_nums = db.Column(db.Integer)   # 处理器总数
+    cpu_capacity = db.Column(db.Integer)  # cpu(容量)
+    used_cpu = db.Column(db.Integer)
+    memory = db.Column(db.BigInteger)  # 内存(容量)
+    used_memory = db.Column(db.BigInteger)
+    capacity = db.Column(db.BigInteger)  # 存储(容量)
+    used_capacity = db.Column(db.BigInteger)
+    host_nums = db.Column(db.Integer)
+    vm_nums = db.Column(db.Integer)
 
 class Company(db.Model):
     __tablename__ = 'company'
@@ -448,4 +530,3 @@ class DepartmentUsers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     department_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
-
