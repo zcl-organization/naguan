@@ -7,6 +7,7 @@ from pyVmomi import vim
 from app.main.vcenter import db
 from app.main.vcenter.utils.base import VCenter
 from app.main.vcenter.utils.vm_dvs import VMDvswitchManager
+from app.main.vcenter.utils.vm_dvs import VMDvswitchHostManager
 from app.main.vcenter.control.utils import get_mor_name
 
 
@@ -240,7 +241,6 @@ class DVSwitch:
         container = content.viewManager.CreateContainerView(content.rootFolder, [vim.DistributedVirtualSwitch], True)
         
         for dvswitch in container.view:
-            print dvswitch.name
             if dvswitch.name == dvswitch_name:
                 return dvswitch
 
@@ -248,3 +248,104 @@ class DVSwitch:
 
     def _find_folder_by_name(self, datacenter):
         return datacenter.networkFolder
+
+
+class DVSwitchHost:
+
+    def __init__(self, platform_id):
+        self._vcenter = VCenter(platform_id)
+
+    def add_host(self, dvswitch_id, args):
+        datacenter = self._vcenter.find_datacenter_by_name(args['dc_name'])
+        if not datacenter:
+            g.error_code = 6703
+            raise RuntimeError("No corresponding datacenter")
+        
+        folder = datacenter.networkFolder
+        data = db.dvswitch.find_dvswitch_by_id(dvswitch_id)
+        if not data:
+            g.error_code = 6704
+            raise RuntimeError("Local no corresponding DVSwitch")
+        
+        dvs = self._get_object([vim.DistributedVirtualSwitch], data.name, folder)
+        if not dvs:
+            g.error_code = 6705
+            raise RuntimeError("Remote no corresponding DVSwitch")
+
+        host = self._vcenter.find_hostsystem_by_name(args['host_name'])
+        if not host:
+            g.error_code = 6706
+            raise RuntimeError("No corresponding HostSystem")
+
+        vmdhm = VMDvswitchHostManager(dvs)
+        vmnics = args['vmnics'] if args['vmnics'] else []
+        if not vmdhm.add(host, vmnics):
+            raise RuntimeError("add Host {} To Switch {} Failed!!!".format(
+                args['host_name'], args['switch_name']))
+
+
+    def remove_host(self, dvswitch_id, args):
+        datacenter = self._vcenter.find_datacenter_by_name(args['dc_name'])
+        if not datacenter:
+            g.error_code = 6733
+            raise RuntimeError("No corresponding datacenter")
+
+        folder = datacenter.networkFolder
+        data = db.dvswitch.find_dvswitch_by_id(dvswitch_id)
+        if not data:
+            g.error_code = 6734
+            raise RuntimeError("Local no corresponding DVSwitch")
+
+        dvs = self._get_object([vim.DistributedVirtualSwitch], data.name, folder)
+        if not dvs:
+            g.error_code = 6735
+            raise RuntimeError("Remote no corresponding DVSwitch")
+
+        host = self._vcenter.find_hostsystem_by_name(args['host_name'])
+        if not dvs or not host:
+            g.error_code = 6736
+            raise RuntimeError("No corresponding HostSystem")
+        vmdhm = VMDvswitchHostManager(dvs)
+        if not vmdhm.remove(host):
+            raise RuntimeError("Remove Host {} To Switch {} Failed!!!".format(
+                args['host_name'], args['switch_name']))
+
+
+    def edit_host(self, dvswitch_id, args):
+        datacenter = self._vcenter.find_datacenter_by_name(args['dc_name'])
+        if not datacenter:
+            g.error_code = 6763
+            raise RuntimeError("No corresponding datacenter")
+
+        folder = datacenter.networkFolder
+        data = db.dvswitch.find_dvswitch_by_id(dvswitch_id)
+        if not data:
+            g.error_code = 6764
+            raise RuntimeError("Local no corresponding DVSwitch")
+
+        dvs = self._get_object([vim.DistributedVirtualSwitch], data.name, folder)
+        if not dvs:
+            g.error_code = 6765
+            raise RuntimeError("Remote no corresponding DVSwitch")
+
+        host = self._vcenter.find_hostsystem_by_name(args['host_name'])
+        if not host:
+            g.error_code = 6766
+            raise RuntimeError("No corresponding HostSystem")
+
+        vmdhm = VMDvswitchHostManager(dvs)
+        vmnics = args['vmnics'] if args['vmnics'] else []
+        if not vmdhm.edit(host, vmnics):
+            raise RuntimeError("Edit Host {} To Switch {} Failed!!!".format(
+                args['host_name'], args['switch_name']))
+
+    def _get_object(self, vim_type, name, folder):
+        if not folder:
+            folder = self._vcenter.connect.rootFolder
+            
+        container = self._vcenter._connect.viewManager.CreateContainerView(folder, vim_type, True)
+        for managed_object_ref in container.view:
+            if managed_object_ref.name == name:
+                return managed_object_ref
+
+        return None

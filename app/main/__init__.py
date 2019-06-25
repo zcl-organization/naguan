@@ -43,6 +43,7 @@ from app.main.vcenter.apis.snapshots import SnapshotManage
 from app.main.vcenter.apis.resource_pool import ResourcePoolManage
 from app.main.vcenter.apis.vswitch import VSwitchManage
 from app.main.vcenter.apis.dvswitch import DVSwitchManage
+from app.main.vcenter.apis.dvswitch import DVSwitchHostManage
 
 from app.main.vcenter.apis.ovf import OvfManage
 
@@ -206,6 +207,7 @@ api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch/<int:vswiter_id>', me
 # vCenter DVSwitch
 api.add_resource(DVSwitchManage, '/api/v1.0/vCenter/dvswitch', methods=["GET", "POST"], endpoint="DVSwitch")
 api.add_resource(DVSwitchManage, '/api/v1.0/vCenter/dvswitch/<int:dvswitch_id>', methods=['DELETE', 'PUT'], endpoint="DVSwitch_id")
+api.add_resource(DVSwitchHostManage, '/api/v1.0/vCenter/dvswitch/<int:dvswitch_id>/host', methods=['POST', 'DELETE', 'PUT'], endpoint="DVSwitch_host")
 
 # 单位管理
 api.add_resource(CompanyManage, '/api/v1.0/company', methods=['GET', 'POST'],

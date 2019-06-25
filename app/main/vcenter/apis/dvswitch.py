@@ -6,23 +6,27 @@ from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter.control.dvswitch import get_dvswitch_infos
 from app.main.vcenter.control.dvswitch import DVSwitch
+from app.main.vcenter.control.dvswitch import DVSwitchHost
 
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')  # 平台ID
 parser.add_argument('dc_name')  # datacenter名称
 parser.add_argument('switch_name')  # 创建或是修改或是删除的交换机名称
-
 parser.add_argument('mtu')    # 设置mtu时钟时间
 parser.add_argument('protocol')    # 发现协议类型
 parser.add_argument('operation')    # 发现协议操作
 parser.add_argument('uplink_quantity')    # 上传链路组数量
 parser.add_argument('uplink_prefix')    # 上传链路组前缀名称
 parser.add_argument('switch_version')    # 交换机版本设置
-
 parser.add_argument("old_uplink_name")  # 修改前的单个上传链路名称
 parser.add_argument("new_uplink_name")  # 修改后的单个上传链路名称
 
+parser_host = reqparse.RequestParser()
+parser_host.add_argument('platform_id')  # 平台ID
+parser_host.add_argument('dc_name')  # 数据中心名称
+parser_host.add_argument('host_name')  # 添加的主机信息
+parser_host.add_argument('vmnics')  # 添加的网卡信息
 
 
 class DVSwitchManage(Resource):
@@ -456,3 +460,285 @@ class DVSwitchManage(Resource):
             return set_return_val(False, [], str(e), g.error_code)
 
         return set_return_val(True, {}, 'Update Vswitch Success!!!', 6650)
+
+
+class DVSwitchHostManage(Resource):
+
+    @basic_auth.login_required
+    def post(self, dvswitch_id):
+        """
+            添加主机到dvswitch
+        ---
+       tags:
+          - vCenter DVSwitch
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: path
+            name: dvswitch_id
+            type: integer
+            required: true
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - dc_name
+              - host_name
+              - vmnics
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                dc_name:
+                  type: string
+                  default: Datacenter
+                  description: DC名称
+                  example: Datacenter
+                host_name:
+                  type: string
+                  default: "192.168.78.59"
+                  description: 添加的主机名称
+                  example: "192.168.78.59"
+                vmnics:
+                  type: list
+                  default: []
+                  description: 需要添加的网卡信息
+                  example: []
+       responses:
+          200:
+            description: vCenter DVSwitch Host 添加状态信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: status
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
+        try:
+            g.error_code = 6701
+            args = parser_host.parse_args()
+            if not all([args['platform_id'], args['dc_name'], args['host_name']]):
+                g.error_code = 6702
+                raise ValueError("Parameter Error!!!")
+            
+            dvsh = DVSwitchHost(args['platform_id'])
+            dvsh.add_host(dvswitch_id, args)
+        except Exception as e:
+            return set_return_val(False, {}, str(e), g.error_code), 400
+        
+        return set_return_val(True, {}, "Add Host {} Success".format(args['host_name']), 6700)
+
+    
+    @basic_auth.login_required
+    def delete(self, dvswitch_id):
+        """
+            从dvswitch中删除主机
+        ---
+       tags:
+          - vCenter DVSwitch
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: path
+            name: dvswitch_id
+            type: integer
+            required: true
+            description: '8 -- switer_id'
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - dc_name
+              - host_name
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                dc_name:
+                  type: string
+                  default: Datacenter
+                  description: DC名称
+                  example: Datacenter
+                host_name:
+                  type: string
+                  default: "192.168.78.59"
+                  description: 添加的主机名称
+                  example: "192.168.78.59"
+       responses:
+          200:
+            description: vCenter DVSwitch 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+          400:
+            description: 获取失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
+        try:
+            g.error_code = 6731
+            args = parser_host.parse_args()
+            if not all([args['platform_id'], args['dc_name'], args['host_name']]):
+                g.error_code = 6372
+                raise ValueError("Parameter Error!!!")
+            
+            dvsh = DVSwitchHost(args['platform_id'])
+            dvsh.remove_host(dvswitch_id, args)
+        except Exception as e:
+            return set_return_val(False, {}, str(e), g.error_code), 400
+        
+        return set_return_val(True, {}, "Remove Host {} Success".format(args['host_name']), 6730)
+
+    @basic_auth.login_required
+    def put(self, dvswitch_id):
+        """
+        从dvswitch中修改主机配置项
+        ---
+       tags:
+          - vCenter DVSwitch
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: path
+            name: dvswitch_id
+            type: integer
+            required: true
+            description: '8 -- dvswitch_id'
+          - in: body
+            name: body
+            required: true
+            schema:
+              required:
+              - platform_id
+              - dc_name
+              - host_name
+              - vmnics
+              properties:
+                platform_id:
+                  type: integer
+                  default: 1
+                  description: 平台id
+                  example: 1
+                dc_name:
+                  type: string
+                  default: Datacenter
+                  description: DC名称
+                  example: Datacenter
+                host_name:
+                  type: string
+                  default: "192.168.78.59"
+                  description: 添加的主机名称
+                  example: "192.168.78.59"
+                vmnics:
+                  type: list
+                  default: []
+                  description: 需要添加的网卡信息
+                  example: []
+       responses:
+          200:
+            description: vCenter DVSwitchHost 修改状态信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: status
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+          400:
+            description: 修改失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
+        try:
+            g.error_code = 6761
+            args = parser_host.parse_args()
+            if not all([args['platform_id'], args['dc_name'], args['host_name']]):
+                g.error_code = 6762
+                raise ValueError("Parameter Error!!!")
+            
+            dvsh = DVSwitchHost(args['platform_id'])
+            dvsh.edit_host(dvswitch_id, args)
+        except Exception as e:
+            return set_return_val(False, {}, str(e), g.error_code), 400
+        
+        return set_return_val(True, {}, "Edit Host {} Success".format(args['host_name']), 6760)
+

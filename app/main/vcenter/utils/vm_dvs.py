@@ -178,8 +178,8 @@ class VMDvswitchHostManager:
     def edit(self, host, vmnics=[]):
         return self._modify('edit', host, vmnics)
 
-    def remove(self, host, vmnics=[]):
-        return self._modify('remove', host, vmnics)
+    def remove(self, host):
+        return self._modify('remove', host)
 
     def _modify(self, operation, host, vmnics=[]):
         spec = vim.DistributedVirtualSwitch.ConfigSpec()
@@ -195,7 +195,8 @@ class VMDvswitchHostManager:
             for nic in vmnics:
                 spec.host[0].backing.pnicSpec.append(vim.dvs.HostMember.PnicSpec())
                 spec.host[0].backing.pnicSpec[count].pnicDevice = nic
-                spec.host[0].backing.pnicSpec[count].uplinkPortgroupKey = self.uplink_portgroup.key
+                uplink_pg = self._dvs.config.uplinkPortgroup[0] if len(self._dvs.config.uplinkPortgroup) else None
+                spec.host[0].backing.pnicSpec[count].uplinkPortgroupKey = uplink_pg.key
                 count += 1
 
         try:

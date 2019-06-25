@@ -940,20 +940,38 @@
 | 6652 | 参数错误 | Wrong parameter |
 | 6653 | DVSwitch不存在 | DVSwitch does not exist |
 
-#### 向DVSwitch添加主机  （6700～6749）
+#### 向DVSwitch添加主机  （6700～6729）
 
 | code | 错误描述 | Error Description |
 | ---- | -------- | ----------------- |
-| 6700 | 创建DVSwitch成功 | Creating DVSwitch successfully |
-| 6701 | 创建DVSwitch失败 | Failed to create DVSwitch |
+| 6700 | 向DVS添加主机成功 | Creating DVSwitch successfully |
+| 6701 | 向DVS添加主机失败 | Failed to create DVSwitch |
 | 6702 | 参数错误 | Wrong parameter |
-| 6703 | 已存在对应DVSwitch | Corresponding DVSwitch already exists |
+| 6703 | 无对应的数据中心 | No corresponding datacenter |
+| 6704 | 本地无对应的DVSwitch | Local no corresponding DVSwitch |
+| 6705 | 远程无对应的DVSwitch | Remote no corresponding DVSwitch |
+| 6706 | 无对应的主机 | No corresponding HostSystem |
 
-#### 向DVSwitch移除主机  （6750～6799）
+#### 向DVSwitch移除主机  （6730～6759）
 
 | code | 错误描述 | Error Description |
 | ---- | -------- | ----------------- |
-| 6750 | 删除DVSwitch成功 | Delete DVSwitch successfully |
-| 6751 | 删除DVSwitch失败 | Deleting DVSwitch failed |
-| 6752 | 参数错误 | Wrong parameter |
-| 6753 | DVSwitch不存在 | DVSwitch does not exist |
+| 6730 | 向DVS移除主机成功 | Delete DVSwitch successfully |
+| 6731 | 向DVS移除主机失败 | Deleting DVSwitch failed |
+| 6732 | 参数错误 | Wrong parameter |
+| 6733 | 无对应的数据中心 | No corresponding datacenter |
+| 6734 | 本地无对应的DVSwitch | Local no corresponding DVSwitch |
+| 6735 | 远程无对应的DVSwitch | Remote no corresponding DVSwitch |
+| 6736 | 无对应的主机 | No corresponding HostSystem |
+
+#### 向DVSwitch修改主机信息  （6760～6789）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6760 | 删除DVSwitch成功 | Delete DVSwitch successfully |
+| 6761 | 删除DVSwitch失败 | Deleting DVSwitch failed |
+| 6762 | 参数错误 | Wrong parameter |
+| 6763 | 无对应的数据中心 | No corresponding datacenter |
+| 6764 | 本地无对应的DVSwitch | Local no corresponding DVSwitch |
+| 6765 | 远程无对应的DVSwitch | Remote no corresponding DVSwitch |
+| 6766 | 无对应的主机 | No corresponding HostSystem |
