@@ -29,7 +29,7 @@ class ClustersManage(Resource):
           type: http
           scheme: basic
        parameters:
-           - in: query
+          - in: query
             name: platform_id
             type: integer
             required: false

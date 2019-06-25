@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+from flask import g
 from flask_restful import Resource, reqparse
 
 from app.common.tool import set_return_val
