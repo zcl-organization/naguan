@@ -4,9 +4,10 @@ from pyVim.task import WaitForTask
 
 
 class VMDvswitchManager:
-    def __init__(self, connect, folder):
+    def __init__(self, connect, folder=None, datacenter=None):
         self._connect = connect
         self._folder = folder
+        self._datacenter = datacenter
 
     def create(self, **kwargs):
         """
@@ -50,7 +51,8 @@ class VMDvswitchManager:
         return True
 
     def destroy(self, switch_name):
-        dvs = self._get_object([vim.DistributedVirtualSwitch], switch_name, self._folder)
+        folder = self._folder if self._folder else self._datacenter.networkFolder
+        dvs = self._get_object([vim.DistributedVirtualSwitch], switch_name, folder)
 
         try:
             WaitForTask(dvs.Destroy_Task())
@@ -107,7 +109,7 @@ class VMDvswitchManager:
         config_spec.uplinkPortPolicy = vim.DistributedVirtualSwitch.NameArrayUplinkPortPolicy()
         if old_uplink_name and new_uplink_name:  # 修改旧的数据
             for uplink_port_name in dvs.config.uplinkPortPolicy.uplinkPortName:
-                append_name = new_uplink_name if uplink_port_name == old_uplink_name else old_uplink_name
+                append_name = new_uplink_name if uplink_port_name == old_uplink_name else uplink_port_name
                 config_spec.uplinkPortPolicy.uplinkPortName.append(append_name)
         elif old_uplink_name and not new_uplink_name:  # 删除旧的数据
             for uplink_port_name in dvs.config.uplinkPortPolicy.uplinkPortName:

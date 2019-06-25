@@ -42,6 +42,7 @@ from app.main.vcenter.apis.network_devices import NetWorkManage
 from app.main.vcenter.apis.snapshots import SnapshotManage
 from app.main.vcenter.apis.resource_pool import ResourcePoolManage
 from app.main.vcenter.apis.vswitch import VSwitchManage
+from app.main.vcenter.apis.dvswitch import DVSwitchManage
 
 from app.main.vcenter.apis.ovf import OvfManage
 
@@ -202,6 +203,9 @@ api.add_resource(LicenseManage, '/api/v1.0/vCenter/license', methods=['GET', 'PO
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch', methods=['GET', 'POST'], endpoint='VSwitch')
 api.add_resource(VSwitchManage, '/api/v1.0/vCenter/vswitch/<int:vswiter_id>', methods=['DELETE', 'PUT'], endpoint='VSwitch_id')
 
+# vCenter DVSwitch
+api.add_resource(DVSwitchManage, '/api/v1.0/vCenter/dvswitch', methods=["GET", "POST"], endpoint="DVSwitch")
+api.add_resource(DVSwitchManage, '/api/v1.0/vCenter/dvswitch/<int:dvswitch_id>', methods=['DELETE', 'PUT'], endpoint="DVSwitch_id")
 
 # 单位管理
 api.add_resource(CompanyManage, '/api/v1.0/company', methods=['GET', 'POST'],
