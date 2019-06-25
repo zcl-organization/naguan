@@ -1,6 +1,7 @@
 # -*- coding=utf-8 -*-
 from app.exts import db
 from app.models import VCenterDatacenter
+from sqlalchemy import exists
 
 
 # 获取datacenters
@@ -32,7 +33,7 @@ def del_datacenter(id):
 
 
 def create_datacenter(name, mor_name, platform_id, host_nums, vm_nums, cluster_nums, network_nums,
-              datastore_nums, cpu_capacity, used_cpu, memory, used_memory, capacity, used_capacity):
+                      datastore_nums, cpu_capacity, used_cpu, memory, used_memory, capacity, used_capacity):
     new_datacenter = VCenterDatacenter()
     new_datacenter.name = name
     new_datacenter.mor_name = mor_name
@@ -51,7 +52,12 @@ def create_datacenter(name, mor_name, platform_id, host_nums, vm_nums, cluster_n
     db.session.add(new_datacenter)
     db.session.flush()
     db.session.commit()
-    return new_datacenter.id
+    return new_datacenter
 
 
-
+# 判断dc是否在数据库中
+def check_if_dc_exists_by_dc_name(dc_name):
+    if_exists = db.session.query(
+        exists().where(VCenterDatacenter.name == dc_name)
+    ).scalar()
+    return if_exists

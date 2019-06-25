@@ -56,4 +56,4 @@ def create_cluster(name, mor_name, platform_id, dc_name, dc_mor_name, cpu_nums, 
     db.session.add(new_cluster)
     db.session.flush()
     db.session.commit()
-    return new_cluster.id
+    return new_cluster

@@ -3,15 +3,55 @@ from flask import g
 from pyVmomi import vim
 from pyVim.task import WaitForTask
 from app.main.vcenter import db
+from app.main.vcenter.utils.base import VCenter
 from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj, get_obj_by_mor_name
 
 
+def sync_cluster(vCenter_obj, dc_obj, cluster_obj):
+    cluster_mor_name = get_mor_name(cluster_obj)
+    dc_mor_name = get_mor_name(dc_obj)
+    dc_host_moc = get_mor_name(dc_obj.hostFolder)
+    dc_vm_moc = get_mor_name(dc_obj.vmFolder)
+
+    # 获取本地datacenter对象
+    tree_dc = db.vcenter.get_vcenter_obj_by_mor_name(vCenter_obj.platform['id'], dc_mor_name)
+
+    # 判断集群是否存在
+    cluster_info = db.vcenter.vcenter_tree_get_by_cluster(vCenter_obj.platform['id'], cluster_mor_name, 3)
+    if cluster_info:
+        cluster_tree = db.vcenter.vcenter_tree_update(tree_type=3, platform_id=vCenter_obj.platform['id'],
+                                                      name=cluster_obj.name, dc_mor_name=dc_mor_name,
+                                                      dc_oc_name=dc_obj.name, mor_name=cluster_mor_name,
+                                                      dc_host_folder_mor_name=dc_host_moc,
+                                                      dc_vm_folder_mor_name=dc_vm_moc,
+                                                      cluster_mor_name=cluster_mor_name,
+                                                      cluster_oc_name=cluster_obj.name,
+                                                      pid=tree_dc.id)
+    else:
+        cluster_tree = db.vcenter.vcenter_tree_create(tree_type=3, platform_id=vCenter_obj.platform['id'],
+                                                      name=cluster_obj.name,
+                                                      dc_mor_name=dc_mor_name, dc_oc_name=dc_obj.name,
+                                                      mor_name=cluster_mor_name,
+                                                      dc_host_folder_mor_name=dc_host_moc,
+                                                      dc_vm_folder_mor_name=dc_vm_moc,
+                                                      cluster_mor_name=cluster_mor_name,
+                                                      cluster_oc_name=cluster_obj.name, pid=tree_dc.id)
+    # TODO 判断是否存在，不存在创建，存在更新
+    # 本地clusters同步
+    data = dict(
+        name=cluster_obj.name, mor_name=cluster_mor_name, platform_id=vCenter_obj.platform['id'],
+        dc_name=dc_obj.name,
+        dc_mor_name=dc_mor_name, cpu_nums=0, cpu_capacity=0, used_cpu=0, memory=0, used_memory=0,
+        capacity=0, used_capacity=0, host_nums=0, vm_nums=0
+    )
+    cluster_local = db.clusters.create_cluster(**data)
+
+    return cluster_tree, cluster_local
+
+
+"""
 def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
-    """
-    Method to create a Cluster in vCenter
-    :param kwargs:
-    :return: Cluster MORef
-    """
+
     si, content, platform = get_connect(platform_id)
     # 本地dc
     dc = db.datacenters.get_dc_by_id(dc_id)
@@ -43,7 +83,8 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
         # 本地vcenter_tree同步
         cluster_id = db.vcenter.vcenter_tree_create(tree_type=3, platform_id=platform_id, name=cluster_name,
                                                     dc_host_folder_mor_name=vcenter_tree_dc.dc_host_folder_mor_name,
-                                                    dc_mor_name=vcenter_tree_dc.mor_name, dc_oc_name=vcenter_tree_dc.name,
+                                                    dc_mor_name=vcenter_tree_dc.mor_name,
+                                                    dc_oc_name=vcenter_tree_dc.name,
                                                     dc_vm_folder_mor_name=vcenter_tree_dc.dc_vm_folder_mor_name,
                                                     mor_name=cluster_mor_name, cluster_mor_name=cluster_mor_name,
                                                     cluster_oc_name=cluster_name, pid=vcenter_tree_dc.id)
@@ -68,6 +109,8 @@ def create_cluster(platform_id, dc_id, cluster_name, cluster_spec=None):
         return new_cluster_id
     except Exception as e:
         raise Exception('Failed to create cluster. %s' % str(e))
+
+"""
 
 
 def del_cluster(platform_id, cluster_id):
@@ -131,3 +174,46 @@ def find_clusters(platform_id=None, cluster_id=None, cluster_name=None, dc_name=
         )
         cluster_list.append(data)
     return cluster_list
+
+
+class Cluster(object):
+    def __init__(self, platform_id):
+        self._platform_id = platform_id
+        self._vCenter = VCenter(platform_id)
+
+    def create(self, dc_id, cluster_name):
+
+        dc_local = db.datacenters.get_dc_by_id(dc_id)
+        if not dc_id:
+            g.error_code = 4103
+            raise ValueError("unable to find dc info")
+
+        dc_obj = get_obj(self._vCenter.connect, [vim.Datacenter], dc_local.name)
+        if dc_obj is None:
+            g.error_code = 4103
+            raise ValueError("Missing value for datacenter.")
+        if cluster_name is None:
+            g.error_code = 4104
+            raise ValueError("Missing value for name.")
+
+        # 判断dc下是否存在同名cluster
+        cluster_local = db.clusters.get_cluster_by_name(self._vCenter.platform['id'], dc_local.name, cluster_name)
+        if cluster_local:
+            g.error_code = 4105
+            raise ValueError('The cluster name already exists')
+
+        cluster_spec = vim.cluster.ConfigSpecEx()
+        host_folder = dc_obj.hostFolder
+        try:
+            new_cluster = host_folder.CreateClusterEx(name=cluster_name, spec=cluster_spec)
+        except RuntimeError:
+            raise Exception('task to create cluster failed')
+
+        cluster_tree, cluster_local = sync_cluster(vCenter_obj=self._vCenter, dc_obj=dc_obj, cluster_obj=new_cluster)
+        return cluster_local
+
+    def delete(self):
+        pass
+
+    def list(self):
+        pass

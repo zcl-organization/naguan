@@ -5,7 +5,7 @@ from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.base import control as base_control
-
+from app.main.vcenter.control.clusters import Cluster
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -29,7 +29,7 @@ class ClustersManage(Resource):
           type: http
           scheme: basic
        parameters:
-           - in: query
+          - in: query
             name: platform_id
             type: integer
             required: false
@@ -231,9 +231,11 @@ class ClustersManage(Resource):
             if not all([args['platform_id'], args['dc_id'], args['cluster_name']]):
                 g.error_code = 4102
                 raise Exception('Parameter error')
-            cluster_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
-                                                         dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
-            data['resources_id'] = cluster_id
+            new_cluster = Cluster(platform_id=args['platform_id'])
+            cluster_tree, cluster_local = new_cluster.create(dc_id=args['dc_id'], cluster_name=args['cluster_name'])
+            # cluster_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
+            #                                           dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
+            data['resources_id'] = cluster_local.id
         except Exception as e:
             data['result'] = False
             return set_return_val(False, data, str(e), g.error_code)
