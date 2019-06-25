@@ -19,6 +19,7 @@ parser.add_argument('operation')    # 发现协议操作
 parser.add_argument('uplink_quantity')    # 上传链路组数量
 parser.add_argument('uplink_prefix')    # 上传链路组前缀名称
 parser.add_argument('switch_version')    # 交换机版本设置
+parser.add_argument("uplink_operation")  # 上传链路操作   add  remove update
 parser.add_argument("old_uplink_name")  # 修改前的单个上传链路名称
 parser.add_argument("new_uplink_name")  # 修改后的单个上传链路名称
 
@@ -381,6 +382,7 @@ class DVSwitchManage(Resource):
               - mtu
               - protocol
               - operation
+              - uplink_operation
               - old_uplink_name
               - new_uplink_name
               properties:
@@ -404,6 +406,11 @@ class DVSwitchManage(Resource):
                   default: "listen"
                   description: 发现协议操作
                   example: "listen"
+                uplink_operation:
+                  type: string
+                  default: "update"
+                  description: 上行链路操作 update add remove
+                  example: "update"
                 old_uplink_name:
                   type: string
                   default: "dvs 1"

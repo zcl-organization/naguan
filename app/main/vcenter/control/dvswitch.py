@@ -83,14 +83,14 @@ def get_dvswitch_infos(platform_id):
     return dvswitch_list
 
 
-def check_if_dvswitch_exists(dvswitch_id=None, platform_id=None, name=None):
+def check_if_dvswitch_exists(dvswitch_id=None, platform_id=None, name=None, dc_name=None):
     """
     检查vswitch是否存在
     """
     if dvswitch_id:
         return True if db.dvswitch.find_dvswitch_by_id(dvswitch_id) else False
-    elif platform_id and name:
-        return True if db.dvswitch.find_dvswitch_by_name(platform_id, name) else False
+    elif platform_id and name and dc_name:
+        return True if db.dvswitch.find_dvswitch_by_name(platform_id, name, dc_name) else False
     else:
         raise RuntimeError("Check Failed!!!")
 
@@ -105,7 +105,9 @@ class DVSwitch:
         """
         创建vswitch
         """
-        if check_if_dvswitch_exists(platform_id=args['platform_id'], name=args['switch_name']):
+        if check_if_dvswitch_exists(
+                platform_id=args['platform_id'], name=args['switch_name'], 
+                dc_name=args['dc_name']):
             g.error_code = 6553
             raise RuntimeError("Project Already Exists!!!")
 
@@ -128,7 +130,7 @@ class DVSwitch:
             raise RuntimeError("Create VSwitch Failed!!!")
         
         # 同步
-        dvs = self._find_dvs_by_name(args['switch_name'])
+        dvs = self._find_dvs_by_name(args['switch_name'], folder)
         data = dict(
             platform_id=args['platform_id'],
             dc_name=dvs.parent.parent.name,
@@ -205,7 +207,8 @@ class DVSwitch:
         
         # update uplink name
         if (args['old_uplink_name'] or args['new_uplink_name']) and args['old_uplink_name'] in old_data['uplink_name']:
-            if not vmdvsm.update_uplink_name(data.name, args['old_uplink_name'], args['new_uplink_name']):
+            if not vmdvsm.update_uplink_name(
+                    data.name, args['uplink_operation'], args['old_uplink_name'], args['new_uplink_name']):
                 raise RuntimeError('Updata DVSwitch UplinkName Failed!!!')
         
         # update switch name
@@ -214,7 +217,9 @@ class DVSwitch:
                 raise RuntimeError("Update DVSwitch Version Failed!!!")
         
         # TODO 同步
-        dvs = self._find_dvs_by_name(data.name)
+        datacenter = self._vcenter.find_datacenter_by_name(data.dc_name)
+        folder = self._find_folder_by_name(datacenter)
+        dvs = self._find_dvs_by_name(data.name, folder)
         data = dict(
             dvswitch_id=dvswitch_id,
             platform_id=args['platform_id'],
@@ -236,9 +241,12 @@ class DVSwitch:
         )
         db.dvswitch.dvswitch_update(**data)
 
-    def _find_dvs_by_name(self, dvswitch_name):
+    def _find_dvs_by_name(self, dvswitch_name, folder=None):
         content = self._vcenter.connect
-        container = content.viewManager.CreateContainerView(content.rootFolder, [vim.DistributedVirtualSwitch], True)
+        if not folder:
+            folder = content.rootFolder
+        
+        container = content.viewManager.CreateContainerView(folder, [vim.DistributedVirtualSwitch], True)
         
         for dvswitch in container.view:
             if dvswitch.name == dvswitch_name:
@@ -283,7 +291,6 @@ class DVSwitchHost:
             raise RuntimeError("add Host {} To Switch {} Failed!!!".format(
                 args['host_name'], args['switch_name']))
 
-
     def remove_host(self, dvswitch_id, args):
         datacenter = self._vcenter.find_datacenter_by_name(args['dc_name'])
         if not datacenter:
@@ -309,7 +316,6 @@ class DVSwitchHost:
         if not vmdhm.remove(host):
             raise RuntimeError("Remove Host {} To Switch {} Failed!!!".format(
                 args['host_name'], args['switch_name']))
-
 
     def edit_host(self, dvswitch_id, args):
         datacenter = self._vcenter.find_datacenter_by_name(args['dc_name'])

@@ -84,11 +84,12 @@ def find_dvswitch_by_id(dvswitch_id):
     return db.session.query(VCenterDvswitch).filter_by(id=dvswitch_id).first()
 
 
-def find_dvswitch_by_name(platform_id, dvswitch_name):
+def find_dvswitch_by_name(platform_id, dvswitch_name, dc_name):
     """
     通过名称获取dvswitch对象   (待处理)
     """
     return db.session.query(VCenterDvswitch).filter_by(
         platform_id=platform_id,
-        name=dvswitch_name
+        name=dvswitch_name,
+        dc_name=dc_name
     ).first()

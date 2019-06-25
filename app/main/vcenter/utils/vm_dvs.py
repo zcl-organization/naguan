@@ -101,22 +101,22 @@ class VMDvswitchManager:
         
         return False  # 无修改
 
-    def update_uplink_name(self, switch_name, old_uplink_name, new_uplink_name):
+    def update_uplink_name(self, switch_name, operation, old_uplink_name, new_uplink_name):
         dvs = self._get_object([vim.DistributedVirtualSwitch], switch_name, self._folder)
         
         config_spec = vim.dvs.VmwareDistributedVirtualSwitch.ConfigSpec()
         config_spec.configVersion = dvs.config.configVersion
         config_spec.uplinkPortPolicy = vim.DistributedVirtualSwitch.NameArrayUplinkPortPolicy()
-        if old_uplink_name and new_uplink_name:  # 修改旧的数据
+        if operation == "update":  # 修改旧的数据
             for uplink_port_name in dvs.config.uplinkPortPolicy.uplinkPortName:
                 append_name = new_uplink_name if uplink_port_name == old_uplink_name else uplink_port_name
                 config_spec.uplinkPortPolicy.uplinkPortName.append(append_name)
-        elif old_uplink_name and not new_uplink_name:  # 删除旧的数据
+        elif operation == "remove":  # 删除旧的数据
             for uplink_port_name in dvs.config.uplinkPortPolicy.uplinkPortName:
                 if uplink_port_name == old_uplink_name:
                     continue
                 config_spec.uplinkPortPolicy.uplinkPortName.append(uplink_port_name)
-        elif not old_uplink_name and new_uplink_name:  # 添加新数据
+        elif operation == "add":  # 添加新数据
             for uplink_port_name in dvs.config.uplinkPortPolicy.uplinkPortName:
                 config_spec.uplinkPortPolicy.uplinkPortName.append(uplink_port_name)
             config_spec.uplinkPortPolicy.uplinkPortName.append(new_uplink_name)
