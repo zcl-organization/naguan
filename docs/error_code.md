@@ -902,3 +902,58 @@
 | 6403 | 当前机器无模板 | Current machine has no template |
 | 6404 | 不存在对应VM | There is no corresponding VM |
 
+
+## vCenter  DVSwitch（错误码范围: 6500～6799）
+
+#### 查看DVSwitch （6500～6549）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6500 | 查看DVSwitch信息成功 | View DVSwitch information success |
+| 6501 | 查看DVSwitch信息失败 | Failed to view DVSwitch information |
+| 6502 | 参数错误 | Wrong parameter |
+
+#### 创建DVSwitch  （6550～6599）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6550 | 创建DVSwitch成功 | Creating DVSwitch successfully |
+| 6551 | 创建DVSwitch失败 | Failed to create DVSwitch |
+| 6552 | 参数错误 | Wrong parameter |
+| 6553 | 已存在对应DVSwitch | Corresponding DVSwitch already exists |
+
+#### 删除DVSwitch  （6600～6649）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6600 | 删除DVSwitch成功 | Delete DvSwitch successfully |
+| 6601 | 删除DVSwitch失败 | Deleting DVSwitch failed |
+| 6602 | 参数错误 | Wrong parameter |
+| 6603 | DVSwitch不存在 | DVSwitch does not exist |
+
+#### 更新DVSwitch  （6650～6699）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6650 | 更新DVSwitch信息成功 | Update DVSwitch information successfully |
+| 6651 | 更新DVSwitch信息失败 | Failure to update DVSwitch information |
+| 6652 | 参数错误 | Wrong parameter |
+| 6653 | DVSwitch不存在 | DVSwitch does not exist |
+
+#### 向DVSwitch添加主机  （6700～6749）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6700 | 创建DVSwitch成功 | Creating DVSwitch successfully |
+| 6701 | 创建DVSwitch失败 | Failed to create DVSwitch |
+| 6702 | 参数错误 | Wrong parameter |
+| 6703 | 已存在对应DVSwitch | Corresponding DVSwitch already exists |
+
+#### 向DVSwitch移除主机  （6750～6799）
+
+| code | 错误描述 | Error Description |
+| ---- | -------- | ----------------- |
+| 6750 | 删除DVSwitch成功 | Delete DVSwitch successfully |
+| 6751 | 删除DVSwitch失败 | Deleting DVSwitch failed |
+| 6752 | 参数错误 | Wrong parameter |
+| 6753 | DVSwitch不存在 | DVSwitch does not exist |

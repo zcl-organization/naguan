@@ -105,7 +105,7 @@ class DVSwitch:
         创建vswitch
         """
         if check_if_dvswitch_exists(platform_id=args['platform_id'], name=args['switch_name']):
-            g.error_code = 4753
+            g.error_code = 6553
             raise RuntimeError("Project Already Exists!!!")
 
         build_data = dict(
@@ -163,7 +163,7 @@ class DVSwitch:
         """
         data = db.dvswitch.find_dvswitch_by_id(dvswitch_id)
         if not data:
-            g.error_code = 4803
+            g.error_code = 6603
             raise RuntimeError("Project Does Not Exists!!!")
 
         self.delete_dvswitch_by_name(data.name, data.dc_name)
@@ -176,7 +176,7 @@ class DVSwitch:
         """
         data = db.dvswitch.find_dvswitch_by_id(dvswitch_id)
         if not data:
-            g.error_code = 4853
+            g.error_code = 6653
             raise RuntimeError('Project Does Not Exists!!!')
 
         old_data = dict(
