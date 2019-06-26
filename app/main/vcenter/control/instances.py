@@ -288,7 +288,7 @@ class Instance(object):
         )
         # 创建vm实例
         build_status, build_info = self._vm_device_info_manager.build_without_device_info(
-            vm_name, dc_info.dc_oc_name, int(new_cpu), int(new_memory))
+            vm_name, dc_info.dc_oc_name, dc_info.cluster_oc_name, int(new_cpu), int(new_memory))
         
         if build_status:
             g.error_code = 3290

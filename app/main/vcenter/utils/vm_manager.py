@@ -188,10 +188,28 @@ class VMDeviceInfoManager:
     def vm(self, vm):
         self._vm = vm
 
-    def build_without_device_info(self, vm_name, dc_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
+    def _get_resource_pool(self, datacenter, cluster_name, resource_pool_name=None):
+        if cluster_name:
+            cluster = self._get_device([vim.ComputeResource], cluster_name, folder=datacenter)
+            if not cluster:
+                raise RuntimeError("Get Cluter Failed!!!")
+        else:
+            cluster = None
+
+        # get resource pools limiting search to cluster or datacenter
+        if resource_pool_name:
+            resource_pool = self._get_device([vim.ResourcePool], resource_pool_name, folder=cluster or datacenter)
+        else:
+            import pdb;pdb.set_trace()
+            resource_pool = cluster.resourcePool
+
+        return resource_pool
+
+    def build_without_device_info(self, vm_name, dc_name, cluster_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
         try:
             data_center = self._get_device([vim.Datacenter], dc_name)
-            resource_pool = data_center.hostFolder.childEntity[0].resourcePool
+            # resource_pool = data_center.hostFolder.childEntity[0].resourcePool
+            resource_pool = self._get_resource_pool(data_center, cluster_name)
             datastore_path = '[datastore1]' + vm_name   # TODO 写死的datastore1需要修改
 
             vmx_file = vim.vm.FileInfo(
@@ -552,11 +570,14 @@ class VMDeviceInfoManager:
         
         return True
 
-    def _get_device(self, vim_type, device_name):
+    def _get_device(self, vim_type, device_name, folder=None):
         """获取设备信息"""
+        if not folder:
+            folder = self._content.rootFolder
+
         device_info = None
         container = self._content.viewManager.CreateContainerView(
-            self._content.rootFolder, vim_type, True
+            folder, vim_type, True
         )
 
         for item in container.view:
