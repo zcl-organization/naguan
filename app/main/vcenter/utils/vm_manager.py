@@ -200,7 +200,6 @@ class VMDeviceInfoManager:
         if resource_pool_name:
             resource_pool = self._get_device([vim.ResourcePool], resource_pool_name, folder=cluster or datacenter)
         else:
-            import pdb;pdb.set_trace()
             resource_pool = cluster.resourcePool
 
         return resource_pool
