@@ -52,7 +52,7 @@ def sync_dvswitch(dvswitch_datas, platform_id):
         db.dvswitch.dvswitch_delete(item)
 
 
-def get_dvswitch_infos(platform_id):
+def get_dvswitch_infos(platform_id, has_host):
     """
     获取本地所有的dvswitch信息
     """
@@ -60,6 +60,9 @@ def get_dvswitch_infos(platform_id):
     dvswitch_list = []
 
     for dvswitch in dvswitchs:
+        if has_host and not dvswitch.host_id:
+            continue
+
         dvs_item = dict(
             id=dvswitch.id,
             platform_id=dvswitch.platform_id,

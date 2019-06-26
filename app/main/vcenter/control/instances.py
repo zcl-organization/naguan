@@ -336,7 +336,7 @@ class Instance(object):
         # 添加Dvswitch 网络信息
         for network in networks.get('dvswitch', []):
             local_network_port_group = network_port_group_manage.get_dvs_network_by_id(network)
-            network_status, network_info = self._vm_device_info_manager.add_network_dvswitch(local_network_port_group.name)
+            network_status, network_info = self._vm_device_info_manager.add_to_dvswitch_portgroup(local_network_port_group.name)
 
             if not network_status:
                 g.error_code = 3311
@@ -353,7 +353,7 @@ class Instance(object):
         for network in networks.get('vswitch', []):
             local_network_port_group = network_port_group_manage.get_network_by_id(network)
 
-            network_status, network_info = self._vm_device_info_manager.add_network_vswitch(local_network_port_group.name)
+            network_status, network_info = self._vm_device_info_manager.add_to_vswitch_portgroup(local_network_port_group.name)
             
             if not network_status:
                 g.error_code = 3311  # TODO

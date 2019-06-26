@@ -266,7 +266,7 @@ class VMDeviceInfoManager:
         
         return True, None
 
-    def add_network_vswitch(self, network_name):
+    def add_to_vswitch_portgroup(self, network_name):
         try:
             nic_spec = vim.vm.device.VirtualDeviceSpec()
             nic_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
@@ -300,7 +300,7 @@ class VMDeviceInfoManager:
         
         return True, None
 
-    def add_network_dvswitch(self, network_name):
+    def add_to_dvswitch_portgroup(self, network_name):
         try:
             # 配置虚拟的网卡
             nic_spec = vim.vm.device.VirtualDeviceSpec()
