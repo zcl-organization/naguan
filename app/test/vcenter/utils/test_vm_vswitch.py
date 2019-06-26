@@ -22,7 +22,7 @@ nics = []#['vmnic3',]
 switch_name = 'Mu_Test'
 
 
-class TestResourcePool(unittest.TestCase):
+class TestVMVswitchManager(unittest.TestCase):
     def setUp(self):
         cloud_platform.platform_list = Mock(return_value=platforms)
         _vcenter = VCenter(1)

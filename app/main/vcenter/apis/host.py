@@ -359,7 +359,7 @@ class HostManage(Resource):
     @basic_auth.login_required
     def put(self, host_id):
         """
-         删除 Host 信息
+         更新 Host 状态
         ---
        tags:
           - vCenter Host
@@ -396,7 +396,7 @@ class HostManage(Resource):
                   items:
                     properties:
           400:
-            description: 获取失败
+            description: 更新失败
             schema:
               properties:
                 ok:

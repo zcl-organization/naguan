@@ -14,3 +14,4 @@ from app.main.vcenter.db import vswitch
 from app.main.vcenter.db import host
 from app.main.vcenter.db import license
 
+from app.main.vcenter.db import dvswitch

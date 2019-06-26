@@ -505,6 +505,27 @@ class VCenterClusters(db.Model):
     host_nums = db.Column(db.Integer)
     vm_nums = db.Column(db.Integer)
 
+class VCenterDvswitch(db.Model):
+    __tablename__ = 'vcenter_dvswitch'
+    id = db.Column(db.Integer, primary_key=True)  # id
+    platform_id = db.Column(db.Integer)  # 平台id
+    dc_name = db.Column(db.String(255))  # datacenter名称
+    dc_mor_name = db.Column(db.String(255))  # datacenter mor name
+    name = db.Column(db.String(255))  # 交换机名称
+    mor_name = db.Column(db.String(32))  # 交换机mor_name
+    host_id = db.Column(db.String(255))  # 添加的主机id列表
+    mtu = db.Column(db.Integer)   # 交换机mtu设置
+    active_uplink_port = db.Column(db.String(255))  # 活动上行链路信息
+    standby_uplink_port = db.Column(db.String(255))  # 静止上行链路信息
+    protocol = db.Column(db.String(255))  # 发现协议类型
+    operation = db.Column(db.String(255))  # 发现协议操作
+    version = db.Column(db.String(100))  # 指定的dvswitch版本
+    describe = db.Column(db.String(255))  # 描述
+    admin_name = db.Column(db.String(255))  # 管理者名称
+    admin_describe = db.Column(db.String(255))  # 管理者描述
+    mulit_mode = db.Column(db.String(255))  # 多拨模式
+
+
 class Company(db.Model):
     __tablename__ = 'company'
     id = db.Column(db.Integer, primary_key=True)

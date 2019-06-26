@@ -182,6 +182,13 @@ class Host:
         host_object = get_obj(self.content, [vim.HostSystem], host.name)
         if not host_object.runtime.inMaintenanceMode:  # ExitMaintenanceMode_Task
             try:
+                # EnterMaintenanceMode_Task 三个参数，
+                # timeout，当主机成功进入维护模式或超时过期时，任务完成，在后一种情况下，任务包含超时错误。如果超时小于或等于零，则不存在超时。超时以秒为单位指定
+                # evacuatePoweredOffVms，这是一个只有VirtualCenter支持的参数。如果设置为true，对于已禁用DRS的集群，除非手动重新注册所有已关闭电源的虚拟机，
+                # 否则任务不会成功;对于启用DRS的集群，VirtualCenter将自动重新注册关闭电源的虚拟机，关闭电源的虚拟机可能只保留在主机上，
+                # 有原因两个:(1)没有找到用于重新注册的兼容主机;(2)虚拟机禁用DRS。如果设置为false，则不需要移动关闭电源的虚拟机
+                # maintenanceSpec 主机进入维护模式时要采取的任何其他操作。如果省略，默认操作将在HostMaintenanceSpec中记录下来
+
                 maintenance_mode_task = host_object.EnterMaintenanceMode_Task(300, True, None)
                 WaitForTask(maintenance_mode_task)
                 mode = True
