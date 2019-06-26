@@ -266,7 +266,7 @@ class VMDeviceInfoManager:
         
         return True, None
 
-    def add_network(self, network_name):
+    def add_network_vswitch(self, network_name):
         try:
             nic_spec = vim.vm.device.VirtualDeviceSpec()
             nic_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
@@ -294,6 +294,43 @@ class VMDeviceInfoManager:
             network_config_spec = vim.vm.ConfigSpec()
             network_config_spec.deviceChange = [nic_spec,]
 
+            WaitForTask(self.vm.ReconfigVM_Task(spec=network_config_spec))
+        except Exception as e:
+            return False, e
+        
+        return True, None
+
+    def add_network_dvswitch(self, network_name):
+        try:
+            # 配置虚拟的网卡
+            nic_spec = vim.vm.device.VirtualDeviceSpec()
+            nic_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+            nic_spec.device = vim.vm.device.VirtualE1000()
+            nic_spec.device.deviceInfo = vim.Description()
+            nic_spec.device.deviceInfo.summary = 'vCenter API test'  # TODO
+            nic_spec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            nic_spec.device.connectable.startConnected = True
+            nic_spec.device.connectable.allowGuestControl = True
+            nic_spec.device.connectable.connected = False
+            nic_spec.device.connectable.status = 'untried'
+            nic_spec.device.wakeOnLanEnabled = True
+            nic_spec.device.addressType = 'assigned'
+            # 配置端口链接dvs端口组信息
+            pg = self._get_device([vim.dvs.DistributedVirtualPortgroup], network_name)
+            if not pg:
+                raise RuntimeError("Not find the PortGroup")
+            dvswitch = pg.config.distributedVirtualSwitch
+
+            port = vim.dvs.PortConnection()
+            port.switchUuid = dvswitch.uuid
+            port.portgroupKey = pg.key
+            # 配置端口连接端口组
+            nic = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+            nic.port = port
+            nic_spec.device.backing = nic
+            # 完成网络配置
+            network_config_spec = vim.vm.ConfigSpec()
+            network_config_spec.deviceChange = [nic_spec,]
             WaitForTask(self.vm.ReconfigVM_Task(spec=network_config_spec))
         except Exception as e:
             return False, e
@@ -364,9 +401,12 @@ class VMDeviceInfoManager:
     def remove_network(self, nic_label):
         try:
             virtual_nic_device = None
+            network_card = (vim.vm.device.VirtualEthernetCard, vim.vm.device.VirtualE1000)
             for network_dev in self.vm.config.hardware.device:
-                if isinstance(network_dev, vim.vm.device.VirtualEthernetCard) and network_dev.deviceInfo.label == nic_label:
+                if isinstance(network_dev, network_card) and network_dev.deviceInfo.label == nic_label:
                     virtual_nic_device = network_dev
+                    break
+                
 
             if not virtual_nic_device:
                 raise Exception

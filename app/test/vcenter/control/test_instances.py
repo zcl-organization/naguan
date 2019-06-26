@@ -25,7 +25,8 @@ create_info = {
     'disks': '', 
     'image_id': ''
 }
-network_str = json.dumps([6,])
+network_str = json.dumps({"vswitch":[], "dvswitch": [7,]})
+del_network_str = json.dumps([74,])
 disk_str = json.dumps([{'type': 'thin', 'size': 16}, ])
 
 snapshot_info = {
@@ -204,7 +205,7 @@ class TestIntance(unittest.TestCase):
         with app.test_request_context():
             g.username = 'test'
             g.request_id = 0
-            self._uti.del_network(network_str)
+            self._uti.del_network(del_network_str)
         
         for item in self._uti.vm.config.hardware.device:
             if isinstance(item, vim.vm.device.VirtualE1000):

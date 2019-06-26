@@ -149,10 +149,10 @@ class NetWorkManage(Resource):
                   description: 云主机uuid
                   example: 2018ddf-f886-12b5-a652-dd60b04ca2df
                 networks:
-                  type: integer
-                  default: '[1,2]'
-                  description: '[1,2]--network_port_group_id'
-                  example: '[1,2]'
+                  type: dict
+                  default: '{"dvswitch": [1,2], "vswitch": [1,2]}'
+                  description: '{"dvswitch": [1,2], "vswitch": [1,2]}--network_port_group_id'
+                  example: '{"dvswitch": [1,2], "vswitch": [1,2]}'
 
        responses:
           200:

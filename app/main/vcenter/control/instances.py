@@ -329,21 +329,41 @@ class Instance(object):
         )
 
         networks = json.loads(networks) if isinstance(networks, str) else networks
+        
+        if not isinstance(networks, dict):
+            raise RuntimeError("Parameter Error!!!")
 
-        for network in networks:
-            local_network_port_group = network_port_group_manage.get_network_by_id(network)
+        # 添加Dvswitch 网络信息
+        for network in networks.get('dvswitch', []):
+            local_network_port_group = network_port_group_manage.get_dvs_network_by_id(network)
+            network_status, network_info = self._vm_device_info_manager.add_network_dvswitch(local_network_port_group.name)
 
-            network_status, network_info = self._vm_device_info_manager.add_network(local_network_port_group.name)
-            
             if not network_status:
-                g.error_code = 3311  # TODO
-                data['result'] = False
-                data['event'] = unicode('为虚拟机({})添加网卡信息'.format(self.local_vm.id))
+                g.error_code = 3311
+                data["result"] = False
+                data['event'] = unicode('为虚拟机({})添加DVS网卡信息'.format(self.local_vm.id))
                 base_control.event_logs.eventlog_create(**data)
                 raise Exception(network_info)
             
             data['result'] = True
-            data['event'] = unicode('为虚拟机({})添加网卡信息: {}'.format(self.local_vm.id, local_network_port_group.name))
+            data['event'] = unicode('为虚拟机({})添加DVS网卡信息: {}'.format(self.local_vm.id, local_network_port_group.name))
+            base_control.event_logs.eventlog_create(**data)  # 逐条记录
+
+        # 添加Vswitch 网络信息
+        for network in networks.get('vswitch', []):
+            local_network_port_group = network_port_group_manage.get_network_by_id(network)
+
+            network_status, network_info = self._vm_device_info_manager.add_network_vswitch(local_network_port_group.name)
+            
+            if not network_status:
+                g.error_code = 3311  # TODO
+                data['result'] = False
+                data['event'] = unicode('为虚拟机({})添加VS网卡信息'.format(self.local_vm.id))
+                base_control.event_logs.eventlog_create(**data)
+                raise Exception(network_info)
+            
+            data['result'] = True
+            data['event'] = unicode('为虚拟机({})添加VS网卡信息: {}'.format(self.local_vm.id, local_network_port_group.name))
             base_control.event_logs.eventlog_create(**data)  # 逐条记录
 
         # 同步云主机网卡信息
