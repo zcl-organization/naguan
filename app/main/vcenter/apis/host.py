@@ -356,8 +356,63 @@ class HostManage(Resource):
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def put(self, host_id):
+        """
+         更新 Host 状态
+        ---
+       tags:
+          - vCenter Host
+       security:
+       - basicAuth:
+          type: http
+          scheme: basic
+       parameters:
+          - in: query
+            name: platform_id
+            type: integer
+            required: true
+            description: '1 -- platform_id'
+          - in: path
+            name: host_id
+            type: integer
+            required: true
+            description: '1 -- host_id'
+       responses:
+          200:
+            description: vCenter Host 信息
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+          400:
+            description: 更新失败
+            schema:
+              properties:
+                ok:
+                  type: boolean
+                  description: 状态
+                  default: False
+                code:
+                  type: "integer"
+                  format: "int64"
+                msg:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    properties:
+        """
         data = dict(
             type='Host',
             result=True,

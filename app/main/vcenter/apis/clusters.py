@@ -20,7 +20,7 @@ class ClustersManage(Resource):
     @basic_auth.login_required
     def get(self):
         """
-         获取vCenter DataCenter 信息
+         获取vCenter Cluster 信息
         ---
        tags:
           - vCenter Cluster
