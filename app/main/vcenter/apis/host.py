@@ -3,7 +3,7 @@ from flask import g
 from flask_restful import Resource, reqparse
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
-from app.main.vcenter.control.host import Host, find_host
+from app.main.vcenter.control.host import Host
 from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
@@ -152,8 +152,9 @@ class HostManage(Resource):
         """
         try:
             args = parser.parse_args()
-            data = find_host(platform_id=args['platform_id'], id=args['host_id'],
-                             host_name=args['host_name'], dc_name=args['dc_name'], cluster_name=args['cluster_name'])
+            host = Host(args['platform_id'])
+            data = host.find_host(id=args['host_id'], host_name=args['host_name'],
+                                  dc_name=args['dc_name'], cluster_name=args['cluster_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Host info get Success!', 3000)
@@ -356,7 +357,7 @@ class HostManage(Resource):
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Delete Success!!!', 3000)
 
-    # @basic_auth.login_required
+    @basic_auth.login_required
     def put(self, host_id):
         data = dict(
             type='Host',

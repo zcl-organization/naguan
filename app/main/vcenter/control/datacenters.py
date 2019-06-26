@@ -2,44 +2,81 @@
 from flask import g
 from pyVim.task import WaitForTask
 from pyVmomi import vim
-from app.main.vcenter.control.utils import get_mor_name, get_connect, get_obj
+from app.main.vcenter.control.utils import get_mor_name, get_obj
 from app.main.vcenter import db
 from app.main.vcenter.utils.base import VCenter
-from app.main.vcenter.control.datastores import sync_datastore
 
 
-def sync_datacenter(vcenter_obj, dacenter_obj):
-    dc_mor_name = get_mor_name(dacenter_obj)
-    dc_host_moc = get_mor_name(dacenter_obj.hostFolder)
-    dc_vm_moc = get_mor_name(dacenter_obj.vmFolder)
+def sync_datacenter(vcenter_obj, datacenter_obj):
+    dc_mor_name = get_mor_name(datacenter_obj)
+    dc_host_moc = get_mor_name(datacenter_obj.hostFolder)
+    dc_vm_moc = get_mor_name(datacenter_obj.vmFolder)
 
-    # 同步dc
-    # sync_datastore(vcenter_obj.platform, dacenter_obj, vcenter_obj.si, vcenter_obj.connect)
     # 获取dc的上一级信息
     dc_parent = db.vcenter.get_vcenter_tree_by_tree_type(vcenter_obj.platform['id'], 1)
 
     dc_exists = db.vcenter.check_if_dc_exists_by_dc_mor_name(vcenter_obj.platform['id'], dc_mor_name, 2)
     if dc_exists:
         dc_tree = db.vcenter.vcenter_tree_update(tree_type=2, platform_id=vcenter_obj.platform['id'],
-                                                 name=dacenter_obj.name,
-                                                 dc_mor_name=dc_mor_name, dc_oc_name=dacenter_obj.name,
+                                                 name=datacenter_obj.name,
+                                                 dc_mor_name=dc_mor_name, dc_oc_name=datacenter_obj.name,
                                                  mor_name=dc_mor_name,
                                                  dc_host_folder_mor_name=dc_host_moc, dc_vm_folder_mor_name=dc_vm_moc,
                                                  pid=dc_parent.id)
     else:
         dc_tree = db.vcenter.vcenter_tree_create(tree_type=2, platform_id=vcenter_obj.platform['id'],
-                                                 name=dacenter_obj.name, dc_mor_name=dc_mor_name,
-                                                 dc_oc_name=dacenter_obj.name,
+                                                 name=datacenter_obj.name, dc_mor_name=dc_mor_name,
+                                                 dc_oc_name=datacenter_obj.name,
                                                  mor_name=dc_mor_name, dc_host_folder_mor_name=dc_host_moc,
                                                  dc_vm_folder_mor_name=dc_vm_moc, pid=dc_parent.id)
-    # TODO vcenter dc 资源数据同步
+    #  vcenter dc 资源数据同步
+    vm_nums = 0
+    if len(datacenter_obj.datastore) > 0:
+        vm_list = []
+        for ds in datacenter_obj.datastore:
+            for vm in ds.vm:
+                vm_list.append(vm)
+        vm_nums += len(set(vm_list))
+    cluster_nums = len(datacenter_obj.hostFolder.childEntity)
+    datastore_nums = len(datacenter_obj.datastore)
+    network_nums = len(datacenter_obj.network)
+    cpu_capacity = 0  # cpu容量
+    used_cpu = 0  # 已用cpu
+    memory = 0  # 内存
+    used_memory = 0  # 已用内存
+    capacity = 0  # 容量
+    used_capacity = 0  # 已用容量
+    host_nums = 0
+    if len(datacenter_obj.hostFolder.childEntity) > 0:
+        for cluster in datacenter_obj.hostFolder.childEntity:
+            host_nums += len(cluster.host)
+            if len(cluster.host) > 0:
+                for host in cluster.host:
+                    nums = int(host.summary.hardware.numCpuCores)
+                    cpu_capacity += nums * host.summary.hardware.cpuMhz
+                    used_cpu += host.summary.quickStats.overallCpuUsage
+                    memory += host.summary.hardware.memorySize
+                    used_memory += host.summary.quickStats.overallMemoryUsage
+                    host_capacity = 0
+                    host_free_capacity = 0
+                    for ds in host.datastore:
+                        host_capacity += ds.summary.capacity
+                        host_free_capacity += ds.summary.freeSpace
+                    host_used_capacity = host_capacity - host_free_capacity
+                    capacity += host_capacity
+                    used_capacity += host_used_capacity
     data = dict(
-        name=dacenter_obj.name, mor_name=dc_mor_name, platform_id=vcenter_obj.platform['id'],
-        host_nums=0, vm_nums=0, cluster_nums=0, network_nums=0, datastore_nums=0,
-        cpu_capacity=0, used_cpu=0, memory=0, used_memory=0, capacity=0, used_capacity=0,
+        name=datacenter_obj.name, mor_name=dc_mor_name, platform_id=vcenter_obj.platform['id'],
+        host_nums=host_nums, vm_nums=vm_nums, cluster_nums=cluster_nums,
+        network_nums=network_nums, datastore_nums=datastore_nums,
+        cpu_capacity=cpu_capacity, used_cpu=used_cpu, memory=memory,
+        used_memory=used_memory, capacity=capacity, used_capacity=used_capacity,
     )
-    # TODO 同步
-    dc_local = db.datacenters.create_datacenter(**data)
+    dc_info = db.datacenters.get_datacenter_by_mor_name(vcenter_obj.platform['id'], dc_mor_name)
+    if dc_info:
+        dc_local = db.datacenters.update_datacenter(**data)
+    else:
+        dc_local = db.datacenters.create_datacenter(**data)
     return dc_tree, dc_local
 
 
@@ -130,18 +167,6 @@ def sync_datacenter(vcenter_obj, dacenter_obj):
 #     return dc_list
 #
 #     # return db.datacenters.get_datacenters(platform_id)
-#
-#
-# # 获取Vcenter id
-# def get_vCenter_pid(platform):
-#     result = db.vcenter.vcenter_tree_get_by_platform(platform['id'], platform['platform_name'], 1)
-#     if result:
-#         vCenter_pid = result.id
-#     else:
-#         vCenter_pid = db.vcenter.vcenter_tree_create(tree_type=1, platform_id=platform['id'],
-#                                                      name=platform['platform_name'])
-#     return vCenter_pid
-
 
 class DataCenter(object):
     def __init__(self, platform_id):
@@ -159,17 +184,14 @@ class DataCenter(object):
             new_dc_obj = folder.CreateDatacenter(name=args['dc_name'])
         except Exception:
             raise RuntimeError('create new DataCenter failed')
-
-        # TODO 同步dc信息到vcenter 表 以及 datacenter表
+        # datacenters = self._vCenter.connect.rootFolder.childEntity
+        # for dc in datacenters:
+        #     sync_datacenter(self._vCenter, dc)
         dc_tree, dc_local = sync_datacenter(self._vCenter, new_dc_obj)
         return dc_local
 
     def delete(self, dc_id):
-        import pdb
-        pdb.set_trace()
-
         dc_info = db.datacenters.get_dc_by_id(dc_id)
-
         dc_tree = db.vcenter.get_vcenter_obj_by_mor_name(self._vCenter.platform['id'], dc_info.mor_name)
 
         # 判断本地datacenter下是否存在资源

@@ -222,8 +222,7 @@ class DataCenterManage(Resource):
                 raise Exception('Parameter error')
             if len(args['dc_name']) > 80:
                 g.error_code = 4303
-                raise ValueError("The name of the datacenter must be under "
-                                 "80 characters.")
+                raise ValueError("The name of the datacenter must be under 80 characters.")
             datacenter = DataCenter(args['platform_id'])
             dc_info = datacenter.create(args)
             # dc_id = control.datacenters.create_datacenter(

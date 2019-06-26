@@ -2,17 +2,22 @@
 import hashlib
 import socket
 import ssl
-import time
 
 from pyVim.task import WaitForTask
 from pyVmomi import vim
-from app.main.vcenter.control.utils import get_connect, get_obj_by_mor_name, get_obj, get_mor_name
+from app.main.vcenter.control.utils import get_obj_by_mor_name, get_obj, get_mor_name
 from app.main.vcenter import db
+from app.main.vcenter.utils.base import VCenter
+
+
+def sync_host(vcenter_obj, dc_obj, cluster_obj, host_obj):
+    pass
 
 
 class Host:
     def __init__(self, platform_id):
-        self.si, self.content, self.platform = get_connect(platform_id)
+        self._platform_id = platform_id
+        self._vCenter = VCenter(platform_id)
 
     # 添加host
     def add_host(self, host_name, esxi_username, esxi_password, as_connected=True, cluster_id=None,
@@ -31,12 +36,12 @@ class Host:
         task = None
         vcenter_tree_cluster = None
         if cluster_id:
-            cluster = db.clusters.get_cluster(self.platform['id'], cluster_id)
-            vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(self.platform['id'], cluster.mor_name)
+            cluster = db.clusters.get_cluster(self._platform_id, cluster_id)
+            vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(self._platform_id, cluster.mor_name)
             if vcenter_tree_cluster.type != 3:
                 raise ValueError('The selected object is not a cluster')
             mor_name = cluster.mor_name
-            cluster_obj = get_obj_by_mor_name(self.content, [vim.ClusterComputeResource], mor_name)
+            cluster_obj = get_obj_by_mor_name(self._vCenter.connect, [vim.ClusterComputeResource], mor_name)
             try:
                 task = cluster_obj.AddHost_Task(
                     spec=host_connect_spec, asConnected=as_connected,
@@ -49,7 +54,7 @@ class Host:
         except Exception as task_error:
             raise Exception('Error adding host %s task' % task_error)
         # 同步
-        host = get_obj(self.content, [vim.HostSystem], host_name)
+        host = get_obj(self._vCenter.connect, [vim.HostSystem], host_name)
         new_host_id = self.sync_host(host, vcenter_tree_cluster)
         self.vcenter_tree_host_sync(host, cluster=vcenter_tree_cluster)
         return new_host_id
@@ -74,7 +79,7 @@ class Host:
                     dc_mor_name=cluster.dc_mor_name, cluster_name=cluster.cluster_oc_name,
                     cluster_mor_name=cluster.cluster_mor_name, port=config.port,
                     power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
-                    maintenance_mode=runtime.inMaintenanceMode, platform_id=self.platform['id'],
+                    maintenance_mode=runtime.inMaintenanceMode, platform_id=self._platform_id,
                     uuid=host.summary.hardware.uuid, cpu_cores=int(host.summary.hardware.numCpuCores),
                     memory=host.summary.hardware.memorySize, used_memory=host.summary.quickStats.overallMemoryUsage,
                     capacity=capacity, used_capacity=used_capacity, used_cpu=host.summary.quickStats.overallCpuUsage,
@@ -86,7 +91,7 @@ class Host:
         return new_host_id
 
     def vcenter_tree_host_sync(self, host, cluster):
-        db.vcenter.vcenter_tree_create(tree_type=4, platform_id=self.platform['id'],
+        db.vcenter.vcenter_tree_create(tree_type=4, platform_id=self._platform_id,
                                        dc_host_folder_mor_name=cluster.dc_host_folder_mor_name,
                                        dc_mor_name=cluster.dc_mor_name, dc_oc_name=cluster.dc_oc_name,
                                        dc_vm_folder_mor_name=cluster.dc_vm_folder_mor_name,
@@ -139,7 +144,7 @@ class Host:
         """Remove host from vCenter"""
         host = db.host.get_host_by_id(host_id)
         task = None
-        host_object = get_obj(self.content, [vim.HostSystem], host.name)
+        host_object = get_obj(self._vCenter.connect, [vim.HostSystem], host.name)
         # Check parent type
         parent_type = self.get_parent_type(host_object)
         try:
@@ -154,7 +159,7 @@ class Host:
         try:
             WaitForTask(task)
             db.host.del_host(host.name)
-            db.vcenter.vcenter_tree_del_by_mor_name(self.platform['id'], host.mor_name)
+            db.vcenter.vcenter_tree_del_by_mor_name(self._platform_id, host.mor_name)
         except Exception as e:
             raise Exception('Error removing host %s task.' % e)
 
@@ -179,7 +184,7 @@ class Host:
         host = db.host.get_host_by_id(host_id)
         if not host:
             raise ValueError('The host id does not exist')
-        host_object = get_obj(self.content, [vim.HostSystem], host.name)
+        host_object = get_obj(self._vCenter.connect, [vim.HostSystem], host.name)
         if not host_object.runtime.inMaintenanceMode:  # ExitMaintenanceMode_Task
             try:
                 maintenance_mode_task = host_object.EnterMaintenanceMode_Task(0, True, None)
@@ -197,23 +202,22 @@ class Host:
         db.host.put_host_maintenance_mode(host_id, mode)
         return mode
 
-
-def find_host(platform_id=None, id=None, host_name=None, dc_name=None, cluster_name=None):
-    hosts = db.host.find_host(platform_id, id, host_name, dc_name, cluster_name)
-    host_list = []
-    for host in hosts:
-        data = dict(
-            id=host.id, name=host.name, mor_mame=host.mor_name, dc_name=host.dc_name,
-            dc_mor_name=host.dc_mor_name, cluster_name=host.cluster_name,
-            cluster_mor_name=host.cluster_mor_name, port=host.port,
-            power_state=host.power_state, connection_state=host.connection_state,
-            maintenance_mode=host.maintenance_mode, platform_id=platform_id,
-            uuid=host.uuid, cpu_cores=host.cpu_cores,  cpu_mhz=host.cpu_mhz, used_cpu=host.used_cpu,
-            memory=host.memory, used_memory=host.used_memory, capacity=host.capacity,
-            used_capacity=host.used_capacity, cpu_model=host.cpu_model,
-            version=host.version, image=host.image, build=host.build,
-            full_name=host.full_name, boot_time=str(host.boot_time), uptime=host.uptime,
-            vm_nums=host.vm_nums, network_nums=host.network_nums,
-        )
-        host_list.append(data)
-    return host_list
+    def find_host(self, id=None, host_name=None, dc_name=None, cluster_name=None):
+        hosts = db.host.find_host(self._platform_id, id, host_name, dc_name, cluster_name)
+        host_list = []
+        for host in hosts:
+            data = dict(
+                id=host.id, name=host.name, mor_mame=host.mor_name, dc_name=host.dc_name,
+                dc_mor_name=host.dc_mor_name, cluster_name=host.cluster_name,
+                cluster_mor_name=host.cluster_mor_name, port=host.port,
+                power_state=host.power_state, connection_state=host.connection_state,
+                maintenance_mode=host.maintenance_mode, platform_id=self._platform_id,
+                uuid=host.uuid, cpu_cores=host.cpu_cores,  cpu_mhz=host.cpu_mhz, used_cpu=host.used_cpu,
+                memory=host.memory, used_memory=host.used_memory, capacity=host.capacity,
+                used_capacity=host.used_capacity, cpu_model=host.cpu_model,
+                version=host.version, image=host.image, build=host.build,
+                full_name=host.full_name, boot_time=str(host.boot_time), uptime=host.uptime,
+                vm_nums=host.vm_nums, network_nums=host.network_nums,
+            )
+            host_list.append(data)
+        return host_list
