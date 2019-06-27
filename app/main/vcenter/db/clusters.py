@@ -11,6 +11,10 @@ def get_cluster(platform_id, cluster_id):
         return None
 
 
+def get_cluster_by_mor_name(platform_id, mor_name):
+    return db.session.query(VCenterClusters).filter_by(platform_id=platform_id).filter_by(mor_name=mor_name).first()
+
+
 # 查找dc下的cluster_name名称的cluster
 def get_cluster_by_name(platform_id, dc_name, cluster_name):
     return db.session.query(VCenterClusters).filter_by(platform_id=platform_id).\
@@ -56,4 +60,44 @@ def create_cluster(name, mor_name, platform_id, dc_name, dc_mor_name, cpu_nums, 
     db.session.add(new_cluster)
     db.session.flush()
     db.session.commit()
-    return new_cluster.id
+    return new_cluster
+
+
+def update_cluster(name, mor_name, platform_id, dc_name, dc_mor_name, cpu_nums, cpu_capacity,
+                   used_cpu, memory, used_memory, capacity, used_capacity, host_nums, vm_nums):
+    cluster_info = get_cluster_by_mor_name(platform_id, mor_name)
+    if name:
+        cluster_info.name = name
+    cluster_info.mor_name = mor_name
+    cluster_info.platform_id = platform_id
+    if dc_name:
+        cluster_info.dc_name = dc_name
+    if dc_mor_name:
+        cluster_info.dc_mor_name = dc_mor_name
+    if cpu_nums:
+        cluster_info.cpu_nums = cpu_nums
+    if cpu_capacity:
+        cluster_info.cpu_capacity = cpu_capacity
+    if used_cpu:
+        cluster_info.used_cpu = used_cpu
+    if memory:
+        cluster_info.memory = memory
+    if used_memory:
+        cluster_info.used_memory = used_memory
+    if capacity:
+        cluster_info.capacity = capacity
+    if used_capacity:
+        cluster_info.used_capacity = used_capacity
+    if host_nums:
+        cluster_info.host_nums = host_nums
+    if vm_nums:
+        cluster_info.vm_nums = vm_nums
+    db.session.add(cluster_info)
+    db.session.flush()
+    db.session.commit()
+    return cluster_info
+
+
+# 根据platform_id获取所有id
+def get_cluster_all_id(platform_id):
+    return db.session.query(VCenterClusters.id).filter_by(platform_id=platform_id).all()

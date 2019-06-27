@@ -110,12 +110,12 @@ class BaseConfig(object):
 class DevelopConfig(BaseConfig):
     DEBUG = True
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'develop.db')
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan2:123456@192.168.78.108:3306/naguan2?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan:123456@192.168.78.108:3306/naguan?charset=utf8'
 
 
 class TestingConfig(BaseConfig):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan1:123456@192.168.78.108:3306/naguan1?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan:123456@192.168.78.108:3306/naguan?charset=utf8'
 
 
 class ProductConfig(BaseConfig):

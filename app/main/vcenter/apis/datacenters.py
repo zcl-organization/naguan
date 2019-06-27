@@ -5,6 +5,7 @@ from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.base import control as base_control
+from app.main.vcenter.control.datacenters import DataCenter
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -129,8 +130,10 @@ class DataCenterManage(Resource):
         """
         try:
             args = parser.parse_args()
-            data = control.datacenters.find_datacenters(platform_id=args['platform_id'],
-                                                        dc_id=args['dc_id'], dc_name=args['dc_name'])
+            datacenter = DataCenter(args['platform_id'])
+            data = datacenter.list(args)
+            # data = control.datacenters.find_datacenters(platform_id=args['platform_id'],
+            #                                             dc_id=args['dc_id'], dc_name=args['dc_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Datastore info get success.', 3000)
@@ -215,11 +218,16 @@ class DataCenterManage(Resource):
         try:
             g.error_code = 4301
             if not all([args['platform_id'], args['dc_name']]):
-                g.error_code =  4302
+                g.error_code = 4302
                 raise Exception('Parameter error')
-            dc_id = control.datacenters.create_datacenter(
-                platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
-            data['resources_id'] = dc_id
+            if len(args['dc_name']) > 80:
+                g.error_code = 4303
+                raise ValueError("The name of the datacenter must be under 80 characters.")
+            datacenter = DataCenter(args['platform_id'])
+            dc_info = datacenter.create(args)
+            # dc_id = control.datacenters.create_datacenter(
+            #     platform_id=args.get('platform_id'), dc_name=args.get('dc_name'))
+            data['resources_id'] = dc_info.id
         except Exception as e:
             data['result'] = False
             return set_return_val(False, data, str(e), g.error_code)
@@ -313,12 +321,12 @@ class DataCenterManage(Resource):
             if not all([args['platform_id'], id]):
                 g.error_code = 4352
                 raise Exception('Parameter error')
-            control.datacenters.del_datacenter(platform_id=args.get('platform_id'), dc_id=id)
+
+            datacenter = DataCenter(args['platform_id'])
+            datacenter.delete(id)
         except Exception as e:
             data['result'] = False
             return set_return_val(False, data, str(e), g.error_code)
         finally:
             base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, data, 'Datastore delete success.', 4350)
-
-

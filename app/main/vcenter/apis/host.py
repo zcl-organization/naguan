@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 from flask import g
 from flask_restful import Resource, reqparse
+
 from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
-from app.main.vcenter.control.host import Host, find_host
+from app.main.vcenter.control.host import Host
 from app.main.base import control as base_control
 
 parser = reqparse.RequestParser()
@@ -152,8 +153,9 @@ class HostManage(Resource):
         """
         try:
             args = parser.parse_args()
-            data = find_host(platform_id=args['platform_id'], id=args['host_id'],
-                             host_name=args['host_name'], dc_name=args['dc_name'], cluster_name=args['cluster_name'])
+            host = Host(args['platform_id'])
+            data = host.find_host(id=args['host_id'], host_name=args['host_name'],
+                                  dc_name=args['dc_name'], cluster_name=args['cluster_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Host info get Success!', 3000)
@@ -161,7 +163,7 @@ class HostManage(Resource):
     @basic_auth.login_required
     def post(self):
         """
-          创建Host
+          添加 Host
         ---
        tags:
           - vCenter Host
@@ -187,9 +189,9 @@ class HostManage(Resource):
                   example: 1
                 host_name:
                   type: string
-                  default: 192.168.12.203
+                  default: 192.168.78.203
                   description: 主机名称
-                  example: 192.168.12.203
+                  example: 192.168.78.203
                 esxi_username:
                   type: string
                   default: root
@@ -200,29 +202,19 @@ class HostManage(Resource):
                   default: kpy2019
                   description: 密码
                   example: kpy2019
-                folder_name:
-                  type: string
-                  default: kpy2019
-                  description: 存储文件夹
-                  example: kpy2019
                 cluster_id:
                   type: integer
                   default: 1
                   description: 集群id
                   example: 1
-                esxi_license:
-                  type: string
-                  default: HV4WC-01087-1ZJ48-031XP-9A843
-                  description: 许可证
-                  example: HV4WC-01087-1ZJ48-031XP-9A843
-                resource_pool:
+                license_id:
                   type: integer
                   default: 1
-                  description: 资源池
+                  description: 许可证id
                   example: 1
        responses:
           200:
-            description: vCenter Host 创建
+            description: vCenter Host 添加
             schema:
               properties:
                 ok:
@@ -258,7 +250,7 @@ class HostManage(Resource):
             type='Host',
             result=True,
             resources_id=None,
-            event=unicode('创建host'),
+            event=unicode('添加host'),
             submitter=g.username,
         )
         try:
@@ -267,22 +259,22 @@ class HostManage(Resource):
                         args['esxi_username'], args['esxi_password'], args['cluster_id']]):
                 raise ValueError('Parameter Error!')
             host = Host(args['platform_id'])
-            new_host_id = host.add_host(host_name=args['host_name'], esxi_username=args['esxi_username'],
-                                        esxi_password=args['esxi_password'],
-                                        cluster_id=args['cluster_id'], license_id=args['license_id'],
-                                        resource_pool=args['resource_pool'])
-            data['resources_id'] = new_host_id
+            new_host = host.add_host(host_name=args['host_name'], esxi_username=args['esxi_username'],
+                                     esxi_password=args['esxi_password'],
+                                     cluster_id=args['cluster_id'], license_id=args['license_id'],
+                                     resource_pool=args['resource_pool'])
+            data['resources_id'] = new_host.id
         except Exception as e:
             data['result'] = False
             return set_return_val(False, [], str(e), 3001), 400
-        finally:
-            base_control.event_logs.eventlog_create(**data)
+        # finally:
+        #     base_control.event_logs.eventlog_create(**data)
         return set_return_val(True, [], 'Create Host Success!!!', 3000)
 
     @basic_auth.login_required
     def delete(self, host_id):
         """
-         删除Host
+         移除 Host
         ---
        tags:
           - vCenter Host
@@ -340,7 +332,7 @@ class HostManage(Resource):
             type='Host',
             result=True,
             resources_id=host_id,
-            event=unicode('删除host'),
+            event=unicode('移除host'),
             submitter=g.username,
         )
         try:

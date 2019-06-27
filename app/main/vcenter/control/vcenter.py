@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import datetime
 
+from app.main.vcenter.control.clusters import sync_cluster
+from app.main.vcenter.control.datacenters import sync_datacenter
 from app.main.vcenter.control.resource_pool import sync_resourcepool
 from app.main.vcenter.control.utils import get_mor_name, connect_server, get_connect
 from app.main.vcenter.control.network_port_group import sync_network_port_group
@@ -11,6 +13,8 @@ from app.main.vcenter.control import disks as disk_manage
 from app.main.vcenter import db
 from app.main.vcenter.control.datastores import sync_datastore
 from app.main.vcenter.control.snapshots import sync_snapshot
+from app.main.vcenter.control.host import sync_host
+from app.main.vcenter.utils.base import VCenter
 from pyVim import connect
 import atexit
 from flask import g
@@ -45,21 +49,14 @@ def sync_vcenter_vm(si, content, host, platform):
 
     # print time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time()))
     # 查询平台内所有的云主机列表
-    # platform_vm_list = db_vm.vcenter_get_vm_by_platform_id(platform['id'], host.name)
     platform_vm_list = db.instances.vcenter_get_vm_by_platform_id(platform['id'], host.name)
-
-    # instance = Instance(platform_id=platform['id'], si=si, content=content)
 
     vm_list = []
     for vm in platform_vm_list:
         vm_list.append(vm.uuid)
-    # print(vm_list)
-    for vm in vms:
-        # print(dir(vm.config))
 
-        # print(vm.summary.config.name)
-        # print(vm.config.createDate)
-        # return 'ccc'
+    for vm in vms:
+
         if vm.resourcePool:
             resource_pool_name = vm.resourcePool.name
             # db.instances.update_vm_rp_name_by_vm_mor_name(platform['id'], get_mor_name(vm), vm.resourcePool.name)
@@ -72,11 +69,6 @@ def sync_vcenter_vm(si, content, host, platform):
             ip = vm.summary.guest.ipAddress
         else:
             ip = ''
-        #
-        # # 判断为模板 非云主机
-        # if vm.summary.config.template:
-        #     # pass
-        #     continue
 
         if vm.summary.config.uuid in vm_list:
             vm_list.remove(vm.summary.config.uuid)
@@ -134,6 +126,8 @@ def sync_vcenter_vm(si, content, host, platform):
 def sync_vcenter_tree(si, content, platform):
     print ('sync_start:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
 
+    vCenter_obj = VCenter(platform['id'])
+
     # 获取当前云平台的 tree_id
     # vcenter_ids = db_vcenter.vcenter_tree_get_all_id(platform['id'])
     vcenter_ids = db.vcenter.vcenter_tree_get_all_id(platform['id'])
@@ -156,18 +150,28 @@ def sync_vcenter_tree(si, content, platform):
                                                      name=platform['platform_name'])
 
     network_sync_datas = []  # 网络端口组收集
+
     dvswitch_datas = []  # dvs数据收集
     vswitch_datas = []   # vswitch交换机数据收集
     datacenters = content.rootFolder.childEntity
-#     sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid)
-#
-#     print ('sync_end:', time.strftime('%Y.%m.%d:%H:%M:%S', time.localtime(time.time())))
-#     # return True
-#
-#
-# # 同步datacenters
-# def sync_datacenter(datacenters, si, content, platform, vcenter_list, vCenter_pid):
+
+    dc_list = []
+    dc_ids = db.datacenters.get_datacenter_all_id(platform['id'])
+    for dc in dc_ids:
+        dc_list.append(dc.id)  # dc表id
+
+    cluster_list = []
+    cluster_ids = db.clusters.get_cluster_all_id(platform['id'])
+    for cluster in cluster_ids:
+        cluster_list.append(cluster.id)  # cluster表id
+
+    host_list = []
+    host_ids = db.host.get_host_all_id(platform['id'])
+    for host in host_ids:
+        host_list.append(host.id)  # host表id
     for dc in datacenters:
+        # 同步 datacenter
+        dc_tree, dc_local = sync_datacenter(vCenter_obj, dc)
         # print('pid:', vCenter_pid)
         dc_mor = get_mor_name(dc)
         dc_host_moc = get_mor_name(dc.hostFolder)
@@ -184,15 +188,14 @@ def sync_vcenter_tree(si, content, platform):
                 dvswitch_datas.append(item)
 
         # 同步datastore
-
         sync_datastore(platform, dc, si, content)
+
         # 异步处理 同步ds信息
         # sync_datastore.apply_async(args=[platform, dc, si])
 
+        """
         # 获取 dc tree
-        # result = db_vcenter.vcenter_tree_get_by_dc(platform['id'], dc_mor, 2)
         result = db.vcenter.vcenter_tree_get_by_dc(platform['id'], dc_mor, 2)
-        # print(22)
         if result:
             vcenter_list.remove(result.id)
             dc_pid = result.id
@@ -205,14 +208,28 @@ def sync_vcenter_tree(si, content, platform):
                                                     dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=dc_mor,
                                                     dc_host_folder_mor_name=dc_host_moc,
                                                     dc_vm_folder_mor_name=dc_vm_moc, pid=vCenter_pid)
+        """
+        dc_pid = dc_tree.id
+        if dc_pid in vcenter_list:
+            vcenter_list.remove(dc_pid)
+        if dc_local.id in dc_list:
+            dc_list.remove(dc_local.id)
 
         clusters = dc.hostFolder.childEntity
         # print(clusters.name)
         for cluster in clusters:
-            # print(44)
+
+            # 同步cluster
+            cluster_tree, cluster_local = sync_cluster(vCenter_obj, dc, cluster)
+            cluster_pid = cluster_tree.id
+            if cluster_pid in vcenter_list:
+                vcenter_list.remove(cluster_pid)
+            if cluster_local.id in cluster_list:
+                cluster_list.remove(cluster_local.id)
 
             cluster_mor = get_mor_name(cluster)
 
+            """
             # 添加/更新 cluster 信息
             # 获取 cluster tree
             result = db.vcenter.vcenter_tree_get_by_cluster(platform['id'], cluster_mor, 3)
@@ -235,7 +252,7 @@ def sync_vcenter_tree(si, content, platform):
                                                              dc_vm_folder_mor_name=dc_vm_moc,
                                                              cluster_mor_name=cluster_mor,
                                                              cluster_oc_name=cluster.name, pid=dc_pid)
-
+            """
             rp_obj = content.viewManager.CreateContainerView(cluster, [vim.ResourcePool], True)
             rps = rp_obj.view
 
@@ -243,8 +260,8 @@ def sync_vcenter_tree(si, content, platform):
                 rp_mor = get_mor_name(rp)
                 rp_info = db.vcenter.vcenter_tree_get_by_mor_name(platform['id'], rp_mor, 5)
                 if rp_info:
-
-                    vcenter_list.remove(rp_info.id)
+                    if rp_info.id in vcenter_list:
+                        vcenter_list.remove(rp_info.id)
                     if rp.parent.name == cluster.name:
                         db.vcenter.vcenter_tree_update(tree_type=5, platform_id=platform['id'], name=rp.name,
                                                        dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=rp_mor,
@@ -291,38 +308,44 @@ def sync_vcenter_tree(si, content, platform):
             hosts = cluster.host
 
             for host in hosts:
-                host_mor = get_mor_name(host)
+
+                host_tree, host_local = sync_host(vCenter_obj, cluster, host)
+                host_pid = host_tree.id
+                if host_pid in vcenter_list:
+                    vcenter_list.remove(host_pid)
+                if host_local.id in host_list:
+                    host_list.remove(host_local.id)
 
                 # 收集vswitch数据
                 for vss in host.configManager.networkSystem.networkInfo.vswitch:
                     vswitch_datas.append((vss, host))
 
-                # 获取 host tree
-                result = db.vcenter.vcenter_tree_get_by_mor_name(platform['id'], host_mor, 4)
-
-                if result:
-                    vcenter_list.remove(result.id)
-
-                    db.vcenter.vcenter_tree_update(tree_type=4, platform_id=platform['id'], name=host.name,
-                                                   dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=host_mor,
-                                                   dc_host_folder_mor_name=dc_host_moc,
-                                                   dc_vm_folder_mor_name=dc_vm_moc,
-                                                   cluster_mor_name=cluster_mor, cluster_oc_name=cluster.name,
-                                                   pid=cluster_pid)
-                else:
-
-                    db.vcenter.vcenter_tree_create(tree_type=4, platform_id=platform['id'], name=host.name,
-                                                   dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=host_mor,
-                                                   dc_host_folder_mor_name=dc_host_moc,
-                                                   dc_vm_folder_mor_name=dc_vm_moc,
-                                                   cluster_mor_name=cluster_mor, cluster_oc_name=cluster.name,
-                                                   pid=cluster_pid)
+                # host_mor = get_mor_name(host)
+                # # 获取 host tree
+                # result = db.vcenter.vcenter_tree_get_by_mor_name(platform['id'], host_mor, 4)
+                #
+                # if result:
+                #     vcenter_list.remove(result.id)
+                #
+                #     db.vcenter.vcenter_tree_update(tree_type=4, platform_id=platform['id'], name=host.name,
+                #                                    dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=host_mor,
+                #                                    dc_host_folder_mor_name=dc_host_moc,
+                #                                    dc_vm_folder_mor_name=dc_vm_moc,
+                #                                    cluster_mor_name=cluster_mor, cluster_oc_name=cluster.name,
+                #                                    pid=cluster_pid)
+                # else:
+                #
+                #     db.vcenter.vcenter_tree_create(tree_type=4, platform_id=platform['id'], name=host.name,
+                #                                    dc_mor_name=dc_mor, dc_oc_name=dc.name, mor_name=host_mor,
+                #                                    dc_host_folder_mor_name=dc_host_moc,
+                #                                    dc_vm_folder_mor_name=dc_vm_moc,
+                #                                    cluster_mor_name=cluster_mor, cluster_oc_name=cluster.name,
+                #                                    pid=cluster_pid)
                 # 同步vm信息
                 # 异步处理 同步vm信息
                 sync_vcenter_vm(si, content, host, platform)
                 # sync_vcenter_vm.apply_async(args=[si, content, host, platform])
                 # sync_vcenter_vm.apply_async(args=[host, platform])
-
     # 同步所有数据中心下的网络端口组
     sync_network_port_group(network_sync_datas, platform['id'])
 
@@ -337,6 +360,15 @@ def sync_vcenter_tree(si, content, platform):
         for id in vcenter_list:
             # db_vcenter.vcenter_tree_delete_by_id(id)
             db.vcenter.vcenter_tree_delete_by_id(id)
+    if dc_list:
+        for id in dc_list:
+            db.datacenters.del_datacenter(id)
+    if cluster_list:
+        for id in cluster_list:
+            db.clusters.del_cluster(id)
+    if host_list:
+        for id in host_list:
+            db.host.del_host_by_id(id)
 
 
 def vcenter_tree_list(platform_id):

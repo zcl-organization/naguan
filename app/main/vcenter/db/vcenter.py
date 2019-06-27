@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from app.models import VCenterTree
 from app.exts import db
+from sqlalchemy import exists, and_
 
 
 # 添加vcenter tree 信息
@@ -26,10 +27,8 @@ def vcenter_tree_create(tree_type, platform_id, name, dc_host_folder_mor_name=No
     # print(new_vcenter)
     db.session.add(new_vcenter)
     db.session.flush()
-
-    vcenter_id = new_vcenter.id
     db.session.commit()
-    return vcenter_id
+    return new_vcenter
     # pass
 
 
@@ -89,6 +88,7 @@ def vcenter_tree_update(tree_type, platform_id, mor_name, name=None, dc_host_fol
     if pid:
         vcenter_info.pid = pid
     db.session.commit()
+    return vcenter_info
 
 
 # 根据platform_id获取所有
@@ -111,7 +111,7 @@ def vcenter_tree_by_id(id):
 
 
 def vcenter_tree_del_by_mor_name(platform_id, mor_name):
-    query = db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
+    query = db.session.query(VCenterTree).filter_by(platform_id=platform_id). \
         filter_by(mor_name=mor_name).first()
     db.session.delete(query)
     db.session.commit()
@@ -137,5 +137,17 @@ def get_vcenter_obj_by_mor_name(platform_id, mor_name):
 
 # 集群及其下的资源
 def get_cluster_and_cluster_resource(platform_id, cluster_mor_name):
-    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).\
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id). \
         filter_by(cluster_mor_name=cluster_mor_name).all()
+
+
+def get_vcenter_tree_by_tree_type(platform_id, tree_type):
+    return db.session.query(VCenterTree).filter_by(platform_id=platform_id).filter_by(type=tree_type).first()
+
+
+def check_if_dc_exists_by_dc_mor_name(platform_id, mor_name, tree_type):
+    if_exists = db.session.query(
+        exists().where(and_(VCenterTree.platform_id == platform_id, VCenterTree.mor_name == mor_name,
+                            VCenterTree.type == tree_type))
+    ).scalar()
+    return if_exists

@@ -5,7 +5,7 @@ from app.main.base.apis.auth import basic_auth
 from app.common.tool import set_return_val
 from app.main.vcenter import control
 from app.main.base import control as base_control
-
+from app.main.vcenter.control.clusters import Cluster
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')
@@ -138,8 +138,9 @@ class ClustersManage(Resource):
             args = parser.parse_args()
             if not args['platform_id']:
                 raise Exception('Parameter error')
-            data = control.clusters.find_clusters(platform_id=args['platform_id'], cluster_name=args['cluster_name'],
-                                                  cluster_id=args['cluster_id'], dc_name=args['dc_name'])
+            cluster = Cluster(platform_id=args['platform_id'])
+            data = cluster.list(platform_id=args['platform_id'], cluster_name=args['cluster_name'],
+                                cluster_id=args['cluster_id'], dc_name=args['dc_name'])
         except Exception as e:
             return set_return_val(False, {}, str(e), 3001), 400
         return set_return_val(True, data, 'Clusters info get success.', 3000)
@@ -231,9 +232,9 @@ class ClustersManage(Resource):
             if not all([args['platform_id'], args['dc_id'], args['cluster_name']]):
                 g.error_code = 4102
                 raise Exception('Parameter error')
-            cluster_id = control.clusters.create_cluster(platform_id=args.get('platform_id'),
-                                                         dc_id=args.get('dc_id'), cluster_name=args.get('cluster_name'))
-            data['resources_id'] = cluster_id
+            new_cluster = Cluster(platform_id=args['platform_id'])
+            cluster_local = new_cluster.create(dc_id=args['dc_id'], cluster_name=args['cluster_name'])
+            data['resources_id'] = cluster_local.id
         except Exception as e:
             data['result'] = False
             return set_return_val(False, data, str(e), g.error_code)
@@ -326,7 +327,8 @@ class ClustersManage(Resource):
             if not all([args['platform_id'], id]):
                 g.error_code = 4152
                 raise Exception('Parameter error')
-            control.clusters.del_cluster(args.get('platform_id'), cluster_id=id)
+            cluster = Cluster(platform_id=args['platform_id'])
+            cluster.delete(args.get('platform_id'), cluster_id=id)
         except Exception as e:
             data['result'] = False
             return set_return_val(False, data, str(e), g.error_code), 400
