@@ -405,6 +405,8 @@
 | 3290 | 创建主机成功 | Successful Host Creation |
 | 3291 | 创建主机失败 | Failed to create host |
 | 3292 | 无对应DataCenter数据 | No corresponding DataCenter data |
+| 3293 | 无对应DataStore数据 | No corresponding DataStores data |
+| 3294 | DataStores和DataCenter不一致 | DataStores and DataCenter do not correspond |
 
 #### 添加网卡信息  （3310～3329）
 

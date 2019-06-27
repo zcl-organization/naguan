@@ -278,6 +278,15 @@ class Instance(object):
         if not dc_info:
             g.error_code = 3292
             raise Exception('No corresponding DataCenter data')
+        
+        ds_info = db.datastores.get_ds_by_id(ds_id)
+        if not ds_info:
+            g.error_code = 3293
+            raise Exception("No corresponding DataStores data")
+
+        if ds_info.dc_name != dc_info.dc_oc_name:
+            g.error_code = 3294
+            raise Exception("DataStores and DataCenter do not correspond") 
 
         build_data = dict(
             type='vm_hardware_boot',
@@ -288,7 +297,7 @@ class Instance(object):
         )
         # 创建vm实例
         build_status, build_info = self._vm_device_info_manager.build_without_device_info(
-            vm_name, dc_info.dc_oc_name, dc_info.cluster_oc_name, int(new_cpu), int(new_memory))
+            vm_name, dc_info.dc_oc_name, dc_info.cluster_oc_name, ds_info.ds_name, int(new_cpu), int(new_memory))
         
         if build_status:
             g.error_code = 3290
@@ -695,7 +704,8 @@ class Instance(object):
             new_vm_name=new_vm_name,
             dc_name=validate_input(dc_info.dc_oc_name) if dc_info else None,
             ds_name=validate_input(ds_info.ds_name),
-            rp_name=validate_input(resourcepool)
+            rp_name=validate_input(resourcepool),
+            target_host_name=ds_info.host
         )
         if not clone_status:
             g.error_code = 3571

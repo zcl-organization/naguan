@@ -204,12 +204,12 @@ class VMDeviceInfoManager:
 
         return resource_pool
 
-    def build_without_device_info(self, vm_name, dc_name, cluster_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
+    def build_without_device_info(self, vm_name, dc_name, cluster_name, ds_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
         try:
             data_center = self._get_device([vim.Datacenter], dc_name)
             # resource_pool = data_center.hostFolder.childEntity[0].resourcePool
             resource_pool = self._get_resource_pool(data_center, cluster_name)
-            datastore_path = '[datastore1]' + vm_name   # TODO 写死的datastore1需要修改
+            datastore_path = '[' + ds_name + ']' + vm_name   # TODO 写死的datastore1需要修改
 
             vmx_file = vim.vm.FileInfo(
                 logDirectory=None,
@@ -507,7 +507,7 @@ class VMDeviceInfoManager:
 
             resource_pool = None
             if rp_name:
-                resource_pool = self._get_device([vim.ResourcePool], rp_name)
+                resource_pool = self._get_device([vim.ResourcePool], rp_name, folder=data_center)
             elif target_host_name:
                 for cluster in data_center.hostFolder.childEntity:
                     for host in cluster.host:
@@ -517,16 +517,20 @@ class VMDeviceInfoManager:
             else:
                 resource_pool = data_center.hostFolder.childEntity[0].resourcePool
 
+            host = self._get_device([vim.HostSystem], target_host_name)
+
             relospec = vim.vm.RelocateSpec()
             relospec.datastore = data_store
             if resource_pool:
                 relospec.pool = resource_pool
+            if host:
+                relospec.host = host
 
             clonespec = vim.vm.CloneSpec()
             clonespec.location = relospec
             clonespec.powerOn = False
 
-            WaitForTask(self.vm.Clone(folder=vmfloder, name=new_vm_name, spec=clonespec))
+            WaitForTask(self.vm.CloneVM_Task(folder=vmfloder, name=new_vm_name, spec=clonespec))
         except Exception as e:
             return False, e.msg if hasattr(e, 'msg') else str(e)
         
@@ -569,7 +573,7 @@ class VMDeviceInfoManager:
         
         return True
 
-    def _get_device(self, vim_type, device_name, folder=None):
+    def _get_device(self, vim_type, device_name, folder=None, pp=None):
         """获取设备信息"""
         if not folder:
             folder = self._content.rootFolder
