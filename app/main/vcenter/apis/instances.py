@@ -109,7 +109,7 @@ class InstanceManage(Resource):
           - in: query
             name: networks
             type: string
-            description: '[1,2]--network_port_group_id'
+            description: '{"dvswitch": [1,2,3], "vswitch": [1,2,3]}--network_port_group_id'
        responses:
           200:
             description: vCenter tree 信息

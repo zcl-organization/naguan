@@ -7,6 +7,7 @@ from app.main.vcenter.control.resource_pool import sync_resourcepool
 from app.main.vcenter.control.utils import get_mor_name, connect_server, get_connect
 from app.main.vcenter.control.network_port_group import sync_network_port_group
 from app.main.vcenter.control.vswitch import sync_vswitch
+from app.main.vcenter.control.dvswitch import sync_dvswitch
 from app.main.vcenter.control import network_devices as netowrk_device_manage
 from app.main.vcenter.control import disks as disk_manage
 from app.main.vcenter import db
@@ -149,7 +150,9 @@ def sync_vcenter_tree(si, content, platform):
                                                      name=platform['platform_name'])
 
     network_sync_datas = []  # 网络端口组收集
-    vswitch_datas = []  # vswitch交换机数据收集
+
+    dvswitch_datas = []  # dvs数据收集
+    vswitch_datas = []   # vswitch交换机数据收集
     datacenters = content.rootFolder.childEntity
 
     dc_list = []
@@ -178,6 +181,11 @@ def sync_vcenter_tree(si, content, platform):
         netwroks = dc.network
         network_sync_datas.append((netwroks, dc.name, dc_mor))
         # sync_network_port_group(netwroks, dc.name, dc_mor, platform['id'])
+
+        # 同步Dvswitch
+        for item in dc.networkFolder.childEntity:
+            if isinstance(item, vim.dvs.VmwareDistributedVirtualSwitch):
+                dvswitch_datas.append(item)
 
         # 同步datastore
         sync_datastore(platform, dc, si, content)
@@ -343,6 +351,9 @@ def sync_vcenter_tree(si, content, platform):
 
     # 同步所有数据中心下的vswitch信息
     sync_vswitch(vswitch_datas, platform['id'])  # vswitch_datas
+
+    # 同步所有数据中心下的dvswitch信息
+    sync_dvswitch(dvswitch_datas, platform['id'])  # dvswitch_datas
 
     # 删除未操作的 tree
     if vcenter_list:

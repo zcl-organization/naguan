@@ -188,11 +188,28 @@ class VMDeviceInfoManager:
     def vm(self, vm):
         self._vm = vm
 
-    def build_without_device_info(self, vm_name, dc_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
+    def _get_resource_pool(self, datacenter, cluster_name, resource_pool_name=None):
+        if cluster_name:
+            cluster = self._get_device([vim.ComputeResource], cluster_name, folder=datacenter)
+            if not cluster:
+                raise RuntimeError("Get Cluter Failed!!!")
+        else:
+            cluster = None
+
+        # get resource pools limiting search to cluster or datacenter
+        if resource_pool_name:
+            resource_pool = self._get_device([vim.ResourcePool], resource_pool_name, folder=cluster or datacenter)
+        else:
+            resource_pool = cluster.resourcePool
+
+        return resource_pool
+
+    def build_without_device_info(self, vm_name, dc_name, cluster_name, ds_name, cpu_num, memory_num, guest_id='rhel6_64Guest', version='vmx-09'):
         try:
             data_center = self._get_device([vim.Datacenter], dc_name)
-            resource_pool = data_center.hostFolder.childEntity[0].resourcePool
-            datastore_path = '[datastore1]' + vm_name   # TODO 写死的datastore1需要修改
+            # resource_pool = data_center.hostFolder.childEntity[0].resourcePool
+            resource_pool = self._get_resource_pool(data_center, cluster_name)
+            datastore_path = '[' + ds_name + ']' + vm_name   # TODO 写死的datastore1需要修改
 
             vmx_file = vim.vm.FileInfo(
                 logDirectory=None,
@@ -266,7 +283,7 @@ class VMDeviceInfoManager:
         
         return True, None
 
-    def add_network(self, network_name):
+    def add_to_vswitch_portgroup(self, network_name):
         try:
             nic_spec = vim.vm.device.VirtualDeviceSpec()
             nic_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
@@ -294,6 +311,43 @@ class VMDeviceInfoManager:
             network_config_spec = vim.vm.ConfigSpec()
             network_config_spec.deviceChange = [nic_spec,]
 
+            WaitForTask(self.vm.ReconfigVM_Task(spec=network_config_spec))
+        except Exception as e:
+            return False, e
+        
+        return True, None
+
+    def add_to_dvswitch_portgroup(self, network_name):
+        try:
+            # 配置虚拟的网卡
+            nic_spec = vim.vm.device.VirtualDeviceSpec()
+            nic_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+            nic_spec.device = vim.vm.device.VirtualE1000()
+            nic_spec.device.deviceInfo = vim.Description()
+            nic_spec.device.deviceInfo.summary = 'vCenter API test'  # TODO
+            nic_spec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            nic_spec.device.connectable.startConnected = True
+            nic_spec.device.connectable.allowGuestControl = True
+            nic_spec.device.connectable.connected = False
+            nic_spec.device.connectable.status = 'untried'
+            nic_spec.device.wakeOnLanEnabled = True
+            nic_spec.device.addressType = 'assigned'
+            # 配置端口链接dvs端口组信息
+            pg = self._get_device([vim.dvs.DistributedVirtualPortgroup], network_name)
+            if not pg:
+                raise RuntimeError("Not find the PortGroup")
+            dvswitch = pg.config.distributedVirtualSwitch
+
+            port = vim.dvs.PortConnection()
+            port.switchUuid = dvswitch.uuid
+            port.portgroupKey = pg.key
+            # 配置端口连接端口组
+            nic = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+            nic.port = port
+            nic_spec.device.backing = nic
+            # 完成网络配置
+            network_config_spec = vim.vm.ConfigSpec()
+            network_config_spec.deviceChange = [nic_spec,]
             WaitForTask(self.vm.ReconfigVM_Task(spec=network_config_spec))
         except Exception as e:
             return False, e
@@ -364,9 +418,12 @@ class VMDeviceInfoManager:
     def remove_network(self, nic_label):
         try:
             virtual_nic_device = None
+            network_card = (vim.vm.device.VirtualEthernetCard, vim.vm.device.VirtualE1000)
             for network_dev in self.vm.config.hardware.device:
-                if isinstance(network_dev, vim.vm.device.VirtualEthernetCard) and network_dev.deviceInfo.label == nic_label:
+                if isinstance(network_dev, network_card) and network_dev.deviceInfo.label == nic_label:
                     virtual_nic_device = network_dev
+                    break
+                
 
             if not virtual_nic_device:
                 raise Exception
@@ -449,27 +506,32 @@ class VMDeviceInfoManager:
             vmfloder = data_center.vmFolder
 
             resource_pool = None
-            if rp_name:
-                resource_pool = self._get_device([vim.ResourcePool], rp_name)
-            elif target_host_name:
+            
+            if target_host_name:
                 for cluster in data_center.hostFolder.childEntity:
                     for host in cluster.host:
                         if host.name == target_host_name:
                             resource_pool = cluster.resourcePool
                             break
+            elif rp_name:
+                resource_pool = self._get_device([vim.ResourcePool], rp_name, folder=data_center)
             else:
                 resource_pool = data_center.hostFolder.childEntity[0].resourcePool
+
+            host = self._get_device([vim.HostSystem], target_host_name)
 
             relospec = vim.vm.RelocateSpec()
             relospec.datastore = data_store
             if resource_pool:
                 relospec.pool = resource_pool
+            if host:
+                relospec.host = host
 
             clonespec = vim.vm.CloneSpec()
             clonespec.location = relospec
             clonespec.powerOn = False
 
-            WaitForTask(self.vm.Clone(folder=vmfloder, name=new_vm_name, spec=clonespec))
+            WaitForTask(self.vm.CloneVM_Task(folder=vmfloder, name=new_vm_name, spec=clonespec))
         except Exception as e:
             return False, e.msg if hasattr(e, 'msg') else str(e)
         
@@ -512,11 +574,14 @@ class VMDeviceInfoManager:
         
         return True
 
-    def _get_device(self, vim_type, device_name):
+    def _get_device(self, vim_type, device_name, folder=None):
         """获取设备信息"""
+        if not folder:
+            folder = self._content.rootFolder
+
         device_info = None
         container = self._content.viewManager.CreateContainerView(
-            self._content.rootFolder, vim_type, True
+            folder, vim_type, True
         )
 
         for item in container.view:
