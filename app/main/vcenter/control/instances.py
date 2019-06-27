@@ -278,6 +278,15 @@ class Instance(object):
         if not dc_info:
             g.error_code = 3292
             raise Exception('No corresponding DataCenter data')
+        
+        ds_info = db.datastores.get_ds_by_id(ds_id)
+        if not ds_info:
+            g.error_code = 3293
+            raise Exception("No corresponding DataStores data")
+
+        if ds_info.dc_name != dc_info.dc_oc_name:
+            g.error_code = 3294
+            raise Exception("DataStores and DataCenter do not correspond") 
 
         build_data = dict(
             type='vm_hardware_boot',
@@ -288,7 +297,7 @@ class Instance(object):
         )
         # 创建vm实例
         build_status, build_info = self._vm_device_info_manager.build_without_device_info(
-            vm_name, dc_info.dc_oc_name, int(new_cpu), int(new_memory))
+            vm_name, dc_info.dc_oc_name, dc_info.cluster_oc_name, ds_info.ds_name, int(new_cpu), int(new_memory))
         
         if build_status:
             g.error_code = 3290
@@ -329,21 +338,41 @@ class Instance(object):
         )
 
         networks = json.loads(networks) if isinstance(networks, str) else networks
+        
+        if not isinstance(networks, dict):
+            raise RuntimeError("Parameter Error!!!")
 
-        for network in networks:
-            local_network_port_group = network_port_group_manage.get_network_by_id(network)
+        # 添加Dvswitch 网络信息
+        for network in networks.get('dvswitch', []):
+            local_network_port_group = network_port_group_manage.get_dvs_network_by_id(network)
+            network_status, network_info = self._vm_device_info_manager.add_to_dvswitch_portgroup(local_network_port_group.name)
 
-            network_status, network_info = self._vm_device_info_manager.add_network(local_network_port_group.name)
-            
             if not network_status:
-                g.error_code = 3311  # TODO
-                data['result'] = False
-                data['event'] = unicode('为虚拟机({})添加网卡信息'.format(self.local_vm.id))
+                g.error_code = 3311
+                data["result"] = False
+                data['event'] = unicode('为虚拟机({})添加DVS网卡信息'.format(self.local_vm.id))
                 base_control.event_logs.eventlog_create(**data)
                 raise Exception(network_info)
             
             data['result'] = True
-            data['event'] = unicode('为虚拟机({})添加网卡信息: {}'.format(self.local_vm.id, local_network_port_group.name))
+            data['event'] = unicode('为虚拟机({})添加DVS网卡信息: {}'.format(self.local_vm.id, local_network_port_group.name))
+            base_control.event_logs.eventlog_create(**data)  # 逐条记录
+
+        # 添加Vswitch 网络信息
+        for network in networks.get('vswitch', []):
+            local_network_port_group = network_port_group_manage.get_network_by_id(network)
+
+            network_status, network_info = self._vm_device_info_manager.add_to_vswitch_portgroup(local_network_port_group.name)
+            
+            if not network_status:
+                g.error_code = 3311  # TODO
+                data['result'] = False
+                data['event'] = unicode('为虚拟机({})添加VS网卡信息'.format(self.local_vm.id))
+                base_control.event_logs.eventlog_create(**data)
+                raise Exception(network_info)
+            
+            data['result'] = True
+            data['event'] = unicode('为虚拟机({})添加VS网卡信息: {}'.format(self.local_vm.id, local_network_port_group.name))
             base_control.event_logs.eventlog_create(**data)  # 逐条记录
 
         # 同步云主机网卡信息
@@ -675,7 +704,8 @@ class Instance(object):
             new_vm_name=new_vm_name,
             dc_name=validate_input(dc_info.dc_oc_name) if dc_info else None,
             ds_name=validate_input(ds_info.ds_name),
-            rp_name=validate_input(resourcepool)
+            rp_name=validate_input(resourcepool),
+            target_host_name=ds_info.host
         )
         if not clone_status:
             g.error_code = 3571

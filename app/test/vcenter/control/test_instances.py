@@ -18,14 +18,15 @@ from app.main.vcenter.control import network_devices as network_device_manage
 create_info = {
     'new_cpu': '1',
     'new_memory': '512',
-    'dc_id': 25,
-    'ds_id': '', 
+    'dc_id': 25,  # 25-6    46-7   32-10
+    'ds_id': 6, 
     'vm_name': 'unit_test',
     'networks': '',
     'disks': '', 
     'image_id': ''
 }
-network_str = json.dumps([6,])
+network_str = json.dumps({"vswitch":[], "dvswitch": [7,]})
+del_network_str = json.dumps([74,])
 disk_str = json.dumps([{'type': 'thin', 'size': 16}, ])
 
 snapshot_info = {
@@ -204,7 +205,7 @@ class TestIntance(unittest.TestCase):
         with app.test_request_context():
             g.username = 'test'
             g.request_id = 0
-            self._uti.del_network(network_str)
+            self._uti.del_network(del_network_str)
         
         for item in self._uti.vm.config.hardware.device:
             if isinstance(item, vim.vm.device.VirtualE1000):
@@ -320,7 +321,7 @@ class TestIntance(unittest.TestCase):
         with app.test_request_context():
             g.username = 'test'
             g.request_id = 0
-            self._uti.clone(clone_name, 2, 25)
+            self._uti.clone(clone_name, 10, 50)
         
         dd = get_obj(self._uti.content, [vim.VirtualMachine], clone_name)
         self.assertEqual(dd.summary.config.name, clone_name)

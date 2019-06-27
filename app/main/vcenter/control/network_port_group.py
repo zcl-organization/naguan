@@ -127,6 +127,8 @@ def _get_portgroup_dswitch(network):
 def get_network_by_id(id):
     return db.network_port_group.network_list_by_id(id)
 
+def get_dvs_network_by_id(id):
+    return db.network_dvs_port_group.find_dvs_portgroup_by_id(id)
 
 def get_network_port_group_all(platform_id):
     port_groups = db.network_port_group.list_all(platform_id)

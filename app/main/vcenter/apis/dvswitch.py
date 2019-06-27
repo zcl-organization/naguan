@@ -11,6 +11,7 @@ from app.main.vcenter.control.dvswitch import DVSwitchHost
 
 parser = reqparse.RequestParser()
 parser.add_argument('platform_id')  # 平台ID
+parser.add_argument("host_id")  # 需要有的host_id信息
 parser.add_argument('dc_name')  # datacenter名称
 parser.add_argument('switch_name')  # 创建或是修改或是删除的交换机名称
 parser.add_argument('mtu')    # 设置mtu时钟时间
@@ -48,6 +49,9 @@ class DVSwitchManage(Resource):
             name: platform_id
             type: integer
             required: true
+          - in: query
+            name: host_id
+            type: integer
        responses:
           200:
             description: vCenter vSwitch 信息
@@ -155,8 +159,8 @@ class DVSwitchManage(Resource):
             if not args['platform_id']:
                 g.error_code = 6502
                 raise RuntimeError('Parameter Error!!!')
-
-            data = get_dvswitch_infos(args['platform_id'])
+            
+            data = get_dvswitch_infos(args['platform_id'], args['host_id'])
         except Exception as e:
             return set_return_val(False, {}, str(e), g.error_code), 400
 
