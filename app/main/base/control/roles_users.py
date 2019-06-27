@@ -19,15 +19,29 @@ def role_user_list(user_name, role_name, role_id):
     data = db_role_user.roles_users_list(user_name, role_name, role_id)
     user_role_list = []
     if data:
-
         for user_role in data:
-            user_role_tmp = dict()
+            is_exists = False
+            for k, v in enumerate(user_role_list):
 
-            user_role_tmp['user_id'] = user_role.user_id
-            user_role_tmp['user_name'] = user_role.user_name
-            user_role_tmp['role_id'] = user_role.role_id
-            user_role_tmp['role_name'] = user_role.role_name
-            user_role_list.append(user_role_tmp)
+                if user_role.user_id == v['user_id']:
+                    is_exists = True
+                    _t = {
+                        'role_id': user_role.role_id,
+                        'role_name': user_role.role_name
+                    }
+                    v['role'].append(_t)
+                    break
+            if not is_exists:
+                user_role_tmp = dict()
+
+                user_role_tmp['user_id'] = user_role.user_id
+                user_role_tmp['user_name'] = user_role.user_name
+
+                user_role_tmp['role'] = [{
+                    'role_id': user_role.role_id,
+                    'role_name': user_role.role_name
+                }]
+                user_role_list.append(user_role_tmp)
 
     return user_role_list
 
