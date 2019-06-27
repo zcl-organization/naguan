@@ -506,14 +506,15 @@ class VMDeviceInfoManager:
             vmfloder = data_center.vmFolder
 
             resource_pool = None
-            if rp_name:
-                resource_pool = self._get_device([vim.ResourcePool], rp_name, folder=data_center)
-            elif target_host_name:
+            
+            if target_host_name:
                 for cluster in data_center.hostFolder.childEntity:
                     for host in cluster.host:
                         if host.name == target_host_name:
                             resource_pool = cluster.resourcePool
                             break
+            elif rp_name:
+                resource_pool = self._get_device([vim.ResourcePool], rp_name, folder=data_center)
             else:
                 resource_pool = data_center.hostFolder.childEntity[0].resourcePool
 
@@ -573,7 +574,7 @@ class VMDeviceInfoManager:
         
         return True
 
-    def _get_device(self, vim_type, device_name, folder=None, pp=None):
+    def _get_device(self, vim_type, device_name, folder=None):
         """获取设备信息"""
         if not folder:
             folder = self._content.rootFolder
