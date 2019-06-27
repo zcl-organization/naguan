@@ -1,17 +1,80 @@
 # -*- coding:utf-8 -*-
+import datetime
 import hashlib
 import socket
 import ssl
 
 from pyVim.task import WaitForTask
 from pyVmomi import vim
+
 from app.main.vcenter.control.utils import get_obj_by_mor_name, get_obj, get_mor_name
 from app.main.vcenter import db
 from app.main.vcenter.utils.base import VCenter
 
 
-def sync_host(vcenter_obj, dc_obj, cluster_obj, host_obj):
-    pass
+def sync_host(vcenter_obj, cluster_obj, host_obj):
+    host_mor_name = get_mor_name(host_obj)
+    cluster_mor_name = get_mor_name(cluster_obj)
+    # 获取本地tree_cluster对象
+    tree_cluster = db.vcenter.vcenter_tree_get_by_mor_name(vcenter_obj.platform['id'], cluster_mor_name, 3)
+    # 获取本地tree_host对象
+    tree_host_info = db.vcenter.vcenter_tree_get_by_mor_name(vcenter_obj.platform['id'], host_mor_name, 4)
+    if tree_host_info:
+        host_tree = db.vcenter.vcenter_tree_update(tree_type=4, platform_id=vcenter_obj.platform['id'],
+                                                   name=host_obj.name, dc_mor_name=tree_cluster.dc_mor_name,
+                                                   dc_oc_name=tree_cluster.dc_oc_name, mor_name=host_mor_name,
+                                                   dc_host_folder_mor_name=tree_cluster.dc_host_folder_mor_name,
+                                                   dc_vm_folder_mor_name=tree_cluster.dc_vm_folder_mor_name,
+                                                   cluster_mor_name=cluster_mor_name,
+                                                   cluster_oc_name=cluster_obj.name,
+                                                   pid=tree_cluster.id)
+    else:
+        host_tree = db.vcenter.vcenter_tree_create(tree_type=4, platform_id=vcenter_obj.platform['id'],
+                                                   name=host_obj.name, dc_mor_name=tree_cluster.dc_mor_name,
+                                                   dc_oc_name=tree_cluster.dc_oc_name, mor_name=host_mor_name,
+                                                   dc_host_folder_mor_name=tree_cluster.dc_host_folder_mor_name,
+                                                   dc_vm_folder_mor_name=tree_cluster.dc_vm_folder_mor_name,
+                                                   cluster_mor_name=cluster_mor_name,
+                                                   cluster_oc_name=cluster_obj.name,
+                                                   pid=tree_cluster.id)
+    host_local = sync_host_local(vcenter_obj.platform['id'], host_obj, tree_cluster)
+    return host_tree, host_local
+
+
+# host表同步
+def sync_host_local(platform_id, host_obj, tree_cluster):
+    """
+    新连接的host，host.summary.quickStats数据不能直接获取，，全为0或-1，需要重新获取一次
+    """
+    host = host_obj
+    capacity = 0
+    free_capacity = 0
+    for ds in host.datastore:
+        capacity += ds.summary.capacity
+        free_capacity += ds.summary.freeSpace
+    used_capacity = capacity - free_capacity
+    config = host.summary.config
+    runtime = host.summary.runtime
+    # print config
+    data = dict(name=config.name, mor_mame=get_mor_name(host), dc_name=tree_cluster.dc_oc_name,
+                dc_mor_name=tree_cluster.dc_mor_name, cluster_name=tree_cluster.cluster_oc_name,
+                cluster_mor_name=tree_cluster.cluster_mor_name, port=config.port,
+                power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
+                maintenance_mode=runtime.inMaintenanceMode, platform_id=platform_id,
+                uuid=host.summary.hardware.uuid, cpu_cores=int(host.summary.hardware.numCpuCores),
+                memory=host.summary.hardware.memorySize, used_memory=host.summary.quickStats.overallMemoryUsage,
+                capacity=capacity, used_capacity=used_capacity, used_cpu=host.summary.quickStats.overallCpuUsage,
+                cpu_mhz=host.summary.hardware.cpuMhz, cpu_model=host.summary.hardware.cpuModel,
+                version=config.product.version, image=config.product.name, build=config.product.build,
+                full_name=config.product.fullName, boot_time=runtime.bootTime.strftime('%Y-%m-%d %H:%M:%S'),
+                uptime=host.summary.quickStats.uptime, vm_nums=len(host.vm), network_nums=len(host.network))
+    # 获取本地cluster对象
+    cluster_info = db.host.get_host_by_name(platform_id, config.name)
+    if cluster_info:
+        host_local = db.host.update_host(**data)
+    else:
+        host_local = db.host.add_host(**data)
+    return host_local
 
 
 class Host:
@@ -23,7 +86,7 @@ class Host:
     def add_host(self, host_name, esxi_username, esxi_password, as_connected=True, cluster_id=None,
                  license_id=None, resource_pool=None):
         """Add ESXi host to a cluster of folder in vCenter"""
-        if db.host.get_host_by_name(host_name):
+        if db.host.get_host_by_name(self._platform_id, host_name):
             raise ValueError('The host object already exists.')
         host_connect_spec = self.get_host_connect_spec(esxi_hostname=host_name, esxi_username=esxi_username,
                                                        esxi_password=esxi_password)
@@ -33,71 +96,23 @@ class Host:
                 license = license.licenseKey
         else:
             license = None
-        task = None
-        vcenter_tree_cluster = None
-        if cluster_id:
-            cluster = db.clusters.get_cluster(self._platform_id, cluster_id)
-            vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(self._platform_id, cluster.mor_name)
-            if vcenter_tree_cluster.type != 3:
-                raise ValueError('The selected object is not a cluster')
-            mor_name = cluster.mor_name
-            cluster_obj = get_obj_by_mor_name(self._vCenter.connect, [vim.ClusterComputeResource], mor_name)
-            try:
-                task = cluster_obj.AddHost_Task(
-                    spec=host_connect_spec, asConnected=as_connected,
-                    resourcePool=resource_pool, license=license
-                )
-            except Exception as task_error:
-                raise RuntimeError('Error adding host %s task' % task_error)
+        cluster = db.clusters.get_cluster(self._platform_id, cluster_id)
+        vcenter_tree_cluster = db.vcenter.get_vcenter_obj_by_mor_name(self._platform_id, cluster.mor_name)
+        if vcenter_tree_cluster.type != 3:
+            raise ValueError('The selected object is not a cluster')
+        cluster_obj = get_obj_by_mor_name(self._vCenter.connect, [vim.ClusterComputeResource], cluster.mor_name)
         try:
+            task = cluster_obj.AddHost_Task(
+                spec=host_connect_spec, asConnected=as_connected,
+                resourcePool=resource_pool, license=license
+            )
             WaitForTask(task)
         except Exception as task_error:
             raise Exception('Error adding host %s task' % task_error)
         # 同步
         host = get_obj(self._vCenter.connect, [vim.HostSystem], host_name)
-        new_host_id = self.sync_host(host, vcenter_tree_cluster)
-        self.vcenter_tree_host_sync(host, cluster=vcenter_tree_cluster)
-        return new_host_id
-
-    # host表同步
-    def sync_host(self, host, cluster):
-        """
-        TODO host.summary.quickStats数据不能直接获取，，全为0或-1，需要重新获取一次
-        :param host:
-        :return:
-        """
-        capacity = 0
-        free_capacity = 0
-        for ds in host.datastore:
-            capacity += ds.summary.capacity
-            free_capacity += ds.summary.freeSpace
-        used_capacity = capacity - free_capacity
-        config = host.summary.config
-        runtime = host.summary.runtime
-        # print config
-        data = dict(name=config.name, mor_mame=get_mor_name(host), dc_name=cluster.dc_oc_name,
-                    dc_mor_name=cluster.dc_mor_name, cluster_name=cluster.cluster_oc_name,
-                    cluster_mor_name=cluster.cluster_mor_name, port=config.port,
-                    power_state=str(runtime.powerState), connection_state=str(runtime.connectionState),
-                    maintenance_mode=runtime.inMaintenanceMode, platform_id=self._platform_id,
-                    uuid=host.summary.hardware.uuid, cpu_cores=int(host.summary.hardware.numCpuCores),
-                    memory=host.summary.hardware.memorySize, used_memory=host.summary.quickStats.overallMemoryUsage,
-                    capacity=capacity, used_capacity=used_capacity, used_cpu=host.summary.quickStats.overallCpuUsage,
-                    cpu_mhz=host.summary.hardware.cpuMhz, cpu_model=host.summary.hardware.cpuModel,
-                    version=config.product.version, image=config.product.name, build=config.product.build,
-                    full_name=config.product.fullName, boot_time=runtime.bootTime,
-                    uptime=host.summary.quickStats.uptime, vm_nums=len(host.vm), network_nums=len(host.network))
-        new_host_id = db.host.add_host(**data)
-        return new_host_id
-
-    def vcenter_tree_host_sync(self, host, cluster):
-        db.vcenter.vcenter_tree_create(tree_type=4, platform_id=self._platform_id,
-                                       dc_host_folder_mor_name=cluster.dc_host_folder_mor_name,
-                                       dc_mor_name=cluster.dc_mor_name, dc_oc_name=cluster.dc_oc_name,
-                                       dc_vm_folder_mor_name=cluster.dc_vm_folder_mor_name,
-                                       mor_name=get_mor_name(host), name=host.name,
-                                       cluster_mor_name=cluster.cluster_mor_name,
-                                       cluster_oc_name=cluster.cluster_oc_name, pid=cluster.id)
+        host_tree, host_local = sync_host(vcenter_obj=self._vCenter, cluster_obj=cluster_obj, host_obj=host)
+        return host_local
 
     # 获取host配置
     def get_host_connect_spec(self, esxi_hostname, esxi_username, esxi_password,
@@ -158,7 +173,7 @@ class Host:
             raise RuntimeError('Build task error.')
         try:
             WaitForTask(task)
-            db.host.del_host(host.name)
+            db.host.del_host_by_id(host_id)
             db.vcenter.vcenter_tree_del_by_mor_name(self._platform_id, host.mor_name)
         except Exception as e:
             raise Exception('Error removing host %s task.' % e)

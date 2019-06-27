@@ -100,3 +100,8 @@ def check_if_dc_exists_by_dc_name(dc_name):
 
 def get_datacenter_by_mor_name(platform_id, mor_name):
     return db.session.query(VCenterDatacenter).filter_by(platform_id=platform_id).filter_by(mor_name=mor_name).first()
+
+
+# 根据platform_id获取所有id
+def get_datacenter_all_id(platform_id):
+    return db.session.query(VCenterDatacenter.id).filter_by(platform_id=platform_id).all()

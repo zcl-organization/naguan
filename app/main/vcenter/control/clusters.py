@@ -65,7 +65,7 @@ def sync_cluster(vcenter_obj, dc_obj, cluster_obj):
             vm_nums += len(host.vm)
         host_nums = len(cluster_obj.host)
     data = dict(
-        name=cluster_obj.name, mor_name=cluster_mor_name, platform_id=vCenter_obj.platform['id'],
+        name=cluster_obj.name, mor_name=cluster_mor_name, platform_id=vcenter_obj.platform['id'],
         dc_name=dc_obj.name, dc_mor_name=dc_mor_name, cpu_nums=cpu_nums, cpu_capacity=cpu_capacity,
         used_cpu=used_cpu, memory=memory, used_memory=used_memory, capacity=capacity,
         used_capacity=used_capacity, host_nums=host_nums, vm_nums=vm_nums
@@ -172,7 +172,7 @@ class Cluster(object):
         # datacenters = self._vCenter.connect.rootFolder.childEntity
         # for dc in datacenters:
         #     for cluster in dc.hostFolder.childEntity:
-        #         sync_cluster(vCenter_obj=self._vCenter, dc_obj=dc, cluster_obj=cluster)
+        #         sync_cluster(vcenter_obj=self._vCenter, dc_obj=dc, cluster_obj=cluster)
         cluster_tree, cluster_local = sync_cluster(vcenter_obj=self._vCenter, dc_obj=dc_obj, cluster_obj=new_cluster)
         return cluster_local
 
