@@ -20,6 +20,7 @@ dc_name = 'Datacenter'
 ds_name = 'datastore1'
 cluster_name = 'cluster2'
 
+
 class TestVCenter(unittest.TestCase):
     def setUp(self):        
         cloud_platform.platform_list = Mock(return_value=platforms)
