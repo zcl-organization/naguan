@@ -55,14 +55,14 @@ def eventlog_create(type, result, resources_id, event, submitter, role_id=None, 
     #     resources_id = db.platform_type.get_platform_type()
     # elif type == 'role' and not resources_id:
     #     resources_id = db.role.get_role()
-    if type == 'roles_users':
-        if result:
-            if resources_id:
-                resources_id = db.roles_users.get_roles_users(resources_id, role_id)
-            else:
-                resources_id = db.roles_users.get_roles_users()
-        if user_id:
-            resources_id = user_id
+    # if type == 'roles_users':
+    #     if result:
+    #         if resources_id:
+    #             resources_id = db.roles_users.get_roles_users(resources_id, role_id)
+    #         else:
+    #             resources_id = db.roles_users.get_roles_users()
+    #     if user_id:
+    #         resources_id = user_id
     db.event_logs.log_create(type, result, resources_id, event, submitter)
 
 

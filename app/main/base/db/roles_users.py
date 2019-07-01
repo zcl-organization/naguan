@@ -5,12 +5,12 @@ from app.exts import db
 
 
 def roles_users_list(user_name, role_name, role_id):
-    query = db.session.query(Users.id.label('user_id'), Users.first_name.label('user_name'),
+    query = db.session.query(Users.id.label('user_id'), Users.username.label('user_name'),
                              Roles.name.label('role_name'), Roles.id.label('role_id')).filter(
         Users.id == RolesUsers.user_id).filter(Roles.id == RolesUsers.role_id)
     # 根据用户名 角色名查询
     if user_name:
-        query = query.filter(Users.first_name == user_name)
+        query = query.filter(Users.username == user_name)
     if role_name:
         query = query.filter(Roles.name == role_name)
     if role_id:
@@ -41,7 +41,7 @@ def get_roles_id_by_user_id(user_id):
 
 
 def get_roles_by_user_id(user_id):
-    query = db.session.query(Users.id.label('user_id'), Users.first_name.label('user_name'),
+    query = db.session.query(Users.id.label('user_id'), Users.username.label('user_name'),
                              Roles.name.label('role_name'), Roles.id.label('role_id')).filter(
         Users.id == RolesUsers.user_id).filter(Roles.id == RolesUsers.role_id)
     if user_id:

@@ -112,7 +112,7 @@ class DepartmentManage(Resource):
             return set_return_val(False, [], str(e), 400), 400
         # finally:
         #     control.event_logs.eventlog_create(**data)
-        return set_return_val(True, department, 'Create department successfully', 1200)
+        return set_return_val(True, department, 'get department successfully', 1200)
 
     @basic_auth.login_required
     def post(self):
