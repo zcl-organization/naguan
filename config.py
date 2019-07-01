@@ -119,7 +119,7 @@ class TestingConfig(BaseConfig):
 
 
 class ProductConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan1:123456@192.168.78.108:3306/naguan1?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://naguan:123456@192.168.78.108:3306/naguan?charset=utf8'
 
 
 config = {

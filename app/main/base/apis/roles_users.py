@@ -143,7 +143,6 @@ class RolesUsersManage(Resource):
             if not all([user_id, role_id]):
                 g.error_code = 1492
                 raise Exception('参数错误,参数不能为空')
-
             user_username, role_name = control.roles_users.role_user_add(user_id, role_id)
         except Exception as e:
             control.event_logs.eventlog_create(type='roles_users', result=False, resources_id=None,
@@ -151,12 +150,12 @@ class RolesUsersManage(Resource):
             return set_return_val(False, {}, str(e), g.error_code), 400
 
         control.event_logs.eventlog_create(type='roles_users', result=True, resources_id=None,
-                                           event=unicode('为用户:%s 分配角色:%s' % (user_username, role_name)),
+                                           event=unicode('为用户:%s 分配角色:%s' % (user_username, role_name[0])),
                                            submitter=g.username)
         return set_return_val(True, {}, '用户角色添加成功', 1490)
 
     @basic_auth.login_required
-    def put(self):
+    def put(self, user_id):
         """
          用户角色更新
          ---
@@ -167,7 +166,7 @@ class RolesUsersManage(Resource):
           type: http
           scheme: basic
        parameters:
-           - in: query
+           - in: path
              type: string
              name: user_id
              description: 用户id
@@ -201,7 +200,7 @@ class RolesUsersManage(Resource):
         try:
             g.error_code = 1521
             args = parser.parse_args()
-            user_id = args.get('user_id')
+            # user_id = args.get('user_id')
             new_role_id = args.get('new_role_id')
             old_role_id = args.get('old_role_id')
 
@@ -221,7 +220,7 @@ class RolesUsersManage(Resource):
         return set_return_val(True, {}, '用户角色更新成功', 1522)
 
     @basic_auth.login_required
-    def delete(self):
+    def delete(self, user_id):
         """
          用户角色删除
          ---
@@ -232,7 +231,7 @@ class RolesUsersManage(Resource):
           type: http
           scheme: basic
        parameters:
-           - in: query
+           - in: path
              type: string
              name: user_id
              description: 用户id
@@ -256,9 +255,8 @@ class RolesUsersManage(Resource):
          """
         # 删除用户所有角色
         try:
+
             g.error_code = 1551
-            args = parser.parse_args()
-            user_id = args.get('user_id')
             if not user_id:
                 g.error_code = 1552
                 raise Exception('参数错误,参数不能为空')

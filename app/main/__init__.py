@@ -129,8 +129,10 @@ api.add_resource(RoleManage, '/api/v1.0/role', methods=['GET', 'POST'], endpoint
 api.add_resource(RoleManage, '/api/v1.0/role/<int:id>', methods=['DELETE', 'PUT'], endpoint='RoleManageById')
 
 # 用户角色管理
-api.add_resource(RolesUsersManage, '/api/v1.0/role_user', methods=['GET', 'POST', 'PUT', 'DELETE'],
+api.add_resource(RolesUsersManage, '/api/v1.0/role_user', methods=['GET', 'POST'],
                  endpoint='RoleUserMg')
+api.add_resource(RolesUsersManage, '/api/v1.0/role_user/<int:user_id>', methods=['PUT', 'DELETE'],
+                 endpoint='RoleUserMgById')
 
 # vCenter 信息同步
 api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree', methods=['GET', 'POST'], endpoint='TreeMg')

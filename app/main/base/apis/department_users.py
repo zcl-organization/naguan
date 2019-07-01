@@ -9,6 +9,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('department_id')
 parser.add_argument('department_name')
 parser.add_argument('user_id')
+parser.add_argument('is_principal')
 
 
 class DepartmentUsersManage(Resource):
@@ -106,9 +107,9 @@ class DepartmentUsersManage(Resource):
                   example: 1
                 user_id:
                   type: string
-                  default: [1,2]
+                  default: '[1,2]'
                   description: 用户编号
-                  example: [1,2]
+                  example: '[1,2]'
        responses:
           200:
             description: 提交单位信息
@@ -158,7 +159,7 @@ class DepartmentUsersManage(Resource):
         try:
             if not all([args['department_id'], args['user_id']]):
                 raise Exception('Parameter error')
-            department_user = control.department_users.update_department_users(department_id=args['department_id'],
+            department_user = control.department_users.create_department_users(department_id=args['department_id'],
                                                                                user_id=args['user_id'])
             # data['resources_id'] = department[0]['department_id']
         except Exception as e:
@@ -187,7 +188,12 @@ class DepartmentUsersManage(Resource):
            required: true
          - in: formData
            name: user_id
-           type: string
+           type: integer
+           required: true
+         - in: formData
+           name: is_principal
+           type: integer
+           required: true
        responses:
          200:
             description: 更新单位信息
@@ -215,10 +221,12 @@ class DepartmentUsersManage(Resource):
             submitter=g.username,
         )
         try:
-            if not all([department_id, args['user_id']]):
+            if not all([department_id, args['user_id'], args['is_principal']]):
                 raise Exception('Parameter error')
-            control.department_users.update_department_users(department_id=department_id,
-                                                             user_id=args['user_id'])
+            if int(args['is_principal']) not in [1, 2]:
+                raise Exception('Is_principal status is incorrect, 1 is True, 2 is False')
+            control.department_users.update_department_user(department_id=department_id, user_id=args['user_id'],
+                                                            is_principal=args['is_principal'])
         except Exception as e:
             data['result'] = False
             return set_return_val(False, [], str(e), 1220)

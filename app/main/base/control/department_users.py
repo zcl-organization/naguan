@@ -19,7 +19,7 @@ def get_department_users(department_id, user_id):
     return department_user_list
 
 
-def update_department_users(department_id, user_id):
+def create_department_users(department_id, user_id):
     try:
         user_id = json.loads(user_id)
     except Exception as e:
@@ -48,3 +48,15 @@ def update_department_users(department_id, user_id):
 
 def delete_department_user(department_id):
     db.department_users.delete_department_user_by_department_id(department_id)
+
+
+def update_department_user(department_id, user_id, is_principal):
+    # 根据部门id 用户id  修改 负责人状态
+    if not db.department_users.get_department_users(department_id, user_id):
+        raise Exception('department user info is not exists.')
+    if int(is_principal) == 1:
+        is_principal = True
+    else:
+        is_principal = False
+    db.department_users.update_department_user_by_user_id(department_id, user_id, is_principal)
+    pass

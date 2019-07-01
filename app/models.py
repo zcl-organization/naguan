@@ -215,7 +215,8 @@ class VCenterVm(db.Model):
     guest_id = db.Column(db.String(255), nullable=False)  # 镜像id
     guest_full_name = db.Column(db.String(255), nullable=False)
     host = db.Column(db.String(40), nullable=False)  # 所属HOST
-    ip = db.Column(db.String(30))  # ip
+    ip = db.Column(db.String(32))  # ip
+
     status = db.Column(db.String(40))
     resource_pool_name = db.Column(db.String(32))
     created_at = db.Column(db.DateTime)  # 创建时间
@@ -418,7 +419,7 @@ class VCenterVswitch(db.Model):
     mor_name = db.Column(db.String(32))  # 交换机mor_name
     host_name = db.Column(db.String(255))  # hostsystem 对象名称
     host_mor_name = db.Column(db.String(32))  # hostsystem mor_name
-    mtu = db.Column(db.Integer)   # 交换机mtu设置
+    mtu = db.Column(db.Integer)  # 交换机mtu设置
     num_of_port = db.Column(db.Integer)  # 交换机端口数量
     nics = db.Column(db.String(255))  # 交换机上行链路
 
@@ -551,3 +552,5 @@ class DepartmentUsers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     department_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
+
+    is_principal = db.Column(db.Boolean, default=False)

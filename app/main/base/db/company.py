@@ -40,7 +40,7 @@ def get_company_by_id(company_id):
     return db.session.query(Company).filter_by(id=company_id).first()
 
 
-def update_company_by_id(company_id, name, mobile, fax, principal_id,remarks):
+def update_company_by_id(company_id, name, mobile, fax, principal_id, remarks):
     company = db.session.query(Company).filter_by(id=company_id).first()
     if name:
         company.name = name
@@ -62,3 +62,7 @@ def update_company_by_id(company_id, name, mobile, fax, principal_id,remarks):
 def delete_company_by_id(company_id):
     db.session.query(Company).filter_by(id=company_id).delete(synchronize_session=False)
     db.session.commit()
+
+
+def get_company_by_principal_id(principal_id):
+    return db.session.query(Company).filter_by(principal_id=principal_id).first()

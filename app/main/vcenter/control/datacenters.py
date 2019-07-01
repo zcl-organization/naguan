@@ -12,7 +12,6 @@ def sync_datacenter(vcenter_obj, datacenter_obj):
     dc_host_moc = get_mor_name(datacenter_obj.hostFolder)
     dc_vm_moc = get_mor_name(datacenter_obj.vmFolder)
 
-    # 获取dc的上一级信息
     dc_parent = db.vcenter.get_vcenter_tree_by_tree_type(vcenter_obj.platform['id'], 1)
 
     dc_exists = db.vcenter.check_if_dc_exists_by_dc_mor_name(vcenter_obj.platform['id'], dc_mor_name, 2)

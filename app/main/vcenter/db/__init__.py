@@ -13,5 +13,6 @@ from app.main.vcenter.db import network_dvs_port_group
 from app.main.vcenter.db import vswitch
 from app.main.vcenter.db import host
 from app.main.vcenter.db import license
-
 from app.main.vcenter.db import dvswitch
+from app.main.vcenter.db import user_instance
+
