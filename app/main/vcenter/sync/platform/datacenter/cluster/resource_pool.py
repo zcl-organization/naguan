@@ -14,8 +14,8 @@ def sync_resourcepools(platform_id, resource_pools):
     }
 
     for resource_pool in resource_pools:
-        parent = resource_pool.parent
-        sync_resourcepool(platform_id, resource_pool, parent)
+        cluster = resource_pool.parent
+        sync_resourcepool(platform_id, resource_pool, cluster)
         resource_pool_mor_name = get_mor_name(resource_pool)
         if resource_pool_mor_name in local_data.keys():
             local_data.pop(resource_pool_mor_name)
@@ -24,19 +24,19 @@ def sync_resourcepools(platform_id, resource_pools):
         db.resource_pool.delete_resource_pool(item)
 
 
-def sync_resourcepool(platform_id, resource_pool, parent):
+def sync_resourcepool(platform_id, resource_pool, cluster):
     """
     同步单个资源池数据
     """
     if isinstance(resource_pool.parent, vim.ResourcePool):
         # 找到归属的集群数据
-        while not isinstance(parent, vim.ClusterComputeResource):
-            parent = parent.parent
+        while not isinstance(cluster, vim.ClusterComputeResource):
+            cluster = cluster.parent
             
         parent_local = db.resource_pool.get_resource_pool_by_datas(
             platform_id=platform_id, 
-            dc_name=parent.parent.parent.name,  # cluster.folder.datacenter
-            cluster_name=parent.name, 
+            dc_name=cluster.parent.parent.name,  # cluster.folder.datacenter
+            cluster_name=cluster.name, 
             name=resource_pool.parent.name, 
             mor_name=get_mor_name(resource_pool.parent)
         )
@@ -46,10 +46,10 @@ def sync_resourcepool(platform_id, resource_pool, parent):
 
     data = dict(
         platform_id=platform_id, 
-        dc_name=parent.parent.parent.name,  # cluster.folder.datacenter
-        dc_mor_name=get_mor_name(parent.parent.parent),  # cluster.folder.datacenter
-        cluster_name=parent.name,
-        cluster_mor_name=get_mor_name(parent), 
+        dc_name=cluster.parent.parent.name,  # cluster.folder.datacenter
+        dc_mor_name=get_mor_name(cluster.parent.parent),  # cluster.folder.datacenter
+        cluster_name=cluster.name,
+        cluster_mor_name=get_mor_name(cluster), 
         name=resource_pool.name, 
         mor_name=get_mor_name(resource_pool),
         parent_name=resource_pool.parent.name, 

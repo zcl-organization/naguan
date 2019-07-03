@@ -17,16 +17,16 @@ def sync_dvswitchs(platform_id, dvswitchs):
     }
     
     for dvswitch in dvswitchs:
-        parent = dvswitch.parent.parent
-        sync_dvswitch(platform_id, dvswitch, parent)
-        if (dvswitch.name, parent.name) in local_data.keys():
-            local_data.pop((dvswitch.name, parent.name))
+        datacenter = dvswitch.parent.parent  # dvswitch.folder.datacenter
+        sync_dvswitch(platform_id, dvswitch, datacenter)
+        if (dvswitch.name, datacenter.name) in local_data.keys():
+            local_data.pop((dvswitch.name, datacenter.name))
     
     for item in local_data.values():
         db.dvswitch.dvswitch_delete(item)
 
 
-def sync_dvswitch(platform_id, dvswitch, parent):
+def sync_dvswitch(platform_id, dvswitch, datacenter):
     """
     单台dvswitch数据的收集
     """
@@ -39,8 +39,8 @@ def sync_dvswitch(platform_id, dvswitch, parent):
 
     data = dict(
         platform_id=platform_id,
-        dc_name=parent.name,
-        dc_mor_name=get_mor_name(parent),
+        dc_name=datacenter.name,
+        dc_mor_name=get_mor_name(datacenter),
         name=dvswitch.name,
         mor_name=get_mor_name(dvswitch),
         host_id=json.dumps(host_ids), 
@@ -56,7 +56,7 @@ def sync_dvswitch(platform_id, dvswitch, parent):
         mulit_mode=dvswitch.config.multicastFilteringMode
     )
 
-    dvswitch_info = db.dvswitch.find_dvswitch_by_name(platform_id, dvswitch.name, parent.name)
+    dvswitch_info = db.dvswitch.find_dvswitch_by_name(platform_id, dvswitch.name, datacenter.name)
     if dvswitch_info:
         data['dvswitch_id'] = dvswitch_info.id
         db.dvswitch.dvswitch_update(**data)

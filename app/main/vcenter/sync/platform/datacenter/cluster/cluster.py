@@ -14,8 +14,8 @@ def sync_clusters(platform_id, clusters):
     }
 
     for cluster in clusters:
-        parent = cluster.parent.parent  # cluster.folder.datacenter
-        sync_cluster(platform_id, cluster, parent)
+        datacenter = cluster.parent.parent  # cluster.folder.datacenter
+        sync_cluster(platform_id, cluster, datacenter)
         mor_name = get_mor_name(cluster)
         if mor_name in local_data.keys():
             local_data.pop(mor_name)
@@ -24,7 +24,7 @@ def sync_clusters(platform_id, clusters):
         db.clusters.del_cluster(item)
 
 
-def sync_cluster(platform_id, cluster, parent):
+def sync_cluster(platform_id, cluster, datacenter):
     """
     同步单个集群
     """
@@ -54,8 +54,8 @@ def sync_cluster(platform_id, cluster, parent):
         name=cluster.name,
         mor_name=get_mor_name(cluster),
         platform_id=platform_id,
-        dc_name=parent.name,
-        dc_mor_name=get_mor_name(parent),
+        dc_name=datacenter.name,
+        dc_mor_name=get_mor_name(datacenter),
         cpu_nums=cpu_sum,
         cpu_capacity=cpu_capacity,
         used_cpu=used_cpu,

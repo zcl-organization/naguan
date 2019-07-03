@@ -15,8 +15,8 @@ def sync_hosts(platform_id, hosts):
     }
 
     for host in hosts:
-        parent = host.parent
-        sync_host(platform_id, host, parent)
+        cluster = host.parent
+        sync_host(platform_id, host, cluster)
         host_mor_name = get_mor_name(host)
         if host_mor_name in local_data.keys():
             local_data.pop(host_mor_name)
@@ -25,7 +25,7 @@ def sync_hosts(platform_id, hosts):
         db.host.del_host_by_id(host_id)
 
 
-def sync_host(platform_id, host, parent):
+def sync_host(platform_id, host, cluster):
     """
     同步单个主机
     """
@@ -37,10 +37,10 @@ def sync_host(platform_id, host, parent):
     data = dict(
         name=host.summary.config.name, 
         mor_mame=get_mor_name(host), 
-        dc_name=parent.parent.parent.name,  # cluster.folder.datacenter
-        dc_mor_name=get_mor_name(parent.parent.parent),  # cluster.folder.datacenter
-        cluster_name=parent.name,
-        cluster_mor_name=get_mor_name(parent), 
+        dc_name=cluster.parent.parent.name,  # cluster.folder.datacenter
+        dc_mor_name=get_mor_name(cluster.parent.parent),  # cluster.folder.datacenter
+        cluster_name=cluster.name,
+        cluster_mor_name=get_mor_name(cluster), 
         port=host.summary.config.port,
         power_state=str(host.summary.runtime.powerState), 
         connection_state=str(host.summary.runtime.connectionState),

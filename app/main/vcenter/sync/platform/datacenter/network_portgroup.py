@@ -18,20 +18,20 @@ def sync_network_portgroup(platform_id, portgroups):
     }
     
     for portgroup in portgroups:
-        parent = portgroup.parent.parent  # portgroup.folder.datacenter
+        datacenter = portgroup.parent.parent  # portgroup.folder.datacenter
         if isinstance(portgroup, vim.dvs.DistributedVirtualPortgroup):
             switch = portgroup.config.distributedVirtualSwitch
-            sync_dvs_portgroup(platform_id, portgroup, switch, parent)
+            sync_dvs_portgroup(platform_id, portgroup, switch, datacenter)
             if (portgroup.name, switch.name) in local_dvs_portgroup.keys():
                 local_dvs_portgroup.pop((portgroup.name, switch.name))
         else:
             if not portgroup.host:
-                sync_vs_portgroup(platform_id, portgroup, None, parent)
+                sync_vs_portgroup(platform_id, portgroup, None, datacenter)
                 if (portgroup.name, None) in local_vs_portgroup.keys():
                     local_vs_portgroup.pop((portgroup.name, host.name))
             else:
                 for host in portgroup.host:
-                    sync_vs_portgroup(platform_id, portgroup, host, parent)
+                    sync_vs_portgroup(platform_id, portgroup, host, datacenter)
                     if (portgroup.name, host.name) in local_vs_portgroup.keys():
                         local_vs_portgroup.pop((portgroup.name, host.name))
 
@@ -41,7 +41,7 @@ def sync_network_portgroup(platform_id, portgroups):
         db.network_dvs_port_group.dvs_network_delete(item)
 
 
-def sync_vs_portgroup(platform_id, vs_portgroup, host, parent):
+def sync_vs_portgroup(platform_id, vs_portgroup, host, datacenter):
     """
     同步单个vswitch端口组
     """
@@ -51,8 +51,8 @@ def sync_vs_portgroup(platform_id, vs_portgroup, host, parent):
         db.network_port_group.network_create(
             name=vs_portgroup.name,
             mor_name=get_mor_name(vs_portgroup),
-            dc_name=parent.name,
-            dc_mor_name=get_mor_name(parent),
+            dc_name=datacenter.name,
+            dc_mor_name=get_mor_name(datacenter),
             platform_id=platform_id,
             host=host_name
         )
@@ -61,8 +61,8 @@ def sync_vs_portgroup(platform_id, vs_portgroup, host, parent):
             id=network_info.id,
             name=vs_portgroup.name,
             mor_name=get_mor_name(vs_portgroup),
-            dc_name=parent.name,
-            dc_mor_name=get_mor_name(parent)
+            dc_name=datacenter.name,
+            dc_mor_name=get_mor_name(datacenter)
         )
 
 

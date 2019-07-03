@@ -21,8 +21,8 @@ def sync_vm_instances(platform_id, vm_instances):
     for vm_instance in vm_instances:
         if not vm_instance.summary.config.uuid:
             continue
-        parent = vm_instance.runtime.host
-        sync_vm_instance(platform_id, vm_instance, parent)
+        host = vm_instance.runtime.host
+        sync_vm_instance(platform_id, vm_instance, host)
 
         sync_network_device(platform_id, vm_instance)
         sync_disk(platform_id, vm_instance)
@@ -38,7 +38,7 @@ def sync_vm_instances(platform_id, vm_instances):
         db.snapshots.delete_snapshot_by_vm_uuid(uuid)
 
 
-def sync_vm_instance(platform_id, vm_instance, parent):
+def sync_vm_instance(platform_id, vm_instance, host):
     """
     同步单个虚拟机实例  只关心当前虚拟机实例
     """
@@ -56,7 +56,7 @@ def sync_vm_instance(platform_id, vm_instance, parent):
         instance_uuid=vm_instance.summary.config.instanceUuid,
         guest_id=vm_instance.summary.config.guestId,
         guest_full_name=vm_instance.summary.config.guestFullName,
-        host=parent.name, 
+        host=host.name, 
         ip=vm_instance.summary.guest.ipAddress if vm_instance.summary.guest else None, 
         status=vm_instance.summary.runtime.powerState,
         resource_pool_name=vm_instance.resourcePool.name if vm_instance.resourcePool else None

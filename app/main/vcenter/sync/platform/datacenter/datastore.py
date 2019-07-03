@@ -18,8 +18,8 @@ def sync_datastores(platform_id, datastores):
     }
     
     for datastore in datastores:
-        parent = datastore.parent.parent  # datastore.folder.datacenter
-        sync_datastore(platform_id, datastore, parent)
+        datacenter = datastore.parent.parent  # datastore.folder.datacenter
+        sync_datastore(platform_id, datastore, datacenter)
         sync_images(platform_id, datastore)
         if datastore.info.vmfs.uuid in local_data.keys():
             local_data.pop(datastore.info.vmfs.uuid)
@@ -28,7 +28,7 @@ def sync_datastores(platform_id, datastores):
         db.datastores.delete_datastore_by_id(item)
 
 
-def sync_datastore(platform_id, datastore, parent):
+def sync_datastore(platform_id, datastore, datacenter):
     """
     同步单个datastore数据
     """
@@ -40,8 +40,8 @@ def sync_datastore(platform_id, datastore, parent):
         platform_id=platform_id,
         ds_name=datastore.name,
         ds_mor_name=get_mor_name(datastore),
-        dc_name=parent.name,
-        dc_mor_name=get_mor_name(parent),
+        dc_name=datacenter.name,
+        dc_mor_name=get_mor_name(datacenter),
         capacity=datastore.summary.capacity,
         used_capacity=datastore.summary.capacity-datastore.summary.freeSpace, 
         free_capacity=datastore.summary.freeSpace,

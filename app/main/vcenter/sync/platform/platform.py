@@ -56,11 +56,11 @@ def sync_platform_cluster(platform_id, cluster):
         tree_type=3, 
         platform_id=platform_id,
         name=cluster.name, 
-        dc_mor_name=get_mor_name(cluster.parent.parent),
-        dc_oc_name=cluster.parent.parent.name, 
+        dc_mor_name=get_mor_name(cluster.parent.parent),  # cluster.folder.datacenter
+        dc_oc_name=cluster.parent.parent.name,   # cluster.folder.datacenter
         mor_name=get_mor_name(cluster),
-        dc_host_folder_mor_name=get_mor_name(cluster.parent.parent.hostFolder),
-        dc_vm_folder_mor_name=get_mor_name(cluster.parent.parent.vmFolder),
+        dc_host_folder_mor_name=get_mor_name(cluster.parent.parent.hostFolder),  # cluster.folder.datacenter
+        dc_vm_folder_mor_name=get_mor_name(cluster.parent.parent.vmFolder),  # cluster.folder.datacenter
         cluster_mor_name=get_mor_name(cluster),
         cluster_oc_name=cluster.name,
         pid=platform_parent.id
@@ -84,21 +84,21 @@ def sync_platform_resourcepool(platform_id, resourcepool):
         parent_rp_info = db.vcenter.vcenter_tree_get_by_mor_name(platform_id, get_mor_name(resourcepool.parent), 5)
         parent_id = parent_rp_info.id
 
-    parent = resourcepool.parent
-    while not isinstance(parent, vim.ClusterComputeResource):
-        parent = parent.parent
+    cluster = resourcepool.parent
+    while not isinstance(cluster, vim.ClusterComputeResource):
+        cluster = cluster.parent
 
     data = dict(
         tree_type=5, 
         platform_id=platform_id, 
         name=resourcepool.name,
-        dc_mor_name=get_mor_name(parent.parent.parent), 
-        dc_oc_name=parent.parent.parent.name,
+        dc_mor_name=get_mor_name(cluster.parent.parent),  # cluster.folder.datacenter
+        dc_oc_name=cluster.parent.parent.name,  # cluster.folder.datacenter
         mor_name=get_mor_name(resourcepool),
-        dc_host_folder_mor_name=get_mor_name(parent.parent.parent.hostFolder),
-        dc_vm_folder_mor_name=get_mor_name(parent.parent.parent.vmFolder),
-        cluster_mor_name=get_mor_name(parent),
-        cluster_oc_name=parent.name, 
+        dc_host_folder_mor_name=get_mor_name(cluster.parent.parent.hostFolder),  # cluster.folder.datacenter
+        dc_vm_folder_mor_name=get_mor_name(cluster.parent.parent.vmFolder),  # cluster.folder.datacenter
+        cluster_mor_name=get_mor_name(cluster),
+        cluster_oc_name=cluster.name, 
         pid=parent_id
     )
     platform_resourcepool_info = db.vcenter.vcenter_tree_get_by_mor_name(platform_id, get_mor_name(resourcepool), 5)
@@ -117,11 +117,11 @@ def sync_platform_host(platform_id, host):
         tree_type=4, 
         platform_id=platform_id,
         name=host.name, 
-        dc_mor_name=get_mor_name(host.parent.parent.parent),
-        dc_oc_name=host.parent.parent.parent.name, 
+        dc_mor_name=get_mor_name(host.parent.parent.parent),  # host.folder.datacenter
+        dc_oc_name=host.parent.parent.parent.name,   # host.folder.datacenter
         mor_name=get_mor_name(host),
-        dc_host_folder_mor_name=get_mor_name(host.parent.parent.parent.hostFolder),
-        dc_vm_folder_mor_name=get_mor_name(host.parent.parent.parent.vmFolder),
+        dc_host_folder_mor_name=get_mor_name(host.parent.parent.parent.hostFolder),  # host.folder.datacenter
+        dc_vm_folder_mor_name=get_mor_name(host.parent.parent.parent.vmFolder),  # host.folder.datacenter
         cluster_mor_name=get_mor_name(host.parent),
         cluster_oc_name=host.parent.name,
         pid=platform_parent.id
