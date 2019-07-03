@@ -105,3 +105,10 @@ def get_datacenter_by_mor_name(platform_id, mor_name):
 # 根据platform_id获取所有id
 def get_datacenter_all_id(platform_id):
     return db.session.query(VCenterDatacenter.id).filter_by(platform_id=platform_id).all()
+
+
+def get_datacenter_by_platform_id(platform_id):
+    """
+    通过platform_id获取数据
+    """
+    return db.session.query(VCenterDatacenter).filter_by(platform_id=platform_id).all()

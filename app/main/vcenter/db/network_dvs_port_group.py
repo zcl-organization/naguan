@@ -3,7 +3,7 @@ from app.models import VCenterNetworkDistributedSwitchPortGroup
 from app.exts import db
 
 
-def dvs_network_create(name, mor_name, dc_name, dc_mor_name, platform_id, switch):
+def dvs_network_create(name, mor_name, dc_name, dc_mor_name, platform_id, switch, uplink=False):
     """
     dvswitch 数据库存储
     """
@@ -14,6 +14,7 @@ def dvs_network_create(name, mor_name, dc_name, dc_mor_name, platform_id, switch
     new_network.dc_mor_name = dc_mor_name
     new_network.platform_id = platform_id
     new_network.switch = switch
+    new_network.uplink = uplink
 
     db.session.add(new_network)
     db.session.commit()

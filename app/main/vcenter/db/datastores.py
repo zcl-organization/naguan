@@ -65,3 +65,13 @@ def delete_datastore_by_ds_name(ds_name):
 
 def get_ds_by_id(ds_id):
     return db.session.query(VCenterDataStore).filter_by(id=ds_id).first()
+
+
+def delete_datastore_by_id(id):
+    data_store = db.session.query(VCenterDataStore).filter_by(id=id).first()
+    db.session.delete(data_store)
+    db.session.commit()
+
+
+def find_datastore_by_uuid(uuid):
+    return db.session.query(VCenterDataStore).filter_by(uuid=uuid).first()

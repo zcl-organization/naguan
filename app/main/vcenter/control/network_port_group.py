@@ -44,7 +44,8 @@ def sync_network_port_group(netwrok_datas, platform_id):
                     dvs_local_portgroups.pop(check_tuple)
                 
                 network_mor_name = get_mor_name(network)
-                sync_single_dvs_network_port_group(network.name, network_mor_name, dc_name, dc_mor_name, platform_id, dvswitch.name)
+                sync_single_dvs_network_port_group(
+                    network.name, network_mor_name, dc_name, dc_mor_name, platform_id, dvswitch.name, network.config.uplink)
 
     for item in local_portgroups:  # 清理vswitch部分的本地数据
         db.network_port_group.network_delete(local_portgroups[item])
@@ -80,7 +81,7 @@ def sync_single_network_port_group(network_name, network_mor_name, dc_name, dc_m
         )
 
 
-def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, switch):
+def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, dc_mor_name, platform_id, switch, uplink):
     """
     同步dswitch端口组信息
     """
@@ -93,7 +94,8 @@ def sync_single_dvs_network_port_group(network_name, network_mor_name, dc_name, 
             dc_name=dc_name,
             dc_mor_name=dc_mor_name,
             platform_id=platform_id,
-            switch=switch
+            switch=switch,
+            uplink=uplink
         )
     else:
         db.network_dvs_port_group.dvs_network_update(

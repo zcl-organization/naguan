@@ -296,6 +296,7 @@ class VCenterNetworkDistributedSwitchPortGroup(db.Model):
     dc_mor_name = db.Column(db.String(255))
     platform_id = db.Column(db.Integer)
     switch = db.Column(db.String(255))
+    uplink = db.Column(db.Boolean)  # 标记是否是上行链路组
 
 
 class VCenterNetworkDevice(db.Model):
