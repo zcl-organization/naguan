@@ -71,9 +71,10 @@ def update_department_by_id(department_id, department_name, department_remarks, 
     if not db.department.get_department_by_id(department_id):
         g.error_code = 4000
         raise Exception('department information does not exist')
-    if not db.department.get_department_by_id(department_pid):
-        g.error_code = 4000
-        raise Exception('parent department information does not exist')
+    if department_pid:
+        if not db.department.get_department_by_id(department_pid):
+            g.error_code = 4000
+            raise Exception('parent department information does not exist')
     db.department.update_department_by_id(department_id, department_name, department_remarks, department_status,
                                           department_pid)
 

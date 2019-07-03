@@ -286,7 +286,7 @@ class MenuManage(Resource):
 
         control.event_logs.eventlog_create(type='menu', result=True, resources_id=id, event=unicode('删除菜单:%s' % name),
                                            submitter=g.username)
-        return set_return_val(False, [], 'Menu deletion successfully', 1650)
+        return set_return_val(True, [], 'Menu deletion successfully', 1650)
 
     @roles_un_permission('unauthorized')
     @basic_auth.login_required

@@ -320,7 +320,7 @@ class DiskManage(Resource):
         data = dict(
             type='vm_network',
             result=False,
-            resources_id=None,
+            resources_id="",
             event=unicode('删除磁盘,id：%s' % args.get('disks')),
             submitter=g.username,
         )
