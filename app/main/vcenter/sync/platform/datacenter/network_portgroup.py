@@ -8,6 +8,7 @@ from app.main.vcenter.control.utils import get_mor_name
 def sync_network_portgroup(platform_id, portgroups):
     """
     同步所有端口组
+    获取 -> 处理 -> 回收
     """
     local_vs_portgroup = {
         (item.name, item.host): item.id for item in db.network_port_group.list_all(platform_id)

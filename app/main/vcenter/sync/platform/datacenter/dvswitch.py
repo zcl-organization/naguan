@@ -10,6 +10,7 @@ from app.main.vcenter.control.utils import get_mor_name
 def sync_dvswitchs(platform_id, dvswitchs):
     """
     同步一组dvswitch数据
+    获取 -> 处理 -> 回收
     """
     local_data = {
         (item.name, item.dc_name): item.id for item in db.dvswitch.dvswitch_all(platform_id)
@@ -44,8 +45,8 @@ def sync_dvswitch(platform_id, dvswitch, parent):
         mor_name=get_mor_name(dvswitch),
         host_id=json.dumps(host_ids), 
         mtu=dvswitch.config.maxMtu,
-        active_uplink_port=str(list(dvswitch.config.defaultPortConfig.uplinkTeamingPolicy.uplinkPortOrder.activeUplinkPort)),
-        standby_uplink_port=str(list(dvswitch.config.defaultPortConfig.uplinkTeamingPolicy.uplinkPortOrder.standbyUplinkPort)),
+        active_uplink_port=json.dumps(list(dvswitch.config.defaultPortConfig.uplinkTeamingPolicy.uplinkPortOrder.activeUplinkPort)),
+        standby_uplink_port=json.dumps(list(dvswitch.config.defaultPortConfig.uplinkTeamingPolicy.uplinkPortOrder.standbyUplinkPort)),
         protocol=dvswitch.config.linkDiscoveryProtocolConfig.protocol,
         operation=dvswitch.config.linkDiscoveryProtocolConfig.operation,
         version=dvswitch.config.productInfo.version,

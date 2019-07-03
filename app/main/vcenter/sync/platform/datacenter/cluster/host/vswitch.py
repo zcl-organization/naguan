@@ -7,14 +7,17 @@ from app.main.vcenter.control.utils import get_mor_name
 
 
 def sync_vswitchs(platform_id, vswitchs):
+    """
+    同步一组vswitch数据
+    获取 -> 处理 -> 回收
+    """
     local_data = {
         (item.name, item.host_mor_name): item.id for item in db.vswitch.get_vswitch_by_data(
             platform_id=platform_id
         )
     }
 
-    for vswitch_p in vswitchs:
-        vswitch, parent = vswitch_p
+    for vswitch, parent in vswitchs:
         sync_vswitch(platform_id, vswitch, parent)
         check_vswitch = (vswitch.name, get_mor_name(parent))
         if check_vswitch in local_data.keys():
@@ -25,11 +28,14 @@ def sync_vswitchs(platform_id, vswitchs):
 
 
 def sync_vswitch(platform_id, vswitch, parent):
+    """
+    同步单个vswitch数据
+    """
     nics = [item for item in vswitch.spec.policy.nicTeaming.nicOrder.activeNic]
     data = dict(
         platform_id=platform_id,
         name=vswitch.name,
-        mor_name="",  # TODO 获取mor_name的方式或是直接取消
+        mor_name="",     # TODO 获取mor_name的方式或是直接取消
         host_name=parent.name,
         host_mor_name=get_mor_name(parent),
         mtu=vswitch.mtu,

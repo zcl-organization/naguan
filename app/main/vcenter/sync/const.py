@@ -3,6 +3,9 @@ from enum import Enum
 
 
 class SyncOperation(Enum):
+    """
+    同步操作类型
+    """
     PLATFORM = 1
     DATACENTER = 2
     PORTGROUP = 3
@@ -16,6 +19,9 @@ class SyncOperation(Enum):
 
 
 class PlatformType(Enum):
+    """
+    Tree表类型
+    """
     PLATFROM = 1
     DATACENTER = 2
     CLUSTER = 3

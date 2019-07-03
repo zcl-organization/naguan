@@ -6,25 +6,11 @@ from app.main.vcenter.control.utils import get_mor_name
 from app.main.vcenter.sync.const import PlatformType
 
 
-
-
-def sync_platforms(platform_id, platforms):
-    local_data = {
-        item.mor_name: item.id for item in db.vcenter.vcenter_tree_list_by_platform_id(platform_id)
-    }
-
-    for platform_type, platform_data in platforms:
-        sync_method[platform_type](platform_id, platform_data)
-        
-        mor_name = None if platform_type == PlatformType.PLATFROM else get_mor_name(platform_data)
-        if mor_name in local_data.keys():
-            local_data.pop(mor_name)
-    
-    for item in local_data.values():
-        db.vcenter.vcenter_tree_delete_by_id(item)
-
-# TODO 合并下述代码
+# TODO
 def sync_platform_base(platform_id, platform):
+    """
+    同步平台基础信息(tree部分)
+    """
     data = dict(
         tree_type=1, 
         platform_id=platform_id, 
@@ -39,6 +25,9 @@ def sync_platform_base(platform_id, platform):
 
 
 def sync_platform_datacenter(platform_id, datacenter):
+    """
+    同步平台下单个datacenter信息(tree部分)
+    """
     platform_parent = db.vcenter.get_vcenter_tree_by_tree_type(platform_id, 1)
     data = dict(
         tree_type=2, 
@@ -59,6 +48,9 @@ def sync_platform_datacenter(platform_id, datacenter):
 
 
 def sync_platform_cluster(platform_id, cluster):
+    """
+    同步平台下单个cluster信息(tree部分)
+    """
     platform_parent = db.vcenter.get_vcenter_obj_by_mor_name(platform_id, get_mor_name(cluster.parent.parent))
     data = dict(
         tree_type=3, 
@@ -82,6 +74,9 @@ def sync_platform_cluster(platform_id, cluster):
 
 
 def sync_platform_resourcepool(platform_id, resourcepool):
+    """
+    同步平台下单个resource pool信息(tree部分)
+    """
     if isinstance(resourcepool.parent, vim.ClusterComputeResource):
         parent_cluter_info = db.vcenter.vcenter_tree_get_by_cluster(platform_id, get_mor_name(resourcepool.parent), 3)
         parent_id = parent_cluter_info.id
@@ -114,6 +109,9 @@ def sync_platform_resourcepool(platform_id, resourcepool):
 
 
 def sync_platform_host(platform_id, host):
+    """
+    同步平台下单个host信息(tree部分)
+    """
     platform_parent = db.vcenter.vcenter_tree_get_by_mor_name(platform_id, get_mor_name(host.parent), 3)
     data = dict(
         tree_type=4, 
@@ -136,10 +134,29 @@ def sync_platform_host(platform_id, host):
         db.vcenter.vcenter_tree_create(**data)
 
 
-sync_method = {
+TREEPLATFORM = {
     PlatformType.PLATFROM: sync_platform_base,
     PlatformType.DATACENTER: sync_platform_datacenter,
     PlatformType.CLUSTER: sync_platform_cluster,
     PlatformType.RESOURCEPOOL: sync_platform_resourcepool,
     PlatformType.HOST: sync_platform_host
 }
+
+
+def sync_platforms(platform_id, platforms):
+    """
+    同步平台信息(tree部分)
+    """
+    local_data = {
+        item.mor_name: item.id for item in db.vcenter.vcenter_tree_list_by_platform_id(platform_id)
+    }
+
+    for platform_type, platform_data in platforms:
+        TREEPLATFORM[platform_type](platform_id, platform_data)
+        
+        mor_name = None if platform_type == PlatformType.PLATFROM else get_mor_name(platform_data)
+        if mor_name in local_data.keys():
+            local_data.pop(mor_name)
+    
+    for item in local_data.values():
+        db.vcenter.vcenter_tree_delete_by_id(item)

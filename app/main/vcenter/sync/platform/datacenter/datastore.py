@@ -11,6 +11,7 @@ from app.main.vcenter.control.images import sync_image
 def sync_datastores(platform_id, datastores):
     """
     同步一组datastore数据
+    获取 -> 处理 -> 回收
     """
     local_data = {
         item.uuid: item.id for item in db.datastores.get_datastore_by_platform_id(platform_id)
@@ -60,6 +61,10 @@ def sync_datastore(platform_id, datastore, parent):
 
 
 def sync_images(platform_id, datastore):
+    """
+    同步DS下的所有镜像文件,直接调用原有函数
+    TODO
+    """
     platform = {
         "id": platform_id
     }

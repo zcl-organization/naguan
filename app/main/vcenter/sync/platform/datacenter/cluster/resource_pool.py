@@ -6,6 +6,9 @@ from app.main.vcenter.control.utils import get_mor_name
 
 
 def sync_resourcepools(platform_id, resource_pools):
+    """
+    同步一组资源池数据
+    """
     local_data = {
         item.mor_name: item.id for item in db.resource_pool.get_resource_pool_list(platform_id=platform_id)
     }
@@ -22,7 +25,11 @@ def sync_resourcepools(platform_id, resource_pools):
 
 
 def sync_resourcepool(platform_id, resource_pool, parent):
+    """
+    同步单个资源池数据
+    """
     if isinstance(resource_pool.parent, vim.ResourcePool):
+        # 找到归属的集群数据
         while not isinstance(parent, vim.ClusterComputeResource):
             parent = parent.parent
             
@@ -38,10 +45,9 @@ def sync_resourcepool(platform_id, resource_pool, parent):
         parent_id = -1
 
     data = dict(
-        # rp_id
         platform_id=platform_id, 
         dc_name=parent.parent.parent.name,  # cluster.folder.datacenter
-        dc_mor_name=get_mor_name(parent.parent.parent), 
+        dc_mor_name=get_mor_name(parent.parent.parent),  # cluster.folder.datacenter
         cluster_name=parent.name,
         cluster_mor_name=get_mor_name(parent), 
         name=resource_pool.name, 

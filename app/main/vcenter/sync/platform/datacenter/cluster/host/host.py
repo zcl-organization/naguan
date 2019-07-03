@@ -6,6 +6,10 @@ from app.main.vcenter.control.utils import get_mor_name
 
 
 def sync_hosts(platform_id, hosts):
+    """
+    同步所有主机
+    获取 -> 处理 -> 回收
+    """
     local_data = {
         item.mor_name: item.id for item in db.host.get_host_by_data(platform_id=platform_id)
     }
@@ -22,6 +26,9 @@ def sync_hosts(platform_id, hosts):
 
 
 def sync_host(platform_id, host, parent):
+    """
+    同步单个主机
+    """
     capacity, free_capacity = 0, 0
     for ds in host.datastore:
         capacity += ds.summary.capacity
@@ -31,7 +38,7 @@ def sync_host(platform_id, host, parent):
         name=host.summary.config.name, 
         mor_mame=get_mor_name(host), 
         dc_name=parent.parent.parent.name,  # cluster.folder.datacenter
-        dc_mor_name=get_mor_name(parent.parent.parent), 
+        dc_mor_name=get_mor_name(parent.parent.parent),  # cluster.folder.datacenter
         cluster_name=parent.name,
         cluster_mor_name=get_mor_name(parent), 
         port=host.summary.config.port,

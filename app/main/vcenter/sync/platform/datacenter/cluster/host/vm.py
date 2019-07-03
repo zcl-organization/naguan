@@ -10,6 +10,10 @@ from app.main.vcenter.control.snapshots import sync_snapshot
 
 
 def sync_vm_instances(platform_id, vm_instances):
+    """
+    同步多个虚拟机实例  同步过程中同时处理实例对应的网卡 磁盘 快照信息
+    获取 -> 处理 -> 回收
+    """
     local_data = [
         item.uuid for item in db.instances.get_vm_by_platform_id(platform_id)
     ]
@@ -35,6 +39,9 @@ def sync_vm_instances(platform_id, vm_instances):
 
 
 def sync_vm_instance(platform_id, vm_instance, parent):
+    """
+    同步单个虚拟机实例  只关心当前虚拟机实例
+    """
     data = dict(
         uuid=vm_instance.summary.config.uuid, 
         platform_id=platform_id,

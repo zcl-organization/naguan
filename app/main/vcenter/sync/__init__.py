@@ -16,7 +16,8 @@ from app.main.vcenter.sync.platform.datacenter.cluster.host.vm import sync_vm_in
 from app.main.vcenter.sync.platform.platform import sync_platforms
 
 
-deal_map = {
+# 处理函数映射
+METHODSMAP = {
     SyncOperation.PLATFORM: sync_platforms,
     SyncOperation.DATACENTER: sync_datacenters,
     SyncOperation.PORTGROUP: sync_network_portgroup,
@@ -30,38 +31,16 @@ deal_map = {
 }
 
 
-def consumption_sync(info):
+def consumption_sync(platform_id, info):
     """
-    处理同步
-    TODO 收集处理删除  无意义的id
+    处理同步 
+    TODO print -> log
     """
     for operation, value in info.items():
-        for platform, datas in value.items():
-            print operation, "Start", platform
-            deal_map[operation](platform, datas)
-            print operation, "Over", platform
+        print operation, "Start", platform_id
+        METHODSMAP[operation](platform_id, value)
+        print operation, "Over", platform_id
 
 
 def sync_all_new(platform_id):
-    consumption_sync(sync_info(1))
-
-
-# if __name__ == "__main__":
-#     from mock import Mock
-#     from manage import app
-#     platforms = [
-#         {
-#             'ip': '192.168.78.205', 
-#             'name': 'administrator@vsphere.local', 
-#             'password': 'Aiya@2018', 
-#             'port': '443'
-#         },
-#     ]
-#     from app.main.vcenter.utils.base import VCenter
-#     from app.main.base.control import cloud_platform
-#     cloud_platform.platform_list = Mock(return_value=platforms)
-
-#     with app.test_request_context():
-#         data = sync_info(1)
-#         consumption_sync(data)
-#         print len(data)
+    consumption_sync(platform_id, sync_info(platform_id))

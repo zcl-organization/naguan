@@ -8,18 +8,16 @@ from app.main.vcenter.control.utils import get_mor_name
 def sync_datacenters(platform_id, datacenters):
     """
     同步所有DC数据
+    获取 -> 处理 -> 回收
     """
-    # 获取
     dc_datas = db.datacenters.get_datacenter_by_platform_id(platform_id)
     local_data = {item.mor_name: item.id for item in dc_datas}
 
-    # 处理
     for datacenter in datacenters:
         result = sync_datacenter(platform_id, datacenter)
         if result.mor_name in local_data.keys():
             local_data.pop(result.mor_name)
 
-    # 回收 
     for item in local_data.values():
         db.datacenters.del_datacenter(item)
 
@@ -27,6 +25,7 @@ def sync_datacenters(platform_id, datacenters):
 def sync_datacenter(platform_id, datacenter):
     """
     处理单个DC数据
+    TODO 数据收集待优化
     """
     dc_mor_name = get_mor_name(datacenter)
 
