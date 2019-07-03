@@ -101,3 +101,7 @@ def update_cluster(name, mor_name, platform_id, dc_name, dc_mor_name, cpu_nums, 
 # 根据platform_id获取所有id
 def get_cluster_all_id(platform_id):
     return db.session.query(VCenterClusters.id).filter_by(platform_id=platform_id).all()
+
+
+def get_cluster_by_platform_id(platform_id):
+    return db.session.query(VCenterClusters).filter_by(platform_id=platform_id).all()

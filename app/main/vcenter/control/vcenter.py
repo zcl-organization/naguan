@@ -115,7 +115,7 @@ def sync_vcenter_vm(si, content, host, platform):
     if vm_list:
         for uuid in vm_list:
             # db_vm.vm_delete_by_uuid(platform['id'], host.name, uuid)
-            db.instances.vm_delete_by_uuid(platform['id'], host.name, uuid)
+            db.instances.vm_delete_by_uuid(platform['id'], uuid)
 
             # 删除相关的 network disk
             db.network_devices.device_delete_by_vm_uuid(platform['id'], uuid)

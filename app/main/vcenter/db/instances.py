@@ -79,9 +79,13 @@ def vcenter_get_vm_by_platform_id(platform_id, host):
         return False
 
 
-def vm_delete_by_uuid(platform_id, host, uuid):
+def get_vm_by_platform_id(platform_id):
+    return db.session.query(VCenterVm).filter_by(platform_id=platform_id).all()
+
+
+def vm_delete_by_uuid(platform_id, uuid):
     query = db.session.query(VCenterVm)
-    query.filter_by(platform_id=platform_id).filter_by(host=host).filter_by(uuid=uuid).delete(
+    query.filter_by(platform_id=platform_id, uuid=uuid).delete(
         synchronize_session=False)
 
 
@@ -152,4 +156,11 @@ def vcenter_sync_vm_transform_template(platform_id, uuid):
     vm.template = True
     db.session.commit()
 
+
+def delete_instance_by_host(platform_id, host):
+    db.session.query(VCenterVm).filter_by(
+        platform_id=platform_id,
+        host=host
+    ).delete(synchronize_session=False)
+    db.session.commit()
 

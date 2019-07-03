@@ -84,7 +84,7 @@ def get_rp_by_mor_name(platform_id, mor_name):
     return db.session.query(VCenterResourcePool).filter_by(platform_id=platform_id).filter_by(mor_name=mor_name).first()
 
 
-def get_resource_pool_list(platform_id, dc_mor_name, cluster_mor_name):
+def get_resource_pool_list(platform_id=None, dc_mor_name=None, cluster_mor_name=None):
     query = db.session.query(VCenterResourcePool)
     if platform_id:
         query = query.filter_by(platform_id=platform_id)

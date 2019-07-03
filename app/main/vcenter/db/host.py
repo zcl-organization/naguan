@@ -119,3 +119,31 @@ def put_host_maintenance_mode(host_id, maintenance_mode):
 # 根据platform_id获取所有id
 def get_host_all_id(platform_id):
     return db.session.query(VCenterHost.id).filter_by(platform_id=platform_id).all()
+
+
+def get_host_id_by_uuid(uuid):
+    """
+    通过host的uuid获取对应表id  用户dvs的host信息收集
+    """
+    return db.session.query(VCenterHost.id).filter_by(uuid=uuid).first()
+
+
+def get_host_by_data(platform_id=None, dc_mor_name=None, cluster_mor_name=None):
+    """
+    通过host数据来获取local数据  
+    TODO
+    """
+    query = db.session.query(VCenterHost)
+    if platform_id:
+        query = query.filter_by(platform_id=platform_id)
+    if dc_mor_name:
+        query = query.filter_by(dc_mor_name=dc_mor_name)
+    if cluster_mor_name:
+        query = query.filter_by(cluster_mor_name=cluster_mor_name)
+    return query.all()
+
+
+def get_host_by_mor_name(platform_id, mor_name):
+    return db.session.query(VCenterHost).filter_by(
+        platform_id=platform_id, mor_name=mor_name
+    ).first()

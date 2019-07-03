@@ -18,7 +18,7 @@ def vcenter_tree_create(tree_type, platform_id, name, dc_host_folder_mor_name=No
     new_vcenter.dc_oc_name = unicode(dc_oc_name)
     new_vcenter.dc_vm_folder_mor_name = dc_vm_folder_mor_name
     new_vcenter.mor_name = mor_name
-    new_vcenter.name = unicode(name)
+    new_vcenter.name = unicode(name) if name else name   # ???
     new_vcenter.cluster_mor_name = cluster_mor_name
     if cluster_oc_name:
         new_vcenter.cluster_oc_name = unicode(cluster_oc_name)

@@ -47,6 +47,8 @@ from app.main.vcenter.apis.dvswitch import DVSwitchHostManage
 
 from app.main.vcenter.apis.ovf import OvfManage
 
+from app.main.vcenter.apis.new_sync import VCenterSyncManage
+
 api = Api()
 
 
@@ -133,6 +135,9 @@ api.add_resource(RolesUsersManage, '/api/v1.0/role_user', methods=['GET', 'POST'
                  endpoint='RoleUserMg')
 api.add_resource(RolesUsersManage, '/api/v1.0/role_user/<int:user_id>', methods=['PUT', 'DELETE'],
                  endpoint='RoleUserMgById')
+
+# vCenter 信息同步(New)
+api.add_resource(VCenterSyncManage, "/api/v1.0/vCenter/sync", methods=["POST"], endpoint="Sync")
 
 # vCenter 信息同步
 api.add_resource(VCenterManage, '/api/v1.0/vCenter/tree', methods=['GET', 'POST'], endpoint='TreeMg')

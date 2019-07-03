@@ -74,3 +74,16 @@ def find_vswitch_by_name(platform_id, host_name, vswitch_name):
         host_name=host_name,
         name=vswitch_name
     ).first()
+
+
+def get_vswitch_by_data(platform_id=None, host_mor_name=None):
+    """
+    通过host数据来获取local数据  
+    TODO
+    """
+    query = db.session.query(VCenterVswitch)
+    if platform_id:
+        query = query.filter_by(platform_id=platform_id)
+    if host_mor_name:
+        query = query.filter_by(host_mor_name=host_mor_name)
+    return query.all()
