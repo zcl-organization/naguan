@@ -12,6 +12,7 @@ def get_department_users(department_id, user_id):
         _t = {
             'department_user_id': item.department_user_id,
             'department_id': item.department_id,
+            'is_principal': item.is_principal,
             'user_id': item.user_id,
             'user_name': item.user_name
         }

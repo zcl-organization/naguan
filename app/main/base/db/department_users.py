@@ -7,7 +7,8 @@ from app.exts import db
 
 def get_department_users(department_id, user_id):
     query = db.session.query(DepartmentUsers.id.label('department_user_id'),
-                             DepartmentUsers.department_id.label('department_id'), Users.id.label('user_id'),
+                             DepartmentUsers.department_id.label('department_id'),
+                             DepartmentUsers.is_principal.label('is_principal'), Users.id.label('user_id'),
                              Users.username.label('user_name')).outerjoin(Users,
                                                                           DepartmentUsers.user_id == Users.id)
     if department_id:

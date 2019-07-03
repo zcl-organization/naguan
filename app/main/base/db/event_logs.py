@@ -55,7 +55,7 @@ def log_create(type, result, resources_id, event, submitter):
 
     new_log.resource_type = type
     new_log.result = result
-    new_log.operation_resources_id = resources_id
+    new_log.operation_resources_id = str(resources_id)
     new_log.operation_event = event
     new_log.submitter = submitter
     # newlog.time = options['result']
