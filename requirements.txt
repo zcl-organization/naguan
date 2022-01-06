@@ -1,4 +1,4 @@
-celery==3.1.18
+celery==5.2.2
 WTForms==2.2.1
 itsdangerous==1.1.0
 pyvim==2.0.24
